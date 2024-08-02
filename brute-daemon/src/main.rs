@@ -26,8 +26,10 @@ async fn main() -> anyhow::Result<()> {
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     println!("Initializing!");
-    dotenvy::dotenv().unwrap();
+    // dotenvy::dotenv().unwrap();
 
+    listen_on_ssh().await?;
+    /*
     if let Err(e) = create_pid_file() {
         eprintln!("Failed to create PID file: {}", e);
         return Err(anyhow::anyhow!("Failed to create PID file"));
@@ -65,6 +67,7 @@ async fn main() -> anyhow::Result<()> {
 
     // Remove PID file on successful shutdown
     let _ = remove_pid_file();
+    */
 
     Ok(())
 }
