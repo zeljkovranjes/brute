@@ -1,10 +1,11 @@
 #[cfg(target_os = "linux")]
 use std::fs::File;
-use std::{fs::File, process};
+#[cfg(target_os = "linux")]
+use std::process;
 #[cfg(target_os = "linux")]
 use daemonize::Daemonize;
-
-use std::io::{self, Write};  // Import the Write trait here
+#[cfg(target_os = "linux")]
+use std::io::{self, Write};
 
 
 use protocol::ssh::listen_on_ssh;
