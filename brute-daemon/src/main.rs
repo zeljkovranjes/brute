@@ -12,6 +12,7 @@ mod endpoint;
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     dotenvy::dotenv().unwrap();
+    listen_on_ssh().await?;
     Ok(())
 }
 
