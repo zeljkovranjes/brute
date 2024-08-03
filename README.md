@@ -87,9 +87,24 @@ Please ensure you have OpenSSH and any FTP server uninstalled before proceeding.
     + [Install]
     + WantedBy=multi-user.target
     ```
-6. Reload <code>systemd</code>
+6. Reload <code>systemd</code>:
     ```
-    sudo systemctl daemon-reload
+    systemctl daemon-reload
+    ```
+7. Enable the service:
+    ```
+    systemctl enable brute-daemon
+    ```
+8. Start the service:
+    ```
+    systemctl start brute-daemon
+    ```
+8. Check the status and it should say the following:
+    ```
+    systemctl status brute-daemon
+    ```
+    ```
+    Active: active (running) 
     ```
 </details>
 
