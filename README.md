@@ -55,9 +55,38 @@ Please ensure you have OpenSSH and any FTP server uninstalled before proceeding.
     ```sh
     cd brute-daemon
     ```
-2. Build the application:
+3. Build the application:
     ```sh
     cargo build --release
+    ```
+4. Move the executable into <code>/usr/local/bin/</code>:
+    ```sh
+    sudo mv ~/brute-daemon/target/release/brute-daemon /usr/local/bin/brute-daemon
+    ```
+5. Create a daemon file and paste and edit the following contents:
+    ```sh
+    sudo nano /etc/systemd/system/brute-daemon.service
+    ```
+    ```diff
+    +  [Unit]
+    +  Description=Brute Daemon
+    +  After=network.target
+
+    +  [Service]
+    +  ExecStart=/usr/local/bin/brute-daemon
+    +  Restart=always
+    +  User=root
+    +  WorkingDirectory=/usr/local/bin
+    +  StandardOutput=append:/var/log/brute-daemon.log
+    +  StandardError=append:/var/log/brute-daemon_error.log
+
+    +  # Environment Variables
+    +  Environment="ADD_ATTACK_ENDPOINT=https://example.com/brute/attack/add"
+    +  Environment="BEARER_TOKEN=my-secret-token"
+
+[Install]
+WantedBy=multi-user.target
+
     ```
 </details>
 
@@ -89,7 +118,7 @@ Please ensure you have OpenSSH and any FTP server uninstalled before proceeding.
     ```
 5. Then go into <code>ssh.service</code>
     ```ssh
-      nano /lib/systemd/system/ssh.service
+    nano /lib/systemd/system/ssh.service
     ```
 6. Replace the existing SSH server with the one you just compiled:
     ```diff
