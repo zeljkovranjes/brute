@@ -19,6 +19,10 @@ sudo apt install build-essential zlib1g-dev libssl-dev libpq-dev
 sudo apt install libcurl4-openssl-dev libpam0g-dev
 sudo apt install autoconf
 ```
+### Daemonn
+Currently i'm working on a daemon for linux so brute can recieve requests from a variety of different sources. This would be an alternative to having
+to patch OpenSSH with a custom version + a pam module.
+
 ### OpenSSH
 ```bash
 git clone https://github.com/notpointless/openssh-9.8-patched
