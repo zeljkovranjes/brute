@@ -20,7 +20,7 @@ sudo apt install libcurl4-openssl-dev libpam0g-dev
 sudo apt install autoconf
 ```
 ### Daemon
-Supports SSH and FTP.  You can easily integrate your own protocols just call /brute/attack/add.
+Supports SSH and FTP. You can easily integrate your own protocols just call /brute/attack/add then specify the protocol in the payload. This is a great alternative if you don't want to go through the openssh route. But ensure that you use this on a dummy server not a production server. 
 https://github.com/notpointless/brute-daemon
 
 ### OpenSSH
