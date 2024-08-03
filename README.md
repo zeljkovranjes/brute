@@ -46,11 +46,22 @@ Non-docker installation
     ```
 3. Set the following environment variables
     ```
+    ##############
+    # brute_http #
+    ##############
     DATABASE_URL=postgresql://postgres:{password}@{host}/{database}
     BEARER_TOKEN=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
     IPINFO_TOKEN=xxxxxxxxxxxxxx
     RUST_LOG=trace
     RUST_LOG_STYLE=always
+    LISTEN_ADDRESS=0.0.0.0:7000
+    LISTEN_ADDRESS_TLS=0.0.0.0:7443
+    RUNNING_IN_DOCKER=false
+
+    ################
+    # brute_daemon #
+    ################
+    ADD_ATTACK_ENDPOINT=http://localhost:7000/brute/stats/attack
     ```
 </details>
 
