@@ -18,7 +18,8 @@ this may compromise the security of your server, so use with **caution**.
 <div align="center"> <img src="./docs/img/in_action.png"> </div>
 
 ## Installation
-We will discuss two different ways for you to recieve **traffic**.
+Before installing, please identify where you want to source your traffic. 
+There are, of course, multiple ways to do this, but we'll only be discussing two of them.
 - OpenSSH
 - Daemon
 ```
