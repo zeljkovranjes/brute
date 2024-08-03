@@ -63,7 +63,7 @@ https://github.com/notpointless/brute-daemon
     autoreconf
     ./configure --with-pam --with-privsep-path=/var/lib/sshd/ --sysconfdir=/etc/ssh
     ```
-4. Now make and install the server.
+4. Now make and install the server:
     ```sh
     sudo make
     sudo make install
@@ -72,7 +72,7 @@ https://github.com/notpointless/brute-daemon
     ```ssh
       nano /lib/systemd/system/ssh.service
     ```
-6. Replace the existing SSH server with the one you just compiled.
+6. Replace the existing SSH server with the one you just compiled:
     ```diff
     -  ExecStartPre=/usr/sbin/sshd -t
     -  ExecStart=/usr/sbin/sshd -D $SSHD_OPTS
@@ -80,5 +80,9 @@ https://github.com/notpointless/brute-daemon
     +  ExecStartPre=/usr/local/sbin/sshd -t
     +  ExecStart=/usr/local/sbin/sshd -D $SSHD_OPTS
     +  ExecReload=/usr/local/sbin/sshd -t
+    ```
+7. Now run <code>ssh -V</code> and it should say the following:
+    ```
+    (Brute) OpenSSH_9.8...
     ```
 </details>
