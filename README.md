@@ -46,6 +46,8 @@ https://github.com/notpointless/brute-daemon
 <details close>
 <summary>Show instructions</summary>
 <br>
-- test 1
-- test 2
+1. A numbered list
+              1. A nested numbered list
+              2. Which is numbered
+          2. Which is numbered
 </details>
