@@ -3,7 +3,7 @@
 <br>
 Brute is a project for monitoring authentication attempts on servers using OpenSSH. It tracks and records each attempt and provides detailed information about the person who made the attempt.
 
-<br><br>
+<br>
 Currently, this project must use a specific version of OpenSSH. Unfortunately, the changes made to this may compromise the security of your server, so use with <b>caution</b>.
 
 * <b>Straightforward</b> — Simply call the endpoint ```/brute/attack/add```, and Brute will log, analyze, and store the credentials for you.
