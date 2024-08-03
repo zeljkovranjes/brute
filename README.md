@@ -15,9 +15,7 @@ this may compromise the security of your server, so use with **caution**.
 
 - **Location Information** — Information can be easily accessed through the [Ipinfo](https://ipinfo.io//) API, which is integrated into Brute. This integration allows for retrieval of detailed data from the individual's IP address.
 
-<div align="center">
-	<img src="./docs/img/in_action.png">
-</div>
+<div align="center"> <img src="./docs/img/in_action.png"> </div>
 
 ## Usage
 *Ubuntu 22.04 was used*
