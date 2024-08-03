@@ -186,7 +186,7 @@ impl Handler<RequestWithLimit<TopPassword>> for BruteSystem {
         let limit = msg.limit;
 
         let fut = async move {
-            let query = "SELECT * FROM top_password ORDER BY amount DESC LIMIT $1;";
+            let query = "SELECT * FROM top_password WHERE password !~ '^X{2,}$' ORDER BY amount DESC LIMIT $1;";
             let rows = sqlx::query_as::<_, TopPassword>(query)
                 .bind(limit as i64)
                 .fetch_all(&db_pool)
