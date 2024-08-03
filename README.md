@@ -45,59 +45,23 @@ https://github.com/notpointless/brute-daemon
 ### OpenSSH
 <details><summary><b>Show instructions</b></summary>
 
-1. Install the preset:
+1. Clone the repository:
 
     ```sh
-    npm install --save-dev size-limit @size-limit/file
+    git clone https://github.com/notpointless/openssh-9.8-patched
     ```
 
-2. Add the `size-limit` section and the `size` script to your `package.json`:
-
-    ```diff
-    + "size-limit": [
-    +   {
-    +     "path": "dist/app-*.js"
-    +   }
-    + ],
-      "scripts": {
-        "build": "webpack ./webpack.config.js",
-    +   "size": "npm run build && size-limit",
-        "test": "vitest && eslint ."
-      }
-    ```
-
-3. Here’s how you can get the size for your current project:
+2. Go into the repository:
 
     ```sh
-    $ npm run size
-
-      Package size: 30.08 kB with all dependencies, minified and brotlied
+    cd openssh-9.8-patched
     ```
 
-4. Now, let’s set the limit. Add 25% to the current total size and use that as
-   the limit in your `package.json`:
+3. Configure the repository:
 
-    ```diff
-      "size-limit": [
-        {
-    +     "limit": "35 kB",
-          "path": "dist/app-*.js"
-        }
-      ],
+    ```sh
+    autoreconf
+
+    ./configure --with-pam --with-privsep-path=/var/lib/sshd/ --sysconfdir=/etc/ssh
     ```
-
-5. Add the `size` script to your test suite:
-
-    ```diff
-      "scripts": {
-        "build": "webpack ./webpack.config.js",
-        "size": "npm run build && size-limit",
-    -   "test": "vitest && eslint ."
-    +   "test": "vitest && eslint . && npm run size"
-      }
-    ```
-
-6. If you don’t have a continuous integration service running, don’t forget
-   to add one — start with Github Actions.
-
 </details>
