@@ -44,6 +44,14 @@ Non-docker installation
     ```sh
     cd brute-http
     ```
+3. Set the following environment variables
+    ```
+    DATABASE_URL=postgresql://postgres:{password}@{host}/{database}
+    BEARER_TOKEN=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+    IPINFO_TOKEN=xxxxxxxxxxxxxx
+    RUST_LOG=trace
+    RUST_LOG_STYLE=always
+    ```
 </details>
 
 Docker installation (TODO)
