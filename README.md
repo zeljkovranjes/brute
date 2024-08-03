@@ -21,7 +21,7 @@ this may compromise the security of your server, so use with **caution**.
 Before installing, please identify where you want to source your traffic. 
 There are, of course, multiple ways to do this, but we'll only be discussing two of them.
 - OpenSSH
-- Daemon
+- Daemon (Developing a custom daemon that listens on protocols such as SSH, FTP, HTTP/HTTPS, LDAP, etc.)
 ```
 # Update package lists
 sudo apt update
