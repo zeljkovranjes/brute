@@ -11,7 +11,7 @@ pub struct Individual {
     username: String,
     password: String,
     ip: String,
-    protocol: String,
+    pub protocol: String,
     pub timestamp: i64,
 }
 

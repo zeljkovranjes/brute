@@ -26,7 +26,7 @@ async fn post_brute_attack_add(
         return Ok(HttpResponse::Unauthorized().body("body"))
     }
 
-    let individual = Individual::new_short(
+    let mut individual = Individual::new_short(
         payload.username.clone(),
         payload.password.clone(),
         payload.ip_address.clone(),

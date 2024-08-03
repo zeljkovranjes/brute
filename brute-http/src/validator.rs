@@ -3,11 +3,11 @@ use regex::Regex;
 use crate::{error::BruteResponeError, model::Individual};
 
 pub trait Validate {
-    fn validate(&self) -> anyhow::Result<(), BruteResponeError>;
+    fn validate(&mut self) -> anyhow::Result<(), BruteResponeError>;
 }
 
 impl Validate for Individual {
-    fn validate(&self) -> anyhow::Result<(), BruteResponeError> {
+    fn validate(&mut self) -> anyhow::Result<(), BruteResponeError> {
         if self.username().is_empty() {
             return Err(BruteResponeError::BadRequest("input validation error: username is empty.".to_string()))
         }
@@ -34,6 +34,10 @@ impl Validate for Individual {
 
         if self.protocol().len() > 50 {
             return Err(BruteResponeError::BadRequest("input validation error: protocol is too long max is 50 characters.".to_string()))
+        }
+
+        if self.protocol().eq_ignore_ascii_case("sshd") {
+            self.protocol = "SSH".to_string();
         }
 
         let regex_ip = Regex::new(r#"^((25[0-5]|(2[0-4]|1\d|[1-9]|)\d)\.?\b){4}$"#).unwrap();
