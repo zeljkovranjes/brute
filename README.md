@@ -79,7 +79,7 @@ Non-docker installation
     ```
 </details>
 
-Docker installation (TODO)
+Docker installation
 <details><summary><b>Show instructions</b></summary>
 
 
