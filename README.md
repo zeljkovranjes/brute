@@ -19,11 +19,19 @@ this may compromise the security of your server, so use with **caution**.
 
 ## Usage
 ```
+# Update package lists
 sudo apt update
+
+# Upgrade all installed packages
 sudo apt upgrade
 
-sudo apt install build-essential zlib1g-dev libssl-dev libpq-dev 
+# Install essential build tools and libraries
+sudo apt install build-essential zlib1g-dev libssl-dev libpq-dev
+
+# Install additional development libraries
 sudo apt install libcurl4-openssl-dev libpam0g-dev
+
+# Install autoconf for configuration scripts
 sudo apt install autoconf
 ```
 ### Daemon
