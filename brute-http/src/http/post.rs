@@ -2,7 +2,12 @@ use actix_web::{post, web, HttpResponse};
 use actix_web_httpauth::extractors::bearer::BearerAuth;
 use serde::Deserialize;
 
-use crate::{error::BruteResponeError, http::AppState, model::{Individual, TopProtocol}, validator::Validate};
+use crate::{
+    error::BruteResponeError,
+    http::AppState,
+    model::{Individual, TopProtocol},
+    validator::Validate,
+};
 
 /////////////
 /// POST ///
@@ -20,10 +25,10 @@ struct IndividualPayload {
 async fn post_brute_attack_add(
     state: web::Data<AppState>,
     payload: web::Json<IndividualPayload>,
-    bearer: BearerAuth
+    bearer: BearerAuth,
 ) -> Result<HttpResponse, BruteResponeError> {
     if !bearer.token().eq(&state.bearer) {
-        return Ok(HttpResponse::Unauthorized().body("body"))
+        return Ok(HttpResponse::Unauthorized().body("body"));
     }
 
     let mut individual = Individual::new_short(
@@ -53,16 +58,13 @@ struct ProtocolPayload {
 async fn post_brute_protocol_increment(
     state: web::Data<AppState>,
     payload: web::Json<ProtocolPayload>,
-    bearer: BearerAuth
+    bearer: BearerAuth,
 ) -> Result<HttpResponse, BruteResponeError> {
     if !bearer.token().eq(&state.bearer) {
-        return Ok(HttpResponse::Unauthorized().body("body"))
+        return Ok(HttpResponse::Unauthorized().body("body"));
     }
 
-    let individual = TopProtocol::new(
-        payload.protocol.clone(),
-        payload.amount,
-    );
+    let individual = TopProtocol::new(payload.protocol.clone(), payload.amount);
     match state.actor.send(individual).await {
         Ok(_) => Ok(HttpResponse::Ok().into()),
         Err(er) => Err(BruteResponeError::InternalError(er.to_string())),
