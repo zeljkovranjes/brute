@@ -1,4 +1,4 @@
-use actix_web::{post, web, HttpResponse};
+use actix_web::{post, web, HttpRequest, HttpResponse};
 use actix_web_httpauth::extractors::bearer::BearerAuth;
 use serde::Deserialize;
 
@@ -30,6 +30,10 @@ async fn post_brute_attack_add(
     if !bearer.token().eq(&state.bearer) {
         return Ok(HttpResponse::Unauthorized().body("body"));
     }
+
+    if payload.ip_address.eq("127.0.0.1") {
+        return Err(BruteResponeError::ValidationError("empty ip or local ip".to_string()));
+    }   
 
     let mut individual = Individual::new_short(
         payload.username.clone(),
@@ -65,6 +69,75 @@ async fn post_brute_protocol_increment(
     }
 
     let individual = TopProtocol::new(payload.protocol.clone(), payload.amount);
+    match state.actor.send(individual).await {
+        Ok(_) => Ok(HttpResponse::Ok().into()),
+        Err(er) => Err(BruteResponeError::InternalError(er.to_string())),
+    }
+}
+
+///////////////////////
+/// HTTPS PROTOCOL ///
+/////////////////////
+/////////////
+/// POST ///
+////////////////////
+/// auth/login ///
+//////////////////
+#[derive(Deserialize)]
+struct FakeLoginPayload {
+    username: String,
+    password: String,
+}
+
+#[post("/login")]
+async fn post_brute_fake_https_login(
+    state: web::Data<AppState>,
+    payload: web::Json<FakeLoginPayload>,
+    req: HttpRequest
+) -> Result<HttpResponse, BruteResponeError> {
+    let conn = req.connection_info();
+    let ip_address = conn.realip_remote_addr();
+    println!("{}", ip_address.unwrap());
+    if ip_address.is_none() || ip_address.unwrap().eq("127.0.0.1") {
+        return Err(BruteResponeError::ValidationError("empty ip or local ip".to_string()));
+    }   
+
+    let individual = Individual::new_short(
+        payload.username.clone(),
+        payload.password.clone(),
+        ip_address.unwrap().to_string(),
+        "HTTPS".to_string(),
+    );
+
+    match state.actor.send(individual).await {
+        Ok(_) => Ok(HttpResponse::Ok().into()),
+        Err(er) => Err(BruteResponeError::InternalError(er.to_string())),
+    }
+}
+
+//////////////////////
+/// HTTP PROTOCOL ///
+////////////////////
+#[post("/login")]
+async fn post_brute_fake_http_login(
+    state: web::Data<AppState>,
+    payload: web::Json<FakeLoginPayload>,
+    req: HttpRequest
+) -> Result<HttpResponse, BruteResponeError> {
+    let conn = req.connection_info();
+    let ip_address = conn.realip_remote_addr();
+    println!("{}", ip_address.unwrap());
+    if ip_address.is_none() || ip_address.unwrap().eq("127.0.0.1") {
+        return Err(BruteResponeError::ValidationError("empty ip or local ip".to_string()));
+    }   
+
+    let individual = Individual::new_short(
+        payload.username.clone(),
+        payload.password.clone(),
+        ip_address.unwrap().to_string(),
+        "HTTPS".to_string(),
+    );
+
     match state.actor.send(individual).await {
         Ok(_) => Ok(HttpResponse::Ok().into()),
         Err(er) => Err(BruteResponeError::InternalError(er.to_string())),
