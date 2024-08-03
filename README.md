@@ -1,9 +1,8 @@
 # Brute
 ![Static Badge](https://img.shields.io/badge/%20OS-Linux%2C%20Windows%2C%20MacOS-blue) ![Static Badge](https://img.shields.io/badge/%20GitHub-notpointless%2Fbrute-orange)
 
-<br>
 Brute is a project for monitoring authentication attempts on servers using OpenSSH. It tracks and records each attempt and provides detailed information about the person who made the attempt.
-
+<br>
 <br>
 Currently, this project must use a specific version of OpenSSH. Unfortunately, the changes made to this may compromise the security of your server, so use with <b>caution</b>.
 
