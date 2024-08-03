@@ -17,7 +17,7 @@ this may compromise the security of your server, so use with **caution**.
 
 <div align="center"> <img src="./docs/img/in_action.png"> </div>
 
-## Setup Brute
+## Setup
 ```sh
 # Download rustup
 curl https://sh.rustup.rs -sSf | sh
@@ -32,6 +32,17 @@ source "$HOME/.cargo/env"
 rustc -V
 ```
 
+<details><summary><b>Show normal installtion </b></summary>
+
+1. Clone the repository:
+
+    ```sh
+    git clone https://github.com/notpointless/brute
+    ```
+2. Go into the repository:
+    ```sh
+    cd brute-http
+    ```
 
 </details>
 
