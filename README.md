@@ -44,10 +44,11 @@ https://github.com/notpointless/brute-daemon
 
 ### OpenSSH
 <details close>
-<summary>Show instructions</summary>
+<summary><b></b></summary>
 <br>
-1. A numbered list
-              1. A nested numbered list
-              2. Which is numbered
-          2. Which is numbered
+<ol>
+<li>Example 1</li>
+<li>Example 2</li>
+<li>Example 3</li>
+</ol>
 </details>
