@@ -44,7 +44,7 @@ Non-docker installation
     ```sh
     cd brute-http
     ```
-3. Set the following environment variables
+3. Set the following environment variables:
     ```env
     ##############
     # brute_http #
@@ -63,7 +63,7 @@ Non-docker installation
     ################
     ADD_ATTACK_ENDPOINT=http://localhost:7000/brute/stats/attack
     ```
-4. Add your cert.pem and key.pem to certs
+4. Add your cert.pem and key.pem to /certs folders:
     ```sh
     Generate one from cloudflare, letsencrypt or just use the openssl command.
     ```
