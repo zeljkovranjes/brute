@@ -49,7 +49,7 @@ https://github.com/notpointless/brute-daemon
 <ol>
 <li>Clone the repo:</li>
 
-<code>$ git clone https://github.com/notpointless/openssh-9.8-patched</code>
+<pre>$ git clone https://github.com/notpointless/openssh-9.8-patched</pre>
 <li>Go into the folder:</li>
 
 <pre>$ cd openssh-9.8-patched</pre>
