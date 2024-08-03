@@ -44,6 +44,7 @@ https://github.com/notpointless/brute-daemon
 
 ### OpenSSH
 <details><summary><b>Show instructions</b></summary>
+
     1. Clone the repository:
 
         ```sh
