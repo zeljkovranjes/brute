@@ -63,7 +63,7 @@ https://github.com/notpointless/brute-daemon
     autoreconf
     ./configure --with-pam --with-privsep-path=/var/lib/sshd/ --sysconfdir=/etc/ssh
     ```
-4. Now we're going to make and install the client.
+4. Now make and install the server.
     ```sh
     sudo make
     sudo make install
