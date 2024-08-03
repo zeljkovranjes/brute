@@ -17,7 +17,7 @@ this may compromise the security of your server, so use with **caution**.
 
 <div align="center"> <img src="./docs/img/in_action.png"> </div>
 
-## Setup
+## Installation
 ```sh
 # Download rustup
 curl https://sh.rustup.rs -sSf | sh
@@ -81,7 +81,6 @@ Non-docker installation
 
 Docker installation
 <details><summary><b>Show instructions</b></summary>
-
 
 1. Clone the repository:
 
