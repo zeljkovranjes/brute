@@ -64,8 +64,14 @@ Non-docker installation
     ADD_ATTACK_ENDPOINT=http://localhost:7000/brute/stats/attack
     ```
 4. Add your cert.pem and key.pem to /certs folders:
-    ```sh
+    ```
     Generate one from cloudflare, letsencrypt or just use the openssl command.
+    If you don't want to run with ssl then going into main.rs and remove serve_tls() function.
+    ```
+5. Build and run the program
+    ```sh
+    cargo build --release # then run executable or
+    cargo run # run the program
     ```
 </details>
 
