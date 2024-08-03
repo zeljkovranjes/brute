@@ -1,8 +1,5 @@
 # Brute
-![<img alt="github" src="https://img.shields.io/badge/%20GitHub-notpointless%2Fbrute-orange" height="20">](https://github.com/notpointless/brute)
-![<img alt="github" height="20">](https://img.shields.io/badge/%20OS-Linux%2C%20Windows%2C%20MacOS-blue)
-![<img alt="github" height="20">](https://img.shields.io/badge/%20Release-v1.0.0-green)(https://github.com/notpointless/brute)
-
+[<img alt="github" src="https://img.shields.io/badge/%20GitHub-notpointless%2Fbrute-orange" height="20">](https://github.com/notpointless/brute)
 
 Brute is a project for monitoring authentication attempts on servers using OpenSSH. It tracks and records each attempt and provides detailed information about the person who made the attempt.
 <br>
