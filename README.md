@@ -1,6 +1,8 @@
 # Brute
 [<img alt="github" src="https://img.shields.io/badge/%20GitHub-notpointless%2Fbrute-orange" height="20">](https://github.com/notpointless/brute)
-[<img alt="OS" src="https://img.shields.io/badge/%20OS-Linux,%20Windows,%20MacOS%2Fbrute-blue" height="20">](/)
+[<img alt="os" src="https://img.shields.io/badge/%20OS-Linux,%20Windows,%20MacOS-blue" height="20">](/)
+[<img alt="version" src="https://img.shields.io/badge/%20Release-v1.0.0-green" height="20">](https://github.com/notpointless/brute/releases/tag/v1.0.0)
+
 
 
 
