@@ -18,7 +18,6 @@ this may compromise the security of your server, so use with **caution**.
 <div align="center"> <img src="./docs/img/in_action.png"> </div>
 
 ## Usage
-### Prerequisites
 ```
 # Update package lists
 sudo apt update
