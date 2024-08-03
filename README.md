@@ -219,7 +219,7 @@ Please ensure you have OpenSSH and any FTP server uninstalled before proceeding.
     ```
     ```
     Active: active (running) 
-    ```
+    ```s
 </details>
 
 ### OpenSSH
@@ -264,5 +264,36 @@ Please ensure you have OpenSSH and any FTP server uninstalled before proceeding.
 7. Now run <code>ssh -V</code> and it should say the following:
     ```
     (Brute) OpenSSH_9.8...
+    ```
+8. Ok, now we need to setup the PAM module first clone it:
+    ```sh
+    git clone https://github.com/notpointless/brute_pam
+    ```
+8. Make and install the PAM module:
+    ```sh
+    cmake .
+    make # go into lib and rename it to brute_pam.so
+    ```
+9. Now copy the PAM module into <code>/lib/x86_64-linux-gnu/security/</code>
+    ```
+    cp brute_pam.so /lib/x86_64-linux-gnu/security/
+    ```
+10. Now go into <code>/etc/pam.d/common-auth</code>
+    ```
+    sudo nano /etc/pam.d/common-auth
+    ```
+11. Now add PAM to the common-auth
+    ```diff
+    original /etc/pam.d/common-auth
+    # here are the per-package modules (the "Primary" block)
+    - auth    [success=1 default=ignore]      pam_unix.so nullok
+    # here's the fallback if no module succeeds
+    auth    requisite 
+    # here are the per-package modules (the "Primary" block)
+    + auth    [success=2 default=ignore]      pam_unix.so nullok
+    + # enable Brute.
+    + auth    optional                        pam_brute.so
+    # here's the fallback if no module succeeds
+    auth    requisite                       pam_deny.so
     ```
 </details>
