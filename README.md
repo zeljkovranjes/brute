@@ -17,7 +17,10 @@ this may compromise the security of your server, so use with **caution**.
 
 <div align="center"> <img src="./docs/img/in_action.png"> </div>
 
-## Usage
+## Installation
+We will discuss two different ways for you to recieve **traffic**.
+- OpenSSH
+- Daemon
 ```
 # Update package lists
 sudo apt update
