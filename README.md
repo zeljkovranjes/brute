@@ -46,6 +46,6 @@ https://github.com/notpointless/brute-daemon
 <details close>
 <summary>Show instructions</summary>
 <br>
-1. test
-2. test3.
+- test 1
+- test 2
 </details>
