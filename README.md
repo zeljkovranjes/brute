@@ -41,3 +41,10 @@ sudo apt install autoconf
 ### Daemon
 Supports SSH and FTP. You can easily integrate your own protocols just call /brute/attack/add then specify the protocol in the payload. This is a great alternative if you don't want to go through the openssh route. But ensure that you use this on a dummy server not a production server. 
 https://github.com/notpointless/brute-daemon
+
+### OpenSSH
+<details close>
+<summary>Step One?</summary>
+<br>
+Well, you asked for it!
+</details>
