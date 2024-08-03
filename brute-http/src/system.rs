@@ -10,7 +10,7 @@ use tokio::sync::Mutex;
 
 use crate::{
     error::BruteResponeError,
-    model::{Individual, ProcessedIndividual, TopCity, TopCountry, TopIp, TopPassword, TopProtocol, TopRegion, TopUsername, TopUsrPassCombo},
+    model::{Individual, ProcessedIndividual, TopCity, TopCountry, TopIp, TopOrg, TopPassword, TopPostal, TopProtocol, TopRegion, TopTimezone, TopUsername, TopUsrPassCombo},
 };
 
 pub trait Brute {}
@@ -249,7 +249,7 @@ impl Handler<RequestWithLimit<TopUsrPassCombo>> for BruteSystem {
         let limit = msg.limit;
 
         let fut = async move {
-            let query = "SELECT * FROM top_usr_pass_combo ORDER BY amount DESC LIMIT $1;";
+            let query = "SELECT * FROM top_usr_pass_combo WHERE password !~ '^X{2,}$' ORDER BY amount DESC LIMIT $1;";
             let rows = sqlx::query_as::<_, TopUsrPassCombo>(query)
                 .bind(limit as i64)
                 .fetch_all(&db_pool)
@@ -417,6 +417,95 @@ impl Handler<RequestWithLimit<TopRegion>> for BruteSystem {
         Box::pin(fut)
     }
 }
+
+///////////////////////////
+// TOP TIMEZONE MESSAGE //
+/////////////////////////
+
+impl Handler<RequestWithLimit<TopTimezone>> for BruteSystem {
+    type Result = ResponseFuture<Result<Vec<TopTimezone>, BruteResponeError>>;
+
+    fn handle(&mut self, msg: RequestWithLimit<TopTimezone>, _: &mut Self::Context) -> Self::Result {
+        let db_pool = self.db_pool.clone();
+        let limit = msg.limit;
+
+        let fut = async move {
+            let query = "SELECT * FROM top_timezone ORDER BY amount DESC LIMIT $1;";
+            let rows = sqlx::query_as::<_, TopTimezone>(query)
+                .bind(limit as i64)
+                .fetch_all(&db_pool)
+                .await;
+            match rows {
+                Ok(rows) => Ok(rows),
+                Err(_) => Err(BruteResponeError::InternalError(format!(
+                    "this timezone? really. {} break the server",
+                    msg.table.timezone()
+                ))),
+            }
+        };
+        Box::pin(fut)
+    }
+}
+
+///////////////////////////////
+// TOP ORGANIZATION MESSAGE //
+/////////////////////////////
+
+impl Handler<RequestWithLimit<TopOrg>> for BruteSystem {
+    type Result = ResponseFuture<Result<Vec<TopOrg>, BruteResponeError>>;
+
+    fn handle(&mut self, msg: RequestWithLimit<TopOrg>, _: &mut Self::Context) -> Self::Result {
+        let db_pool = self.db_pool.clone();
+        let limit = msg.limit;
+
+        let fut = async move {
+            let query = "SELECT * FROM top_org ORDER BY amount DESC LIMIT $1;";
+            let rows = sqlx::query_as::<_, TopOrg>(query)
+                .bind(limit as i64)
+                .fetch_all(&db_pool)
+                .await;
+            match rows {
+                Ok(rows) => Ok(rows),
+                Err(_) => Err(BruteResponeError::InternalError(format!(
+                    "how did some org named {} break the server",
+                    msg.table.org()
+                ))),
+            }
+        };
+        Box::pin(fut)
+    }
+}
+
+/////////////////////////
+// TOP POSTAL MESSAGE //
+///////////////////////
+
+impl Handler<RequestWithLimit<TopPostal>> for BruteSystem {
+    type Result = ResponseFuture<Result<Vec<TopPostal>, BruteResponeError>>;
+
+    fn handle(&mut self, msg: RequestWithLimit<TopPostal>, _: &mut Self::Context) -> Self::Result {
+        let db_pool = self.db_pool.clone();
+        let limit = msg.limit;
+
+        let fut = async move {
+            let query = "SELECT * FROM top_postal WHERE postal !~ '^\\s*$' ORDER BY amount DESC LIMIT $1;";
+            let rows = sqlx::query_as::<_, TopPostal>(query)
+                .bind(limit as i64)
+                .fetch_all(&db_pool)
+                .await;
+            match rows {
+                Ok(rows) => Ok(rows),
+                Err(_) => Err(BruteResponeError::InternalError(format!(
+                    "how did some postal code with this code {} break the server",
+                    msg.table.postal()
+                ))),
+            }
+        };
+        Box::pin(fut)
+    }
+}
+
+
 
 ///////////////
 // REPORTER //

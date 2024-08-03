@@ -189,22 +189,34 @@ impl Message for RequestWithLimit<TopRegion> {
     type Result = Result<Vec<TopRegion>, BruteResponeError>;
 }
 
-#[derive(Debug, sqlx::FromRow, Getters)]
+#[derive(Default, Debug, sqlx::FromRow, Getters, Serialize, Deserialize)]
 pub struct TopTimezone {
     timezone: String,
     amount: i32,
 }
 
-#[derive(Debug, sqlx::FromRow, Getters)]
+impl Message for RequestWithLimit<TopTimezone> {
+    type Result = Result<Vec<TopTimezone>, BruteResponeError>;
+}
+
+#[derive(Default, Debug, sqlx::FromRow, Getters, Serialize, Deserialize)]
 pub struct TopOrg {
     org: String,
     amount: i32,
 }
 
-#[derive(Debug, sqlx::FromRow, Getters)]
+impl Message for RequestWithLimit<TopOrg> {
+    type Result = Result<Vec<TopOrg>, BruteResponeError>;
+}
+
+#[derive(Default, Debug, sqlx::FromRow, Getters, Serialize, Deserialize)]
 pub struct TopPostal {
     postal: String,
     amount: i32,
+}
+
+impl Message for RequestWithLimit<TopPostal> {
+    type Result = Result<Vec<TopPostal>, BruteResponeError>;
 }
 
 impl TopPostal {
