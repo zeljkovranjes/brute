@@ -32,7 +32,8 @@ source "$HOME/.cargo/env"
 rustc -V
 ```
 
-<details><summary><b>Show normal installtion </b></summary>
+Non-docker installation
+<details><summary><b>Show normal installation </b></summary>
 
 1. Clone the repository:
 
@@ -43,8 +44,10 @@ rustc -V
     ```sh
     cd brute-http
     ```
-
 </details>
+
+Docker installation
+{todo}
 
 ## Installation for Traffic
 Before installing, please identify where you want to source your traffic. 
