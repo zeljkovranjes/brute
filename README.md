@@ -30,7 +30,7 @@ sudo apt update
 sudo apt upgrade
 
 # Install essential build tools and libraries
-sudo apt install build-essential zlib1g-dev libssl-dev libpq-dev
+sudo apt install build-essential zlib1g-dev libssl-dev libpq-dev pkg-config
 
 # Install additional development libraries
 sudo apt install libcurl4-openssl-dev libpam0g-dev
@@ -41,6 +41,25 @@ sudo apt install autoconf
 ### Daemon
 Supports SSH and FTP. You can easily integrate your own protocols just call /brute/attack/add then specify the protocol in the payload. This is a great alternative if you don't want to go through the openssh route. But ensure that you use this on a dummy server not a production server. 
 https://github.com/notpointless/brute-daemon
+
+Please ensure you have OpenSSH and any FTP server uninstalled before proceeding.
+
+<details><summary><b>Show instructions</b></summary>
+
+1. Clone the repository:
+
+    ```sh
+    git clone https://github.com/notpointless/brute-daemon
+    ```
+2. Go into the repository:
+    ```sh
+    cd brute-daemon
+    ```
+2. Build the application:
+    ```sh
+    cargo build --release
+    ```
+</details>
 
 ### OpenSSH
 <details><summary><b>Show instructions</b></summary>
