@@ -20,8 +20,8 @@ sudo apt install libcurl4-openssl-dev libpam0g-dev
 sudo apt install autoconf
 ```
 ### Daemon
-Currently i'm working on a daemon for linux so brute can recieve requests from a variety of different sources. This would be an alternative to having
-to patch OpenSSH with a custom version + a pam module.
+Supports SSH and FTP.  You can easily integrate your own protocols just call /brute/attack/add.
+https://github.com/notpointless/brute-daemon
 
 ### OpenSSH
 ```bash
