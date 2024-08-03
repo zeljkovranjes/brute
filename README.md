@@ -7,7 +7,10 @@ Currently, this project must use a specific version of OpenSSH. Unfortunately, t
 * <b>Extendable Metrics</b> — Brute allows developers to easily add or remove metrics as needed. You can easily integrate additional metrics or connect an API with minimal effort to Brute.
 * <b>Location Information</b> — Information can be easily accessed through the [Ipinfo](https://ipinfo.io//) API, which is integrated into Brute. This integration allows for retrieval of detailed data from the individual's IP address.
 <br><br>
-## Installation
+<div align="center">
+	<img src="./docs/img/in_action2.png">
+</div>
+## Usage
 *Ubuntu 22.04 was used*
 
 Before we begin setting up and installing Brute & OpenSSH, ensure you have downloaded the following libraries and tools.
