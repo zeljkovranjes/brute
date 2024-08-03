@@ -66,7 +66,11 @@ Non-docker installation
 4. Add your cert.pem and key.pem to /certs folders:
     ```
     Generate one from cloudflare, letsencrypt or just use the openssl command.
-    If you don't want to run with ssl then going into main.rs and remove serve_tls() function.
+    If you don't want to run with ssl then going into main.rs and remove serve_tls() function and
+    make sure you remove everything that is under this header in main.rs
+    //////////
+    // TLS //
+    ////////
     ```
 5. Build and run the program
     ```sh
@@ -77,6 +81,53 @@ Non-docker installation
 
 Docker installation (TODO)
 <details><summary><b>Show instructions</b></summary>
+
+
+1. Clone the repository:
+
+    ```sh
+    git clone https://github.com/notpointless/brute
+    ```
+2. Go into your DockerFile
+    ```
+    Open it with nano or your favorite text editor on windows or macos doesn't matter.
+    ```
+3. Change the environment variables
+    ```
+    ENV DATABASE_URL=postgresql://chomnr:{password}@{host}:{port}/brute
+    ENV BEARER_TOKEN=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+    ENV IPINFO_TOKEN=xxxxxxxxxxxxxx
+    ENV RUST_LOG=trace
+    ENV RUST_LOG_STYLE=alwayss
+    ENV LISTEN_ADDRESS=0.0.0.0:7000
+    ENV LISTEN_ADDRESS_TLS=0.0.0.0:7443
+    ENV RUNNING_IN_DOCKER=true
+    ```
+4. (Maybe) Go into brute-http and make a .env and paste the following:
+    ```
+    DATABASE_URL=postgresql://postgres:{password}@{host}/{database}
+    BEARER_TOKEN=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+    IPINFO_TOKEN=xxxxxxxxxxxxxx
+    RUST_LOG=trace
+    RUST_LOG_STYLE=always
+    LISTEN_ADDRESS=0.0.0.0:7000
+    LISTEN_ADDRESS_TLS=0.0.0.0:7443
+    RUNNING_IN_DOCKER=false
+    ```
+5. (Maybe) Copy your cert.pem and key.pem into /brute/brute-http: 
+    ```
+    If you plan on serving with TLS then you must do this if not
+    you can ignore the certs folder. If you would like to remove
+    TLS then just click "show instructions" for non-docker.
+    ```
+5. Go back into /brute folder and build the image.
+    ```
+    docker build --pull --rm -f "DockerFile" -t brute:latest "."
+    ```
+6. After the installation finishes run.
+    ```sh
+    docker run --name brute -p 7000:7000 -p 7443:7443 --restart unless-stopped -d brute  # sqlx will do the migrations for you automatically.
+    ```
 </details>
 
 ## Installation for Traffic
