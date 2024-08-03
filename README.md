@@ -8,7 +8,7 @@ Currently, this project must use a specific version of OpenSSH. Unfortunately, t
 * <b>Location Information</b> — Information can be easily accessed through the [Ipinfo](https://ipinfo.io//) API, which is integrated into Brute. This integration allows for retrieval of detailed data from the individual's IP address.
 <br><br>
 <div align="center">
-	<img src="./docs/img/in_action_small.png">
+	<img src="./docs/img/in_action.png">
 </div>
 ## Usage
 *Ubuntu 22.04 was used*
