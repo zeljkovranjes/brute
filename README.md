@@ -44,10 +44,11 @@ https://github.com/notpointless/brute-daemon
 
 ### OpenSSH
 <details close>
-<summary><b></b></summary>
+<summary><b>Show instructions</b></summary>
 <br>
 <ol>
-<li>Example 1</li>
+<li>Example 1d</li>
+<code>test</code>
 <li>Example 2</li>
 <li>Example 3</li>
 </ol>
