@@ -44,7 +44,8 @@ https://github.com/notpointless/brute-daemon
 
 ### OpenSSH
 <details close>
-<summary>Step One?</summary>
+<summary>Show instructions</summary>
 <br>
-Well, you asked for it!
+1. test
+2. test3.
 </details>
