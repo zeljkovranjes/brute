@@ -43,16 +43,11 @@ Supports SSH and FTP. You can easily integrate your own protocols just call /bru
 https://github.com/notpointless/brute-daemon
 
 ### OpenSSH
-<details close>
-<summary><b>Show instructions</b></summary>
-<br>
-<ol>
-<li>Clone the repo:</li>
-&nbsp;
-<pre>$ git clone https://github.com/notpointless/openssh-9.8-patched</pre>
-<li>Go into the folder:</li>
-&nbsp;
-<pre>$ cd openssh-9.8-patched</pre>
-<li>Example 3</li>
-</ol>
+<details><summary><b>Show instructions</b></summary>
+1. Clone the repository:
+
+    ```sh
+    git clone https://github.com/notpointless/openssh-9.8-patched
+    ```
+
 </details>
