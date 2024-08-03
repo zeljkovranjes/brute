@@ -44,11 +44,15 @@ https://github.com/notpointless/brute-daemon
 
 ### OpenSSH
 <details><summary><b>Show instructions</b></summary>
+1. Clone the repository:
 
-    1. Clone the repository:
+    ```sh
+    git clone https://github.com/notpointless/openssh-9.8-patched
+    ```
 
-        ```sh
-        git clone https://github.com/notpointless/openssh-9.8-patched
-        ```
+2. Go into the repository:
 
+    ```diff
+    cd openssh-9.8-patched
+    ```
 </details>
