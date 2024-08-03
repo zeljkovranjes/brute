@@ -45,7 +45,7 @@ Non-docker installation
     cd brute-http
     ```
 3. Set the following environment variables
-    ```
+    ```env
     ##############
     # brute_http #
     ##############
