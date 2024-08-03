@@ -18,7 +18,7 @@ this may compromise the security of your server, so use with **caution**.
 <div align="center"> <img src="./docs/img/in_action.png"> </div>
 
 ## Installation
-This installation is for <code>brute-http</code> this is the http server thats to run in order
+This installation is for <code>brute-http</code> this is the http server that needs to run in order
 to collect the traffic from the dummy servers.
 ```sh
 # Download rustup
