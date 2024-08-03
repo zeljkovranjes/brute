@@ -16,7 +16,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     /////////////////////
     // ENV AND LOGGER //
     ///////////////////
+    #[cfg(debug_assertions)]
     dotenvy::dotenv().unwrap();
+
     env_logger::builder()
         .filter_module("async_io", log::LevelFilter::Off)
         .filter_module("async_std", log::LevelFilter::Off)
@@ -27,7 +29,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .filter_module("actix_http", log::LevelFilter::Off)
         .filter_module("mio::poll", log::LevelFilter::Off)
         .filter_module("rustls", log::LevelFilter::Off)
-
         .init();
 
     ////////////////////
