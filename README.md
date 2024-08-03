@@ -48,6 +48,7 @@ Non-docker installation
 
 Docker installation (TODO)
 <details><summary><b>Show instructions</b></summary>
+</details>
 
 ## Installation for Traffic
 Before installing, please identify where you want to source your traffic. 
