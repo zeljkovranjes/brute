@@ -17,15 +17,30 @@ this may compromise the security of your server, so use with **caution**.
 
 <div align="center"> <img src="./docs/img/in_action.png"> </div>
 
-## Setting up
-{brute instructions here...}
+## Setup Brute
+```sh
+# Download rustup
+curl https://sh.rustup.rs -sSf | sh
+
+# Type 1 to proceed with the default installation.
+# You might need to restart the shell
+
+# Add Rust to PATH
+source "$HOME/.cargo/env"
+
+# Verify the installation
+rustc -V
+```
+
+
+</details>
 
 ## Installation for Traffic
 Before installing, please identify where you want to source your traffic. 
 There are, of course, multiple ways to do this, but we'll only be discussing two of them.
 - OpenSSH
 - Daemon (Developing a custom daemon that listens on ports such as SSH, FTP, HTTP/HTTPS, LDAP, etc.)
-```
+```sh
 # Update package lists
 sudo apt update
 
