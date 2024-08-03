@@ -63,6 +63,10 @@ Non-docker installation
     ################
     ADD_ATTACK_ENDPOINT=http://localhost:7000/brute/stats/attack
     ```
+4. Add your cert.pem and key.pem to certs
+    ```sh
+    Generate one from cloudflare, letsencrypt or just use the openssl command.
+    ```
 </details>
 
 Docker installation (TODO)
