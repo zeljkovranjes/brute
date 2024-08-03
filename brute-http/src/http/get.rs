@@ -8,6 +8,8 @@ struct LimitParameter {
     limit: Option<usize>,
 }
 
+static MAX_LIMIT: usize = 100;
+
 ////////////
 /// GET ///
 //////////////////////////////////////////
@@ -18,11 +20,11 @@ async fn get_brute_attackers(
     state: web::Data<AppState>,
     params: web::Query<LimitParameter>,
 ) -> impl Responder {
-    let limit = params.limit.unwrap_or(50);
+    let limit = params.limit.unwrap_or(MAX_LIMIT);
     let mut request = RequestWithLimit {
         table: ProcessedIndividual::default(),
         limit,
-        max_limit: 50,
+        max_limit: MAX_LIMIT,
     };
     if limit > request.max_limit {
         request.limit = request.max_limit;
@@ -43,11 +45,11 @@ async fn get_brute_protocol(
     state: web::Data<AppState>,
     params: web::Query<LimitParameter>,
 ) -> impl Responder {
-    let limit = params.limit.unwrap_or(50);
+    let limit = params.limit.unwrap_or(MAX_LIMIT);
     let mut request = RequestWithLimit {
         table: TopProtocol::default(),
         limit,
-        max_limit: 50,
+        max_limit: MAX_LIMIT,
     };
     if limit > request.max_limit {
         request.limit = request.max_limit;
@@ -68,11 +70,11 @@ async fn get_brute_country(
     state: web::Data<AppState>,
     params: web::Query<LimitParameter>,
 ) -> impl Responder {
-    let limit = params.limit.unwrap_or(50);
+    let limit = params.limit.unwrap_or(MAX_LIMIT);
     let mut request = RequestWithLimit {
         table: TopCountry::default(),
         limit,
-        max_limit: 50,
+        max_limit: MAX_LIMIT,
     };
     if limit > request.max_limit {
         request.limit = request.max_limit;
@@ -94,11 +96,11 @@ async fn get_brute_city(
     state: web::Data<AppState>,
     params: web::Query<LimitParameter>,
 ) -> impl Responder {
-    let limit = params.limit.unwrap_or(50);
+    let limit = params.limit.unwrap_or(MAX_LIMIT);
     let mut request = RequestWithLimit {
         table: TopCity::default(),
         limit,
-        max_limit: 50,
+        max_limit: MAX_LIMIT,
     };
     if limit > request.max_limit {
         request.limit = request.max_limit;
@@ -120,11 +122,11 @@ async fn get_brute_region(
     state: web::Data<AppState>,
     params: web::Query<LimitParameter>,
 ) -> impl Responder {
-    let limit = params.limit.unwrap_or(50);
+    let limit = params.limit.unwrap_or(MAX_LIMIT);
     let mut request = RequestWithLimit {
         table: TopRegion::default(),
         limit,
-        max_limit: 50,
+        max_limit: MAX_LIMIT,
     };
     if limit > request.max_limit {
         request.limit = request.max_limit;
