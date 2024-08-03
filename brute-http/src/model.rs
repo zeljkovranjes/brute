@@ -89,22 +89,52 @@ impl Message for RequestWithLimit<ProcessedIndividual> {
     type Result = Result<Vec<ProcessedIndividual>, BruteResponeError>;
 }
 
-#[derive(Debug, sqlx::FromRow, Getters)]
+#[derive(Default, Debug, sqlx::FromRow, Getters, Serialize, Deserialize)]
 pub struct TopUsername {
     username: String,
     amount: i32,
 }
 
-#[derive(Debug, sqlx::FromRow, Getters)]
+impl TopUsername {
+    pub fn new(username: String, amount: i32) -> Self {
+        TopUsername { username, amount }
+    }
+}
+
+impl Message for RequestWithLimit<TopUsername> {
+    type Result = Result<Vec<TopUsername>, BruteResponeError>;
+}
+
+#[derive(Default, Debug, sqlx::FromRow, Getters, Serialize, Deserialize)]
 pub struct TopPassword {
     password: String,
     amount: i32,
 }
 
-#[derive(Debug, sqlx::FromRow, Getters)]
+impl TopPassword {
+    pub fn new(password: String, amount: i32) -> Self {
+        TopPassword { password, amount }
+    }
+}
+
+impl Message for RequestWithLimit<TopPassword> {
+    type Result = Result<Vec<TopPassword>, BruteResponeError>;
+}
+
+#[derive(Default, Debug, sqlx::FromRow, Getters, Serialize, Deserialize)]
 pub struct TopIp {
     ip: String,
     amount: i32,
+}
+
+impl Message for RequestWithLimit<TopIp> {
+    type Result = Result<Vec<TopIp>, BruteResponeError>;
+}
+
+impl TopIp {
+    pub fn new(ip: String, amount: i32) -> Self {
+        TopIp { ip, amount }
+    }
 }
 
 #[derive(Default, Debug, sqlx::FromRow, Getters, Serialize, Deserialize)]
@@ -137,7 +167,7 @@ impl Message for RequestWithLimit<TopCountry> {
     type Result = Result<Vec<TopCountry>, BruteResponeError>;
 }
 
-#[derive(Debug, Default, sqlx::FromRow, Getters, Serialize, Deserialize)]
+#[derive(Default, Debug, sqlx::FromRow, Getters, Serialize, Deserialize)]
 pub struct TopCity {
     city: String,
     country: String,
@@ -186,12 +216,27 @@ impl TopPostal {
     }
 }
 
-#[derive(Debug, sqlx::FromRow, Getters)]
+#[derive(Default, Debug, sqlx::FromRow, Getters, Serialize, Deserialize)]
 pub struct TopUsrPassCombo {
     id: String,
     username: String,
     password: String,
     amount: i32,
+}
+
+impl TopUsrPassCombo {
+    pub fn new(id: String, username: String, password: String, amount: i32) -> Self {
+        TopUsrPassCombo {
+            id,
+            username,
+            password,
+            amount
+        }
+    }
+}
+
+impl Message for RequestWithLimit<TopUsrPassCombo> {
+    type Result = Result<Vec<TopUsrPassCombo>, BruteResponeError>;
 }
 
 #[derive(Debug, Clone, sqlx::FromRow, Getters)]

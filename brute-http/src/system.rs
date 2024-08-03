@@ -10,7 +10,7 @@ use tokio::sync::Mutex;
 
 use crate::{
     error::BruteResponeError,
-    model::{Individual, ProcessedIndividual, TopCity, TopCountry, TopProtocol, TopRegion},
+    model::{Individual, ProcessedIndividual, TopCity, TopCountry, TopIp, TopPassword, TopProtocol, TopRegion, TopUsername, TopUsrPassCombo},
 };
 
 pub trait Brute {}
@@ -124,6 +124,133 @@ impl Handler<RequestWithLimit<ProcessedIndividual>> for BruteSystem {
         let fut = async move {
             let query = "SELECT * FROM processed_individual ORDER BY timestamp DESC LIMIT $1";
             let rows = sqlx::query_as::<_, ProcessedIndividual>(query)
+                .bind(limit as i64)
+                .fetch_all(&db_pool)
+                .await;
+            match rows {
+                Ok(rows) => Ok(rows),
+                Err(_) => Err(BruteResponeError::InternalError(
+                    "something definitely broke on our side".to_string(),
+                )),
+            }
+        };
+        Box::pin(fut)
+    }
+}
+
+///////////////////////////
+// TOP USERNAME MESSAGE //
+/////////////////////////
+
+impl Handler<RequestWithLimit<TopUsername>> for BruteSystem {
+    type Result = ResponseFuture<Result<Vec<TopUsername>, BruteResponeError>>;
+
+    fn handle(
+        &mut self,
+        msg: RequestWithLimit<TopUsername>,
+        _: &mut Self::Context,
+    ) -> Self::Result {
+        let db_pool = self.db_pool.clone();
+        let limit = msg.limit;
+
+        let fut = async move {
+            let query = "SELECT * FROM top_username ORDER BY amount DESC LIMIT $1;";
+            let rows = sqlx::query_as::<_, TopUsername>(query)
+                .bind(limit as i64)
+                .fetch_all(&db_pool)
+                .await;
+            match rows {
+                Ok(rows) => Ok(rows),
+                Err(_) => Err(BruteResponeError::InternalError(
+                    "something definitely broke on our side".to_string(),
+                )),
+            }
+        };
+        Box::pin(fut)
+    }
+}
+
+///////////////////////////
+// TOP PASSWORD MESSAGE //
+/////////////////////////
+
+impl Handler<RequestWithLimit<TopPassword>> for BruteSystem {
+    type Result = ResponseFuture<Result<Vec<TopPassword>, BruteResponeError>>;
+
+    fn handle(
+        &mut self,
+        msg: RequestWithLimit<TopPassword>,
+        _: &mut Self::Context,
+    ) -> Self::Result {
+        let db_pool = self.db_pool.clone();
+        let limit = msg.limit;
+
+        let fut = async move {
+            let query = "SELECT * FROM top_password ORDER BY amount DESC LIMIT $1;";
+            let rows = sqlx::query_as::<_, TopPassword>(query)
+                .bind(limit as i64)
+                .fetch_all(&db_pool)
+                .await;
+            match rows {
+                Ok(rows) => Ok(rows),
+                Err(_) => Err(BruteResponeError::InternalError(
+                    "something definitely broke on our side".to_string(),
+                )),
+            }
+        };
+        Box::pin(fut)
+    }
+}
+
+/////////////////////
+// TOP IP MESSAGE //
+////////////////////
+impl Handler<RequestWithLimit<TopIp>> for BruteSystem {
+    type Result = ResponseFuture<Result<Vec<TopIp>, BruteResponeError>>;
+
+    fn handle(
+        &mut self,
+        msg: RequestWithLimit<TopIp>,
+        _: &mut Self::Context,
+    ) -> Self::Result {
+        let db_pool = self.db_pool.clone();
+        let limit = msg.limit;
+
+        let fut = async move {
+            let query = "SELECT * FROM top_ip ORDER BY amount DESC LIMIT $1;";
+            let rows = sqlx::query_as::<_, TopIp>(query)
+                .bind(limit as i64)
+                .fetch_all(&db_pool)
+                .await;
+            match rows {
+                Ok(rows) => Ok(rows),
+                Err(_) => Err(BruteResponeError::InternalError(
+                    "something definitely broke on our side".to_string(),
+                )),
+            }
+        };
+        Box::pin(fut)
+    }
+}
+ 
+////////////////////////////
+// TOP TOPUSRPASS MESSAGE //
+////////////////////////////
+
+impl Handler<RequestWithLimit<TopUsrPassCombo>> for BruteSystem {
+    type Result = ResponseFuture<Result<Vec<TopUsrPassCombo>, BruteResponeError>>;
+
+    fn handle(
+        &mut self,
+        msg: RequestWithLimit<TopUsrPassCombo>,
+        _: &mut Self::Context,
+    ) -> Self::Result {
+        let db_pool = self.db_pool.clone();
+        let limit = msg.limit;
+
+        let fut = async move {
+            let query = "SELECT * FROM top_usr_pass_combo ORDER BY amount DESC LIMIT $1;";
+            let rows = sqlx::query_as::<_, TopUsrPassCombo>(query)
                 .bind(limit as i64)
                 .fetch_all(&db_pool)
                 .await;

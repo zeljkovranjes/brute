@@ -2,7 +2,7 @@ use actix::Addr;
 use actix_cors::Cors;
 use actix_web::{http, web, App, HttpServer};
 use get::{
-    get_brute_attackers, get_brute_city, get_brute_country, get_brute_protocol, get_brute_region,
+    get_brute_attackers, get_brute_city, get_brute_country, get_brute_ip, get_brute_password, get_brute_protocol, get_brute_region, get_brute_username, get_brute_usr_pass_combo
 };
 use log::info;
 use post::{post_brute_attack_add, post_brute_protocol_increment};
@@ -50,7 +50,11 @@ pub async fn serve(
                     .service(get_brute_protocol)
                     .service(get_brute_country)
                     .service(get_brute_city)
-                    .service(get_brute_region),
+                    .service(get_brute_region)
+                    .service(get_brute_username)
+                    .service(get_brute_password)
+                    .service(get_brute_ip)
+                    .service(get_brute_usr_pass_combo),
             )
     })
     .bind((ip, port))
@@ -93,7 +97,11 @@ pub async fn serve_tls(
                     .service(get_brute_protocol)
                     .service(get_brute_country)
                     .service(get_brute_city)
-                    .service(get_brute_region),
+                    .service(get_brute_region)
+                    .service(get_brute_username)
+                    .service(get_brute_password)
+                    .service(get_brute_ip)
+                    .service(get_brute_usr_pass_combo),
             )
     })
     .bind_rustls_0_23((ip, port), tls_config)?
