@@ -68,4 +68,17 @@ https://github.com/notpointless/brute-daemon
     sudo make
     sudo make install
     ```
+5. Then go into <code>ssh.service</code>
+    ```ssh
+      nano /lib/systemd/system/ssh.service
+    ```
+6. Replace the existing SSH server with the one you just compiled.
+    ```diff
+    -  ExecStartPre=/usr/sbin/sshd -t
+    -  ExecStart=/usr/sbin/sshd -D $SSHD_OPTS
+    -  ExecReload=/usr/sbin/sshd -t
+    +  ExecStartPre=/usr/local/sbin/sshd -t
+    +  ExecStart=/usr/local/sbin/sshd -D $SSHD_OPTS
+    +  ExecReload=/usr/local/sbin/sshd -t
+    ```
 </details>
