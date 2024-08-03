@@ -33,7 +33,7 @@ rustc -V
 ```
 
 Non-docker installation
-<details><summary><b>Show normal installation </b></summary>
+<details><summary><b>Show instructions</b></summary>
 
 1. Clone the repository:
 
@@ -46,8 +46,8 @@ Non-docker installation
     ```
 </details>
 
-Docker installation
-{todo}
+Docker installation (TODO)
+<details><summary><b>Show instructions</b></summary>
 
 ## Installation for Traffic
 Before installing, please identify where you want to source your traffic. 
