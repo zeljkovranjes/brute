@@ -61,11 +61,11 @@ Please ensure you have OpenSSH and any FTP server uninstalled before proceeding.
     ```
 4. Move the executable into <code>/usr/local/bin/</code>:
     ```sh
-    sudo mv ~/brute-daemon/target/release/brute-daemon /usr/local/bin/brute-daemon
+    mv ~/brute-daemon/target/release/brute-daemon /usr/local/bin/brute-daemon
     ```
 5. Create a daemon file and paste and edit the following contents:
     ```sh
-    sudo nano /etc/systemd/system/brute-daemon.service
+    nano /etc/systemd/system/brute-daemon.service
     ```
     ```diff
     +  [Unit]
@@ -84,9 +84,12 @@ Please ensure you have OpenSSH and any FTP server uninstalled before proceeding.
     +  Environment="ADD_ATTACK_ENDPOINT=https://example.com/brute/attack/add"
     +  Environment="BEARER_TOKEN=my-secret-token"
 
-[Install]
-WantedBy=multi-user.target
-
+    + [Install]
+    + WantedBy=multi-user.target
+    ```
+6. Reload <code>systemd</code>
+    ```
+    sudo systemctl daemon-reload
     ```
 </details>
 
@@ -113,8 +116,8 @@ WantedBy=multi-user.target
     ```
 4. Now make and install the server:
     ```sh
-    sudo make
-    sudo make install
+    make
+    make install
     ```
 5. Then go into <code>ssh.service</code>
     ```ssh
