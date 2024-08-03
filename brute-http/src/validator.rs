@@ -1,6 +1,5 @@
 use std::net::IpAddr;
 
-use actix_web::HttpResponse;
 use ipnetwork::Ipv4Network;
 use regex::Regex;
 
