@@ -1,5 +1,5 @@
 use actix::{
-    dev::ContextFutureSpawner, Actor, ActorFutureExt, AsyncContext, Context, Handler, ResponseActFuture, ResponseFuture, WrapFuture
+    Actor, ActorFutureExt, AsyncContext, Context, Handler, ResponseActFuture, ResponseFuture, WrapFuture
 };
 use ipinfo::IpInfo;
 use log::{error, info};
@@ -81,7 +81,7 @@ impl Actor for BruteSystem {
 impl Handler<Individual> for BruteSystem {
     type Result = ResponseActFuture<Self, Result<ProcessedIndividual, BruteResponeError>>;
 
-    fn handle(&mut self, msg: Individual, ctx: &mut Self::Context) -> Self::Result {
+    fn handle(&mut self, msg: Individual, _: &mut Self::Context) -> Self::Result {
         let reporter = self.reporter();
         let fut = async move {
             match reporter.start_report(msg).await {

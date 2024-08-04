@@ -1,4 +1,4 @@
-use actix::{Message, ResponseFuture};
+use actix::Message;
 use derive_getters::Getters;
 
 use serde::{Deserialize, Serialize};
