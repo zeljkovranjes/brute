@@ -25,9 +25,8 @@ impl Validate for Individual {
         }
 
         if self.password().is_empty() {
-            return Err(BruteResponeError::BadRequest(
-                "input validation error: password is empty.".to_string(),
-            ));
+            // allow empty passwords.
+            self.password = String::default();
         }
 
         if self.password().len() > 255 {

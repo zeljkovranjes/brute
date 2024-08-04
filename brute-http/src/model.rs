@@ -9,7 +9,7 @@ use crate::{error::BruteResponeError, system::RequestWithLimit};
 pub struct Individual {
     pub id: String,
     username: String,
-    password: String,
+    pub password: String,
     ip: String,
     pub protocol: String,
     pub timestamp: i64,
