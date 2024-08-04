@@ -100,7 +100,7 @@ struct FakeLoginPayload {
 #[post("/login")]
 async fn post_brute_fake_https_login(
     state: web::Data<AppState>,
-    payload: web::Json<FakeLoginPayload>,
+    mut payload: web::Json<FakeLoginPayload>,
     req: HttpRequest
 ) -> Result<HttpResponse, BruteResponeError> {
     let conn = req.connection_info();
@@ -110,6 +110,13 @@ async fn post_brute_fake_https_login(
     }
 
     validate_and_check_ip(ip_address.unwrap())?;
+
+    // empty passwords are not allowed for HTTP or HTTPS
+    if payload.password.is_empty() {
+        return Err(BruteResponeError::BadRequest(
+            "input validation error: password is empty.".to_string(),
+        ));
+    }
 
     let individual = Individual::new_short(
         payload.username.clone(),
@@ -136,13 +143,20 @@ async fn post_brute_fake_https_login(
 #[post("/login")]
 async fn post_brute_fake_http_login(
     state: web::Data<AppState>,
-    payload: web::Json<FakeLoginPayload>,
+    mut payload: web::Json<FakeLoginPayload>,
     req: HttpRequest
 ) -> Result<HttpResponse, BruteResponeError> {
     let conn = req.connection_info();
     let ip_address = conn.realip_remote_addr();
     if ip_address.is_none() {
         return Err(BruteResponeError::ValidationError("input validation error: ip_address is empty.".to_string()))
+    }
+
+    // empty passwords are not allowed for HTTP or HTTPS
+    if payload.password.is_empty() {
+        return Err(BruteResponeError::BadRequest(
+            "input validation error: password is empty.".to_string(),
+        ));
     }
     
     validate_and_check_ip(ip_address.unwrap())?;
