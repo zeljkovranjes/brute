@@ -204,9 +204,7 @@ pub mod websocket {
     #[derive(Message)]
     #[rtype(result = "()")]
     pub struct ClientMessage {
-        /// Id of the client session
         pub id: String,
-        /// Peer message
         pub msg: String,
     }
 
@@ -362,59 +360,4 @@ pub mod websocket {
             }
         }
     }
-    /*
-    /////////////////////
-    // BRUTEWEBSOCKET //
-    ///////////////////
-
-    #[derive(Message)]
-    #[rtype(result = "()")]
-    struct BruteMessage(pub String);
-
-    pub struct BruteWebSocket;
-
-    impl Actor for BruteWebSocket {
-        type Context = ws::WebsocketContext<Self>;
-    }
-
-    impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for BruteWebSocket {
-        fn handle(&mut self, msg: Result<ws::Message, ws::ProtocolError>, ctx: &mut Self::Context) {
-            if let Ok(ws::Message::Ping(msg)) = msg {
-                ctx.pong(&msg);
-            }
-        }
-    }
-
-    impl Handler<BruteMessage> for BruteWebSocket {
-        type Result = ();
-
-        fn handle(&mut self, msg: BruteMessage, ctx: &mut Self::Context) {
-            ctx.text(msg.0);
-        }
-    }
-
-    /////////////
-    // CLIENT //
-    ///////////
-
-    #[derive(Message)]
-    #[rtype(result = "()")]
-    pub struct RegisterClient(pub Addr<BruteWebSocket>);
-
-    pub struct BruteWebSocketServer {
-        pub clients: Vec<Addr<BruteWebSocket>>,
-    }
-
-    impl Actor for BruteWebSocketServer {
-        type Context = Context<Self>;
-    }
-
-    impl Handler<RegisterClient> for BruteWebSocketServer {
-        type Result = ();
-
-        fn handle(&mut self, msg: RegisterClient, _: &mut Self::Context) {
-            self.clients.push(msg.0);
-        }
-    }
-    */
 }
