@@ -228,6 +228,16 @@ impl TopPostal {
     }
 }
 
+#[derive(Default, Debug, Clone, sqlx::FromRow, Getters, Serialize, Deserialize)]
+pub struct TopLocation {
+    pub loc: String,
+    pub amount: i32,
+}
+
+impl Message for RequestWithLimit<TopLocation> {
+    type Result = Result<Vec<TopLocation>, BruteResponeError>;
+}
+
 #[derive(Default, Debug, sqlx::FromRow, Getters, Serialize, Deserialize)]
 pub struct TopUsrPassCombo {
     id: String,
@@ -246,6 +256,7 @@ impl TopUsrPassCombo {
         }
     }
 }
+
 
 impl Message for RequestWithLimit<TopUsrPassCombo> {
     type Result = Result<Vec<TopUsrPassCombo>, BruteResponeError>;

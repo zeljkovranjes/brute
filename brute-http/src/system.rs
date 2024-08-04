@@ -10,7 +10,7 @@ use tokio::sync::Mutex;
 
 use crate::{
     error::BruteResponeError,
-    model::{Individual, ProcessedIndividual, TopCity, TopCountry, TopIp, TopOrg, TopPassword, TopPostal, TopProtocol, TopRegion, TopTimezone, TopUsername, TopUsrPassCombo},
+    model::{Individual, ProcessedIndividual, TopCity, TopCountry, TopIp, TopLocation, TopOrg, TopPassword, TopPostal, TopProtocol, TopRegion, TopTimezone, TopUsername, TopUsrPassCombo},
 };
 
 pub trait Brute {}
@@ -205,6 +205,7 @@ impl Handler<RequestWithLimit<TopPassword>> for BruteSystem {
 /////////////////////
 // TOP IP MESSAGE //
 ////////////////////
+
 impl Handler<RequestWithLimit<TopIp>> for BruteSystem {
     type Result = ResponseFuture<Result<Vec<TopIp>, BruteResponeError>>;
 
@@ -505,6 +506,37 @@ impl Handler<RequestWithLimit<TopPostal>> for BruteSystem {
     }
 }
 
+///////////////////////////
+// TOP LOCATION MESSAGE //
+/////////////////////////
+
+impl Handler<RequestWithLimit<TopLocation>> for BruteSystem {
+    type Result = ResponseFuture<Result<Vec<TopLocation>, BruteResponeError>>;
+
+    fn handle(
+        &mut self,
+        msg: RequestWithLimit<TopLocation>,
+        _: &mut Self::Context,
+    ) -> Self::Result {
+        let db_pool = self.db_pool.clone();
+        let limit = msg.limit;
+
+        let fut = async move {
+            let query = "SELECT * FROM top_loc ORDER BY amount DESC LIMIT $1;";
+            let rows = sqlx::query_as::<_, TopLocation>(query)
+                .bind(limit as i64)
+                .fetch_all(&db_pool)
+                .await;
+            match rows {
+                Ok(rows) => Ok(rows),
+                Err(_) => Err(BruteResponeError::InternalError(
+                    "something definitely broke on our side".to_string(),
+                )),
+            }
+        };
+        Box::pin(fut)
+    }
+}
 
 
 ///////////////
@@ -514,9 +546,7 @@ impl Handler<RequestWithLimit<TopPostal>> for BruteSystem {
 pub mod reporter {
     use super::{Brute, BruteSystem};
     use crate::model::{
-        Individual, ProcessedIndividual, TopCity, TopCountry, TopDaily, TopHourly, TopIp, TopOrg,
-        TopPassword, TopPostal, TopProtocol, TopRegion, TopTimezone, TopUsername, TopUsrPassCombo,
-        TopWeekly, TopYearly,
+        Individual, ProcessedIndividual, TopCity, TopCountry, TopDaily, TopHourly, TopIp, TopLocation, TopOrg, TopPassword, TopPostal, TopProtocol, TopRegion, TopTimezone, TopUsername, TopUsrPassCombo, TopWeekly, TopYearly
     };
     use ipinfo::{AbuseDetails, AsnDetails, CompanyDetails, DomainsDetails, PrivacyDetails};
     use log::info;
@@ -574,6 +604,7 @@ pub mod reporter {
             TopTimezone::report(&self, &processed_individual).await?;
             TopOrg::report(&self, &processed_individual).await?;
             TopPostal::report(&self, &processed_individual).await?;
+            TopLocation::report(&self, &processed_individual).await?;
 
             // Report combination and time-based statistics
             TopUsrPassCombo::report(&self, &individual).await?;
@@ -1041,7 +1072,7 @@ pub mod reporter {
         ) -> anyhow::Result<Self> {
             if model.postal().is_none() {
                 info!(
-                    "Top_postal not updated as no postal information was found. for: {}",
+                    "top_postal not updated as no postal information was found. for: {}",
                     model.id()
                 );
                 return Ok(TopPostal::new(String::default(), 0));
@@ -1057,6 +1088,29 @@ pub mod reporter {
             "#;
             let result = sqlx::query_as::<_, TopPostal>(query)
                 .bind(model.postal())
+                .fetch_one(pool)
+                .await?;
+            Ok(result)
+        }
+    }
+
+       // top postal
+    impl Reportable<BruteReporter<BruteSystem>, ProcessedIndividual> for TopLocation {
+        async fn report(
+            reporter: &BruteReporter<BruteSystem>,
+            model: &ProcessedIndividual,
+        ) -> anyhow::Result<Self> {
+            let pool = &reporter.brute.db_pool;
+            // query
+            let query = r#"
+                INSERT INTO top_loc ( loc, amount )
+                VALUES ($1, 1)
+                ON CONFLICT (loc)
+                DO UPDATE SET amount = top_loc.amount + EXCLUDED.amount
+                RETURNING *;
+            "#;
+            let result = sqlx::query_as::<_, TopLocation>(query)
+                .bind(model.loc())
                 .fetch_one(pool)
                 .await?;
             Ok(result)

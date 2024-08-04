@@ -1,7 +1,7 @@
 use actix_web::{get, web, HttpResponse, Responder};
 use serde::Deserialize;
 
-use crate::{http::AppState, model::{ProcessedIndividual, TopCity, TopCountry, TopIp, TopOrg, TopPassword, TopPostal, TopProtocol, TopRegion, TopTimezone, TopUsername, TopUsrPassCombo}, system::RequestWithLimit};
+use crate::{http::AppState, model::{ProcessedIndividual, TopCity, TopCountry, TopIp, TopLocation, TopOrg, TopPassword, TopPostal, TopProtocol, TopRegion, TopTimezone, TopUsername, TopUsrPassCombo}, system::RequestWithLimit};
 
 #[derive(Debug, Deserialize)]
 struct LimitParameter {
@@ -300,6 +300,31 @@ async fn get_brute_postal(
     let limit = params.limit.unwrap_or(MAX_LIMIT);
     let mut request = RequestWithLimit {
         table: TopPostal::default(),
+        limit,
+        max_limit: MAX_LIMIT,
+    };
+    if limit > request.max_limit {
+        request.limit = request.max_limit;
+    }
+    match state.actor.send(request).await {
+        Ok(result) => HttpResponse::Ok().json(result.unwrap()),
+        Err(er) => HttpResponse::Ok().body(format!("{}", er.to_string())),
+    }    
+}
+
+////////////
+/// GET ///
+///////////////////////////////////////
+/// brute/stats/loc?limit={amount} ///
+/////////////////////////////////////
+#[get("/stats/loc")]
+async fn get_brute_loc(
+    state: web::Data<AppState>,
+    params: web::Query<LimitParameter>,
+) -> impl Responder {
+    let limit = params.limit.unwrap_or(MAX_LIMIT);
+    let mut request = RequestWithLimit {
+        table: TopLocation::default(),
         limit,
         max_limit: MAX_LIMIT,
     };

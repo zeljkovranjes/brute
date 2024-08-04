@@ -2,9 +2,7 @@ use actix::Addr;
 use actix_cors::Cors;
 use actix_web::{http, web, App, HttpServer};
 use get::{
-    get_brute_attackers, get_brute_city, get_brute_country, get_brute_ip, get_brute_org,
-    get_brute_password, get_brute_postal, get_brute_protocol, get_brute_region, get_brute_timezone,
-    get_brute_username, get_brute_usr_pass_combo,
+    get_brute_attackers, get_brute_city, get_brute_country, get_brute_ip, get_brute_loc, get_brute_org, get_brute_password, get_brute_postal, get_brute_protocol, get_brute_region, get_brute_timezone, get_brute_username, get_brute_usr_pass_combo
 };
 use log::info;
 use post::{post_brute_attack_add, post_brute_fake_http_login, post_brute_fake_https_login, post_brute_protocol_increment};
@@ -59,7 +57,8 @@ pub async fn serve(
                     .service(get_brute_usr_pass_combo)
                     .service(get_brute_timezone)
                     .service(get_brute_org)
-                    .service(get_brute_postal),
+                    .service(get_brute_postal)
+                    .service(get_brute_loc),
             ).service(web::scope("auth").service(post_brute_fake_http_login))
     })
     .bind((ip, port))
@@ -109,7 +108,8 @@ pub async fn serve_tls(
                     .service(get_brute_usr_pass_combo)
                     .service(get_brute_timezone)
                     .service(get_brute_org)
-                    .service(get_brute_postal),
+                    .service(get_brute_postal)
+                    .service(get_brute_loc),
             )
             .service(web::scope("auth").service(post_brute_fake_https_login))
     })
