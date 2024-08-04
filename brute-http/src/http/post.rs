@@ -100,7 +100,7 @@ struct FakeLoginPayload {
 #[post("/login")]
 async fn post_brute_fake_https_login(
     state: web::Data<AppState>,
-    mut payload: web::Json<FakeLoginPayload>,
+    payload: web::Json<FakeLoginPayload>,
     req: HttpRequest
 ) -> Result<HttpResponse, BruteResponeError> {
     let conn = req.connection_info();
@@ -143,7 +143,7 @@ async fn post_brute_fake_https_login(
 #[post("/login")]
 async fn post_brute_fake_http_login(
     state: web::Data<AppState>,
-    mut payload: web::Json<FakeLoginPayload>,
+    payload: web::Json<FakeLoginPayload>,
     req: HttpRequest
 ) -> Result<HttpResponse, BruteResponeError> {
     let conn = req.connection_info();
