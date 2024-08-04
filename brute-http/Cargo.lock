@@ -235,6 +235,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "actix-web-actors"
+version = "4.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "420b001bb709d8510c3e2659dae046e54509ff9528018d09c78381e765a1f9fa"
+dependencies = [
+ "actix",
+ "actix-codec",
+ "actix-http",
+ "actix-web",
+ "bytes",
+ "bytestring",
+ "futures-core",
+ "pin-project-lite",
+ "tokio",
+ "tokio-util",
+]
+
+[[package]]
 name = "actix-web-codegen"
 version = "4.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -536,6 +554,7 @@ dependencies = [
  "actix-cors",
  "actix-rt",
  "actix-web",
+ "actix-web-actors",
  "actix-web-httpauth",
  "anyhow",
  "clap",
@@ -545,10 +564,12 @@ dependencies = [
  "ipinfo",
  "ipnetwork",
  "log",
+ "once_cell",
  "regex",
  "rustls 0.23.12",
  "rustls-pemfile 2.1.2",
  "serde",
+ "serde_json",
  "sqlx",
  "tokio",
  "uuid",
@@ -2170,9 +2191,9 @@ dependencies = [
 
 [[package]]
 name = "serde_json"
-version = "1.0.121"
+version = "1.0.122"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4ab380d7d9f22ef3f21ad3e6c1ebe8e4fc7a2000ccba2e4d71fc96f15b2cb609"
+checksum = "784b6203951c57ff748476b126ccb5e8e2959a5c19e5c617ab1956be3dbc68da"
 dependencies = [
  "itoa",
  "memchr",

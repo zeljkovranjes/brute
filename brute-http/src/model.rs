@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{error::BruteResponeError, system::RequestWithLimit};
 
-#[derive(Default, Clone, Debug, sqlx::FromRow,Getters)]
+#[derive(Default, Clone, Debug, sqlx::FromRow, Getters, Serialize)]
 pub struct Individual {
     pub id: String,
     username: String,

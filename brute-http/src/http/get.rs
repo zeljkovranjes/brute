@@ -1,7 +1,21 @@
-use actix_web::{get, web, HttpResponse, Responder};
+use std::time::Instant;
+
+use actix::Addr;
+use actix_web::{get, web, HttpRequest, HttpResponse, Responder};
+use actix_web_actors::ws;
 use serde::Deserialize;
 
-use crate::{http::AppState, model::{ProcessedIndividual, TopCity, TopCountry, TopIp, TopLocation, TopOrg, TopPassword, TopPostal, TopProtocol, TopRegion, TopTimezone, TopUsername, TopUsrPassCombo}, system::RequestWithLimit};
+use crate::{
+    http::{
+        websocket::{BruteServer, BruteSession},
+        AppState,
+    },
+    model::{
+        ProcessedIndividual, TopCity, TopCountry, TopIp, TopLocation, TopOrg, TopPassword,
+        TopPostal, TopProtocol, TopRegion, TopTimezone, TopUsername, TopUsrPassCombo,
+    },
+    system::RequestWithLimit,
+};
 
 #[derive(Debug, Deserialize)]
 struct LimitParameter {
@@ -32,7 +46,7 @@ async fn get_brute_attackers(
     match state.actor.send(request).await {
         Ok(result) => HttpResponse::Ok().json(result.unwrap()),
         Err(er) => HttpResponse::Ok().body(format!("{}", er.to_string())),
-    }    
+    }
 }
 
 ////////////
@@ -57,7 +71,7 @@ async fn get_brute_protocol(
     match state.actor.send(request).await {
         Ok(result) => HttpResponse::Ok().json(result.unwrap()),
         Err(er) => HttpResponse::Ok().body(format!("{}", er.to_string())),
-    }    
+    }
 }
 
 ////////////
@@ -82,9 +96,8 @@ async fn get_brute_country(
     match state.actor.send(request).await {
         Ok(result) => HttpResponse::Ok().json(result.unwrap()),
         Err(er) => HttpResponse::Ok().body(format!("{}", er.to_string())),
-    }    
+    }
 }
-
 
 ////////////
 /// GET ///
@@ -108,9 +121,8 @@ async fn get_brute_city(
     match state.actor.send(request).await {
         Ok(result) => HttpResponse::Ok().json(result.unwrap()),
         Err(er) => HttpResponse::Ok().body(format!("{}", er.to_string())),
-    }    
+    }
 }
-
 
 ////////////
 /// GET ///
@@ -134,7 +146,7 @@ async fn get_brute_region(
     match state.actor.send(request).await {
         Ok(result) => HttpResponse::Ok().json(result.unwrap()),
         Err(er) => HttpResponse::Ok().body(format!("{}", er.to_string())),
-    }    
+    }
 }
 
 ////////////
@@ -159,7 +171,7 @@ async fn get_brute_username(
     match state.actor.send(request).await {
         Ok(result) => HttpResponse::Ok().json(result.unwrap()),
         Err(er) => HttpResponse::Ok().body(format!("{}", er.to_string())),
-    }    
+    }
 }
 
 ////////////
@@ -184,7 +196,7 @@ async fn get_brute_password(
     match state.actor.send(request).await {
         Ok(result) => HttpResponse::Ok().json(result.unwrap()),
         Err(er) => HttpResponse::Ok().body(format!("{}", er.to_string())),
-    }    
+    }
 }
 
 ////////////
@@ -206,10 +218,11 @@ async fn get_brute_ip(
     if limit > request.max_limit {
         request.limit = request.max_limit;
     }
+
     match state.actor.send(request).await {
         Ok(result) => HttpResponse::Ok().json(result.unwrap()),
         Err(er) => HttpResponse::Ok().body(format!("{}", er.to_string())),
-    }    
+    }
 }
 
 ////////////
@@ -234,7 +247,7 @@ async fn get_brute_usr_pass_combo(
     match state.actor.send(request).await {
         Ok(result) => HttpResponse::Ok().json(result.unwrap()),
         Err(er) => HttpResponse::Ok().body(format!("{}", er.to_string())),
-    }    
+    }
 }
 
 ////////////
@@ -259,7 +272,7 @@ async fn get_brute_timezone(
     match state.actor.send(request).await {
         Ok(result) => HttpResponse::Ok().json(result.unwrap()),
         Err(er) => HttpResponse::Ok().body(format!("{}", er.to_string())),
-    }    
+    }
 }
 
 ////////////
@@ -284,7 +297,7 @@ async fn get_brute_org(
     match state.actor.send(request).await {
         Ok(result) => HttpResponse::Ok().json(result.unwrap()),
         Err(er) => HttpResponse::Ok().body(format!("{}", er.to_string())),
-    }    
+    }
 }
 
 ////////////
@@ -309,7 +322,7 @@ async fn get_brute_postal(
     match state.actor.send(request).await {
         Ok(result) => HttpResponse::Ok().json(result.unwrap()),
         Err(er) => HttpResponse::Ok().body(format!("{}", er.to_string())),
-    }    
+    }
 }
 
 ////////////
@@ -334,5 +347,29 @@ async fn get_brute_loc(
     match state.actor.send(request).await {
         Ok(result) => HttpResponse::Ok().json(result.unwrap()),
         Err(er) => HttpResponse::Ok().body(format!("{}", er.to_string())),
-    }    
+    }
+}
+
+////////////
+/// GET ///
+/////////////////////////////////
+/// ws://localhost:7000/ws   ///
+/// wss://localhost:7443/ws ///
+//////////////////////////////
+#[get("/ws")]
+#[allow(unused_variables)]
+async fn get_websocket(
+    req: HttpRequest,
+    stream: web::Payload,
+    srv: web::Data<Addr<BruteServer>>,
+) -> Result<HttpResponse, actix_web::Error> {
+    ws::start(
+        BruteSession {
+            id: String::default(),
+            hb: Instant::now(),
+            addr: srv.get_ref().clone(),
+        },
+        &req,
+        stream,
+    )
 }

@@ -14,6 +14,7 @@ use crate::{
 /////////////////////////
 /// brute/attack/add ///
 ///////////////////////
+
 #[derive(Deserialize)]
 struct IndividualPayload {
     username: String,
@@ -33,7 +34,7 @@ async fn post_brute_attack_add(
 
     if payload.ip_address.eq("127.0.0.1") {
         return Err(BruteResponeError::ValidationError("empty ip or local ip".to_string()));
-    }   
+    } 
 
     let mut individual = Individual::new_short(
         payload.username.clone(),
@@ -41,7 +42,9 @@ async fn post_brute_attack_add(
         payload.ip_address.clone(),
         payload.protocol.clone(),
     );
+
     individual.validate()?;
+
     match state.actor.send(individual).await {
         Ok(_) => Ok(HttpResponse::Ok().into()),
         Err(er) => Err(BruteResponeError::InternalError(er.to_string())),
@@ -53,6 +56,7 @@ async fn post_brute_attack_add(
 /////////////////////////////////
 /// brute/protocol/increment ///
 ///////////////////////////////
+
 #[derive(Deserialize)]
 struct ProtocolPayload {
     protocol: String,
@@ -75,14 +79,15 @@ async fn post_brute_protocol_increment(
     }
 }
 
-///////////////////////
-/// HTTPS PROTOCOL ///
-/////////////////////
 /////////////
 /// POST ///
 ///////////////////
 /// auth/login ///
 /////////////////
+///////////////////////
+/// HTTPS PROTOCOL ///
+/////////////////////
+
 #[derive(Deserialize)]
 struct FakeLoginPayload {
     username: String,
@@ -116,9 +121,15 @@ async fn post_brute_fake_https_login(
     }
 }
 
+/////////////
+/// POST ///
+///////////////////
+/// auth/login ///
+/////////////////
 //////////////////////
 /// HTTP PROTOCOL ///
 ////////////////////
+
 #[post("/login")]
 async fn post_brute_fake_http_login(
     state: web::Data<AppState>,
