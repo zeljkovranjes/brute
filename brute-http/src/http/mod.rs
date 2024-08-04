@@ -160,8 +160,9 @@ pub mod websocket {
 
     // todo find another way of doing without using a static
     //
-    // why i used a static used it because I having issues
-    // maintaining the connection.
+    // I used a static to help maintain a list of clients.
+    // If I did it through instantiation it wouldn't increase
+    // the client count.
 
     // Combine TLS + Non
     static CLIENTS: Lazy<Mutex<HashMap<String, Recipient<BruteMessage>>>> =
@@ -199,13 +200,6 @@ pub mod websocket {
     #[rtype(result = "()")]
     pub struct Disconnect {
         pub id: String,
-    }
-
-    #[derive(Message)]
-    #[rtype(result = "()")]
-    pub struct ClientMessage {
-        pub id: String,
-        pub msg: String,
     }
 
     #[derive(Debug)]
