@@ -264,10 +264,8 @@ pub mod websocket {
                     // heartbeat timed out
                     println!("Websocket Client heartbeat failed, disconnecting!");
 
-                    // notify chat server
                     act.addr.do_send(Disconnect { id: act.id.clone() });
 
-                    // stop actor
                     ctx.stop();
 
                     // don't try to send a ping
