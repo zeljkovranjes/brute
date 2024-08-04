@@ -337,7 +337,7 @@ pub mod websocket {
                 }
                 Ok(item) => item,
             };
-            log::debug!("WEBSOCKET MESSAGE: {item:?}");
+            // log::debug!("WEBSOCKET MESSAGE: {item:?}");
 
             match item {
                 ws::Message::Text(_) => (),

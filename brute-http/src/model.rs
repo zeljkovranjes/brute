@@ -1,4 +1,4 @@
-use actix::Message;
+use actix::{Message, ResponseFuture};
 use derive_getters::Getters;
 
 use serde::{Deserialize, Serialize};
@@ -41,7 +41,7 @@ impl Individual {
 
 // allow as a message in actix actor.
 impl Message for Individual {
-    type Result = ();
+    type Result = Result<ProcessedIndividual, BruteResponeError>;
 }
 
 #[derive(Default, Clone, Debug, sqlx::FromRow, Getters, Serialize, Deserialize)]

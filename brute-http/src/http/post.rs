@@ -1,10 +1,11 @@
+use actix::fut::result;
 use actix_web::{post, web, HttpRequest, HttpResponse};
 use actix_web_httpauth::extractors::bearer::BearerAuth;
 use serde::Deserialize;
 
 use crate::{
     error::BruteResponeError,
-    http::AppState,
+    http::{websocket, AppState},
     model::{Individual, TopProtocol},
     validator::{validate_and_check_ip, Validate},
 };
@@ -46,7 +47,10 @@ async fn post_brute_attack_add(
     individual.validate()?;
 
     match state.actor.send(individual).await {
-        Ok(_) => Ok(HttpResponse::Ok().into()),
+        Ok(res) => {
+            websocket::BruteServer::broadcast(websocket::ParseType::ProcessedIndividual, res.unwrap());
+            Ok(HttpResponse::Ok().into())
+        },
         Err(er) => Err(BruteResponeError::InternalError(er.to_string())),
     }
 }

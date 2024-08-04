@@ -1,5 +1,5 @@
 use actix::{
-    dev::ContextFutureSpawner, Actor, AsyncContext, Context, Handler, ResponseFuture, WrapFuture,
+    dev::ContextFutureSpawner, Actor, ActorFutureExt, AsyncContext, Context, Handler, ResponseActFuture, ResponseFuture, WrapFuture
 };
 use ipinfo::IpInfo;
 use log::{error, info};
@@ -79,6 +79,40 @@ impl Actor for BruteSystem {
 ///////////////////////
 
 impl Handler<Individual> for BruteSystem {
+    type Result = ResponseActFuture<Self, Result<ProcessedIndividual, BruteResponeError>>;
+
+    fn handle(&mut self, msg: Individual, ctx: &mut Self::Context) -> Self::Result {
+        let reporter = self.reporter();
+        let fut = async move {
+            match reporter.start_report(msg).await {
+                Ok(result) => {
+                    info!(
+                        "Successfully processed Individual with ID: {}. Details: Username: '{}', IP: '{}', Protocol: '{}', Timestamp: {}, Location: {} - {}, {}, {}",
+                        result.id(),
+                        result.username(),
+                        result.ip(),
+                        result.protocol(),
+                        result.timestamp(),
+                        result.city().as_ref().unwrap_or(&"{EMPTY}".to_string()),
+                        result.region().as_ref().unwrap_or(&"{EMPTY}".to_string()),
+                        result.country().as_ref().unwrap_or(&"{EMPTY}".to_string()),
+                        result.postal().as_ref().unwrap_or(&"{EMPTY}".to_string())
+                    );
+                    Ok(result)
+                }
+                Err(e) => {
+                    error!("Failed to process report: {}", e);
+                    Err(BruteResponeError::InternalError(
+                        "something definitely broke on our side".to_string(),
+                    ))
+                }
+            }
+        };
+        fut.into_actor(self).map(|res, _, _| res).boxed_local()
+    }
+}
+/*
+impl Handler<Individual> for BruteSystem {
     type Result = ();
 
     fn handle(&mut self, msg: Individual, ctx: &mut Self::Context) -> Self::Result {
@@ -105,6 +139,8 @@ impl Handler<Individual> for BruteSystem {
             }.into_actor(self).wait(ctx)
     }
 }
+*/
+
 
 //////////////////////////////////
 // PROCESSEDINDIVIDUAL MESSAGE //
