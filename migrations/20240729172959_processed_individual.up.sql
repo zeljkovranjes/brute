@@ -3,7 +3,7 @@ CREATE TABLE processed_individual (
     id VARCHAR(32) PRIMARY KEY,
     username VARCHAR(255) NOT NULL,
     password VARCHAR(255) NOT NULL,
-    ip VARCHAR(15) NOT NULL,
+    ip VARCHAR(39) NOT NULL, -- to support both ipv4 and ipv6
     protocol VARCHAR(50) NOT NULL,    
     hostname VARCHAR(255),
     city VARCHAR(255),

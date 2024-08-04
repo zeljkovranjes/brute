@@ -1,5 +1,3 @@
-use std::net::IpAddr;
-
 use actix_web::{post, web, HttpRequest, HttpResponse};
 use actix_web_httpauth::extractors::bearer::BearerAuth;
 use serde::Deserialize;
@@ -8,7 +6,7 @@ use crate::{
     error::BruteResponeError,
     http::AppState,
     model::{Individual, TopProtocol},
-    validator::{is_private_ip, validate_ip, Validate},
+    validator::{validate_and_check_ip, Validate},
 };
 
 /////////////
@@ -82,9 +80,9 @@ async fn post_brute_protocol_increment(
 /////////////////////
 /////////////
 /// POST ///
-////////////////////
+///////////////////
 /// auth/login ///
-//////////////////
+/////////////////
 #[derive(Deserialize)]
 struct FakeLoginPayload {
     username: String,
@@ -102,8 +100,8 @@ async fn post_brute_fake_https_login(
     if ip_address.is_none() {
         return Err(BruteResponeError::ValidationError("input validation error: ip_address is empty.".to_string()))
     }
-    validate_ip(ip_address.unwrap())?;
-    is_private_ip(ip_address.unwrap().parse::<IpAddr>().unwrap())?;
+
+    validate_and_check_ip(ip_address.unwrap())?;
 
     let individual = Individual::new_short(
         payload.username.clone(),
@@ -132,8 +130,8 @@ async fn post_brute_fake_http_login(
     if ip_address.is_none() {
         return Err(BruteResponeError::ValidationError("input validation error: ip_address is empty.".to_string()))
     }
-    validate_ip(ip_address.unwrap())?;
-    is_private_ip(ip_address.unwrap().parse::<IpAddr>().unwrap())?;
+    
+    validate_and_check_ip(ip_address.unwrap())?;
 
     let individual = Individual::new_short(
         payload.username.clone(),
