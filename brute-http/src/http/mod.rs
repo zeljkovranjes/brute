@@ -1,3 +1,5 @@
+use std::any::Any;
+
 use actix::{Actor, Addr};
 use actix_cors::Cors;
 use actix_web::{
@@ -96,6 +98,7 @@ fn configure_app(
     >,
 > {
     let cors = Cors::default()
+        .allowed_origin_fn(|_origin, _request_head| true) // Allow all origins
         .allowed_methods(vec!["GET", "POST"])
         .allowed_headers(vec![
             header::AUTHORIZATION,
