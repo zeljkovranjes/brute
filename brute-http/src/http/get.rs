@@ -87,7 +87,7 @@ async fn get_brute_country(
     let mut request = RequestWithLimit {
         table: TopCountry::default(),
         limit,
-        max_limit: MAX_LIMIT,
+        max_limit: 195, // there can only be 195 countries...
     };
     if limit > request.max_limit {
         request.limit = request.max_limit;
