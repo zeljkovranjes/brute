@@ -13,12 +13,12 @@ use crate::{
     model::{Individual, ProcessedIndividual, TopCity, TopCountry, TopIp, TopLocation, TopOrg, TopPassword, TopPostal, TopProtocol, TopRegion, TopTimezone, TopUsername, TopUsrPassCombo},
 };
 
+// A trait that I forgot about.
 pub trait Brute {}
 
 ////////////////////
 // REQUEST TYPES //
 //////////////////
-
 pub struct RequestWithLimit<T> {
     pub table: T, // just call ::default()
     pub limit: usize,
@@ -28,7 +28,6 @@ pub struct RequestWithLimit<T> {
 //////////////////////
 // SYSTEM /w ACTOR //
 ////////////////////
-
 #[derive(Clone)]
 pub struct BruteSystem {
     /// PostgreSQL connection pool.
@@ -77,7 +76,6 @@ impl Actor for BruteSystem {
 /////////////////////////
 // INDIVIDUAL MESSAGE //
 ///////////////////////
-
 impl Handler<Individual> for BruteSystem {
     type Result = ResponseActFuture<Self, Result<ProcessedIndividual, BruteResponeError>>;
 
@@ -145,7 +143,6 @@ impl Handler<Individual> for BruteSystem {
 //////////////////////////////////
 // PROCESSEDINDIVIDUAL MESSAGE //
 ////////////////////////////////
-
 impl Handler<RequestWithLimit<ProcessedIndividual>> for BruteSystem {
     type Result = ResponseFuture<Result<Vec<ProcessedIndividual>, BruteResponeError>>;
 

@@ -14,7 +14,6 @@ use crate::{
 /////////////////////////
 /// brute/attack/add ///
 ///////////////////////
-
 #[derive(Deserialize)]
 struct IndividualPayload {
     username: String,
@@ -59,7 +58,6 @@ async fn post_brute_attack_add(
 /////////////////////////////////
 /// brute/protocol/increment ///
 ///////////////////////////////
-
 #[derive(Deserialize)]
 struct ProtocolPayload {
     protocol: String,
@@ -90,7 +88,6 @@ async fn post_brute_protocol_increment(
 ///////////////////////
 /// HTTPS PROTOCOL ///
 /////////////////////
-
 #[derive(Deserialize)]
 struct FakeLoginPayload {
     username: String,
@@ -139,7 +136,6 @@ async fn post_brute_fake_https_login(
 //////////////////////
 /// HTTP PROTOCOL ///
 ////////////////////
-
 #[post("/login")]
 async fn post_brute_fake_http_login(
     state: web::Data<AppState>,
