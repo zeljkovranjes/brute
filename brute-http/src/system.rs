@@ -1,5 +1,6 @@
 use actix::{
-    Actor, ActorFutureExt, AsyncContext, Context, Handler, ResponseActFuture, ResponseFuture, WrapFuture
+    Actor, ActorFutureExt, AsyncContext, Context, Handler, ResponseActFuture, ResponseFuture,
+    WrapFuture,
 };
 use ipinfo::IpInfo;
 use log::{error, info};
@@ -10,7 +11,11 @@ use tokio::sync::Mutex;
 
 use crate::{
     error::BruteResponeError,
-    model::{Individual, ProcessedIndividual, TopCity, TopCountry, TopIp, TopLocation, TopOrg, TopPassword, TopPostal, TopProtocol, TopRegion, TopTimezone, TopUsername, TopUsrPassCombo},
+    model::{
+        Individual, ProcessedIndividual, TopCity, TopCountry, TopHourly, TopIp, TopLocation,
+        TopOrg, TopPassword, TopPostal, TopProtocol, TopRegion, TopTimezone, TopUsername,
+        TopUsrPassCombo,
+    },
 };
 
 // A trait that I forgot about.
@@ -139,7 +144,6 @@ impl Handler<Individual> for BruteSystem {
 }
 */
 
-
 //////////////////////////////////
 // PROCESSEDINDIVIDUAL MESSAGE //
 ////////////////////////////////
@@ -174,7 +178,6 @@ impl Handler<RequestWithLimit<ProcessedIndividual>> for BruteSystem {
 ///////////////////////////
 // TOP USERNAME MESSAGE //
 /////////////////////////
-
 impl Handler<RequestWithLimit<TopUsername>> for BruteSystem {
     type Result = ResponseFuture<Result<Vec<TopUsername>, BruteResponeError>>;
 
@@ -206,7 +209,6 @@ impl Handler<RequestWithLimit<TopUsername>> for BruteSystem {
 ///////////////////////////
 // TOP PASSWORD MESSAGE //
 /////////////////////////
-
 impl Handler<RequestWithLimit<TopPassword>> for BruteSystem {
     type Result = ResponseFuture<Result<Vec<TopPassword>, BruteResponeError>>;
 
@@ -238,15 +240,10 @@ impl Handler<RequestWithLimit<TopPassword>> for BruteSystem {
 /////////////////////
 // TOP IP MESSAGE //
 ////////////////////
-
 impl Handler<RequestWithLimit<TopIp>> for BruteSystem {
     type Result = ResponseFuture<Result<Vec<TopIp>, BruteResponeError>>;
 
-    fn handle(
-        &mut self,
-        msg: RequestWithLimit<TopIp>,
-        _: &mut Self::Context,
-    ) -> Self::Result {
+    fn handle(&mut self, msg: RequestWithLimit<TopIp>, _: &mut Self::Context) -> Self::Result {
         let db_pool = self.db_pool.clone();
         let limit = msg.limit;
 
@@ -266,11 +263,10 @@ impl Handler<RequestWithLimit<TopIp>> for BruteSystem {
         Box::pin(fut)
     }
 }
- 
+
 ////////////////////////////
 // TOP TOPUSRPASS MESSAGE //
 ////////////////////////////
-
 impl Handler<RequestWithLimit<TopUsrPassCombo>> for BruteSystem {
     type Result = ResponseFuture<Result<Vec<TopUsrPassCombo>, BruteResponeError>>;
 
@@ -302,7 +298,6 @@ impl Handler<RequestWithLimit<TopUsrPassCombo>> for BruteSystem {
 ///////////////////////////
 // TOP PROTOCOL MESSAGE //
 /////////////////////////
-
 impl Handler<RequestWithLimit<TopProtocol>> for BruteSystem {
     type Result = ResponseFuture<Result<Vec<TopProtocol>, BruteResponeError>>;
 
@@ -334,7 +329,6 @@ impl Handler<RequestWithLimit<TopProtocol>> for BruteSystem {
 /////////////////////////////////
 // INCREMENT PROTOCOL MESSAGE //
 ///////////////////////////////
-
 impl Handler<TopProtocol> for BruteSystem {
     type Result = ();
 
@@ -369,7 +363,6 @@ impl Handler<TopProtocol> for BruteSystem {
 //////////////////////////
 // TOP COUNTRY MESSAGE //
 ////////////////////////
-
 impl Handler<RequestWithLimit<TopCountry>> for BruteSystem {
     type Result = ResponseFuture<Result<Vec<TopCountry>, BruteResponeError>>;
 
@@ -397,7 +390,6 @@ impl Handler<RequestWithLimit<TopCountry>> for BruteSystem {
 ///////////////////////
 // TOP CITY MESSAGE //
 /////////////////////
-
 impl Handler<RequestWithLimit<TopCity>> for BruteSystem {
     type Result = ResponseFuture<Result<Vec<TopCity>, BruteResponeError>>;
 
@@ -426,7 +418,6 @@ impl Handler<RequestWithLimit<TopCity>> for BruteSystem {
 /////////////////////////
 // TOP REGION MESSAGE //
 ///////////////////////
-
 impl Handler<RequestWithLimit<TopRegion>> for BruteSystem {
     type Result = ResponseFuture<Result<Vec<TopRegion>, BruteResponeError>>;
 
@@ -455,11 +446,14 @@ impl Handler<RequestWithLimit<TopRegion>> for BruteSystem {
 ///////////////////////////
 // TOP TIMEZONE MESSAGE //
 /////////////////////////
-
 impl Handler<RequestWithLimit<TopTimezone>> for BruteSystem {
     type Result = ResponseFuture<Result<Vec<TopTimezone>, BruteResponeError>>;
 
-    fn handle(&mut self, msg: RequestWithLimit<TopTimezone>, _: &mut Self::Context) -> Self::Result {
+    fn handle(
+        &mut self,
+        msg: RequestWithLimit<TopTimezone>,
+        _: &mut Self::Context,
+    ) -> Self::Result {
         let db_pool = self.db_pool.clone();
         let limit = msg.limit;
 
@@ -484,7 +478,6 @@ impl Handler<RequestWithLimit<TopTimezone>> for BruteSystem {
 ///////////////////////////////
 // TOP ORGANIZATION MESSAGE //
 /////////////////////////////
-
 impl Handler<RequestWithLimit<TopOrg>> for BruteSystem {
     type Result = ResponseFuture<Result<Vec<TopOrg>, BruteResponeError>>;
 
@@ -513,7 +506,6 @@ impl Handler<RequestWithLimit<TopOrg>> for BruteSystem {
 /////////////////////////
 // TOP POSTAL MESSAGE //
 ///////////////////////
-
 impl Handler<RequestWithLimit<TopPostal>> for BruteSystem {
     type Result = ResponseFuture<Result<Vec<TopPostal>, BruteResponeError>>;
 
@@ -522,7 +514,8 @@ impl Handler<RequestWithLimit<TopPostal>> for BruteSystem {
         let limit = msg.limit;
 
         let fut = async move {
-            let query = "SELECT * FROM top_postal WHERE postal !~ '^\\s*$' ORDER BY amount DESC LIMIT $1;";
+            let query =
+                "SELECT * FROM top_postal WHERE postal !~ '^\\s*$' ORDER BY amount DESC LIMIT $1;";
             let rows = sqlx::query_as::<_, TopPostal>(query)
                 .bind(limit as i64)
                 .fetch_all(&db_pool)
@@ -542,7 +535,6 @@ impl Handler<RequestWithLimit<TopPostal>> for BruteSystem {
 ///////////////////////////
 // TOP LOCATION MESSAGE //
 /////////////////////////
-
 impl Handler<RequestWithLimit<TopLocation>> for BruteSystem {
     type Result = ResponseFuture<Result<Vec<TopLocation>, BruteResponeError>>;
 
@@ -571,6 +563,32 @@ impl Handler<RequestWithLimit<TopLocation>> for BruteSystem {
     }
 }
 
+/////////////////
+// TOP HOURLY //
+///////////////
+impl Handler<RequestWithLimit<TopHourly>> for BruteSystem {
+    type Result = ResponseFuture<Result<Vec<TopHourly>, BruteResponeError>>;
+
+    fn handle(&mut self, msg: RequestWithLimit<TopHourly>, _: &mut Self::Context) -> Self::Result {
+        let db_pool = self.db_pool.clone();
+        let limit = msg.limit;
+
+        let fut = async move {
+            let query = "SELECT * FROM top_hourly ORDER BY timestamp DESC LIMIT $1;";
+            let rows = sqlx::query_as::<_, TopHourly>(query)
+                .bind(limit as i64)
+                .fetch_all(&db_pool)
+                .await;
+            match rows {
+                Ok(rows) => Ok(rows),
+                Err(_) => Err(BruteResponeError::InternalError(
+                    "something definitely broke on our side".to_string(),
+                )),
+            }
+        };
+        Box::pin(fut)
+    }
+}
 
 ///////////////
 // REPORTER //
@@ -579,7 +597,9 @@ impl Handler<RequestWithLimit<TopLocation>> for BruteSystem {
 pub mod reporter {
     use super::{Brute, BruteSystem};
     use crate::model::{
-        Individual, ProcessedIndividual, TopCity, TopCountry, TopDaily, TopHourly, TopIp, TopLocation, TopOrg, TopPassword, TopPostal, TopProtocol, TopRegion, TopTimezone, TopUsername, TopUsrPassCombo, TopWeekly, TopYearly
+        Individual, ProcessedIndividual, TopCity, TopCountry, TopDaily, TopHourly, TopIp,
+        TopLocation, TopOrg, TopPassword, TopPostal, TopProtocol, TopRegion, TopTimezone,
+        TopUsername, TopUsrPassCombo, TopWeekly, TopYearly,
     };
     use ipinfo::{AbuseDetails, AsnDetails, CompanyDetails, DomainsDetails, PrivacyDetails};
     use log::info;
@@ -1127,7 +1147,7 @@ pub mod reporter {
         }
     }
 
-       // top postal
+    // top postal
     impl Reportable<BruteReporter<BruteSystem>, ProcessedIndividual> for TopLocation {
         async fn report(
             reporter: &BruteReporter<BruteSystem>,

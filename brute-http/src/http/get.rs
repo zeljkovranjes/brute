@@ -11,8 +11,7 @@ use crate::{
         AppState,
     },
     model::{
-        ProcessedIndividual, TopCity, TopCountry, TopIp, TopLocation, TopOrg, TopPassword,
-        TopPostal, TopProtocol, TopRegion, TopTimezone, TopUsername, TopUsrPassCombo,
+        ProcessedIndividual, TopCity, TopCountry, TopHourly, TopIp, TopLocation, TopOrg, TopPassword, TopPostal, TopProtocol, TopRegion, TopTimezone, TopUsername, TopUsrPassCombo
     },
     system::RequestWithLimit,
 };
@@ -338,6 +337,32 @@ async fn get_brute_loc(
     let limit = params.limit.unwrap_or(MAX_LIMIT);
     let mut request = RequestWithLimit {
         table: TopLocation::default(),
+        limit,
+        max_limit: MAX_LIMIT,
+    };
+    if limit > request.max_limit {
+        request.limit = request.max_limit;
+    }
+    match state.actor.send(request).await {
+        Ok(result) => HttpResponse::Ok().json(result.unwrap()),
+        Err(er) => HttpResponse::Ok().body(format!("{}", er.to_string())),
+    }
+}
+
+////////////
+/// GET ///
+//////////////////////////////////////////
+/// brute/stats/hourly?limit={amount} ///
+////////////////////////////////////////
+#[get("/stats/hourly")]
+async fn get_hourly(
+    state: web::Data<AppState>,
+    params: web::Query<LimitParameter>,
+) -> impl Responder {
+    // sorted by most recent.
+    let limit = params.limit.unwrap_or(MAX_LIMIT);
+    let mut request = RequestWithLimit {
+        table: TopHourly::default(),
         limit,
         max_limit: MAX_LIMIT,
     };

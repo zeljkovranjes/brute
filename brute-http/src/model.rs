@@ -262,10 +262,14 @@ impl Message for RequestWithLimit<TopUsrPassCombo> {
     type Result = Result<Vec<TopUsrPassCombo>, BruteResponeError>;
 }
 
-#[derive(Debug, Clone, sqlx::FromRow, Getters)]
+#[derive(Default, Debug, Clone, sqlx::FromRow, Getters, Serialize)]
 pub struct TopHourly {
     pub timestamp: i64,
     pub amount: i32,
+}
+
+impl Message for RequestWithLimit<TopHourly> {
+    type Result = Result<Vec<TopHourly>, BruteResponeError>;
 }
 
 #[derive(Debug, Clone, sqlx::FromRow, Getters)]
