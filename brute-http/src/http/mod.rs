@@ -96,7 +96,12 @@ fn configure_app(
     >,
 > {
     let cors = Cors::default()
-        .send_wildcard()
+        .allowed_origin("https://pointless.ai/")
+        .allowed_origin("https://brute.exposed/")
+        .allowed_origin("https://73.148.135.111")
+        .allowed_origin("73.148.135.111")
+        .allowed_origin_fn(|origin, _req_head| origin.as_bytes().ends_with(b".brute.exposed"))
+        .allowed_origin_fn(|origin, _req_head| origin.as_bytes().ends_with(b".pointless.ai"))
         .allowed_methods(vec!["GET", "POST"])
         .allowed_headers(vec![
             header::AUTHORIZATION,
