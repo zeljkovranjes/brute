@@ -1,6 +1,0 @@
-patches/openssh-9.3-janky/* linguist-vendored
-patches/openssh-9.8/* linguist-vendored
-*.c linguist-vendored
-*.cpp linguist-vendored
-*.h linguist-vendored
-*.sh linguist-vendored
