@@ -1,0 +1,7 @@
+/home/chomnr/personal/2024/clion_projects/pam/build/CMakeFiles/pam_module.dir
+/home/chomnr/personal/2024/clion_projects/pam/build/CMakeFiles/edit_cache.dir
+/home/chomnr/personal/2024/clion_projects/pam/build/CMakeFiles/rebuild_cache.dir
+/home/chomnr/personal/2024/clion_projects/pam/build/CMakeFiles/list_install_components.dir
+/home/chomnr/personal/2024/clion_projects/pam/build/CMakeFiles/install.dir
+/home/chomnr/personal/2024/clion_projects/pam/build/CMakeFiles/install/local.dir
+/home/chomnr/personal/2024/clion_projects/pam/build/CMakeFiles/install/strip.dir

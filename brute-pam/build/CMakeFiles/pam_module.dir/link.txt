@@ -1,0 +1,1 @@
+/usr/bin/cc -fPIC -shared -Wl,-soname,libpam_module.so -o lib/libpam_module.so CMakeFiles/pam_module.dir/library.c.o  -lcurl 
