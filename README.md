@@ -15,6 +15,8 @@ this may compromise the security of your server, so use with **caution**.
 
 - **Location Information** — Information can be easily accessed through the [Ipinfo](https://ipinfo.io//) API, which is integrated into Brute. This integration allows for retrieval of detailed data from the individual's IP address.
 
+- **WebSocket Support** —  Brute supports WebSocket connections for both TLS and non-TLS websites, providing an easy way for you to stream your results in real-time.
+
 <div align="center"> <img src="./docs/img/in_action.png"> </div>
 
 ## Installation
