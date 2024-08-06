@@ -1,6 +1,3 @@
-use std::sync::Arc;
-
-use libunftp::{Server, ServerBuilder};
 use log::LevelFilter;
 use protocol::ftp::start_ftp_server;
 use protocol::ssh::start_ssh_server;

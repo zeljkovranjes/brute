@@ -9,7 +9,7 @@ use std::env;
 use std::{collections::HashMap, net::SocketAddr, sync::Arc, time::Duration};
 
 use async_trait::async_trait;
-use log::{info, LevelFilter};
+use log::info;
 use russh::server::{Auth, Msg, Server as _, Session};
 use russh::{Channel, ChannelId};
 use russh_keys::key::KeyPair;
@@ -51,7 +51,7 @@ impl russh::server::Handler for SshSession {
     #[allow(unused_variables)]
     async fn auth_password(&mut self, user: &str, password: &str) -> Result<Auth, Self::Error> {
         let binding = self.ip.unwrap();
-        let mut ip = binding.ip().to_string();
+        let ip = binding.ip().to_string();
         let endpoint = env::var("ADD_ATTACK_ENDPOINT")?;
         if !ip.eq("127.0.0.1") {
             info!("Recieved an auth request sending to {}", endpoint);
