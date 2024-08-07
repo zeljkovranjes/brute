@@ -43,7 +43,7 @@ async fn post_brute_attack_add(
     );
 
     individual.validate()?;
-
+    
     match state.actor.send(individual).await {
         Ok(res) => {
             websocket::BruteServer::broadcast(websocket::ParseType::ProcessedIndividual, res.unwrap());
