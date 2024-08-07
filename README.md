@@ -17,7 +17,7 @@ this may compromise the security of your server, so use with **caution**.
 
 - **WebSocket Support** —  Brute supports WebSocket connections for both TLS and non-TLS websites, providing an easy way for you to stream your results in real-time.
 
-<div align="center"> <img src="./docs/img/in_action.png"> </div>
+<div align="center"> <img src="./docs/img/in_action2.png"> </div>
 
 ## Installation
 This installation is for <code>brute-http</code> this is the http server that needs to run in order
