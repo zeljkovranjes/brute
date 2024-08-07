@@ -170,7 +170,6 @@ pub mod websocket {
     /////////////
     // SERVER //
     ///////////
-
     #[derive(Message, Serialize)]
     #[rtype(result = "()")]
     pub struct BruteMessage {
@@ -244,7 +243,6 @@ pub mod websocket {
     /////////////
     // CLIENT //
     ///////////
-
     const HEARTBEAT_INTERVAL: Duration = Duration::from_secs(5);
 
     const CLIENT_TIMEOUT: Duration = Duration::from_secs(10);
@@ -328,7 +326,6 @@ pub mod websocket {
                 }
                 Ok(item) => item,
             };
-            // log::debug!("WEBSOCKET MESSAGE: {item:?}");
 
             match item {
                 ws::Message::Text(_) => (),
