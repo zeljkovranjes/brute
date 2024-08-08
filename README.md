@@ -299,3 +299,6 @@ Please ensure you have OpenSSH and any FTP server uninstalled before proceeding.
     auth    requisite                       pam_deny.so
     ```
 </details>
+
+### License
+The MIT License (MIT) 2024 - Zeljko Vranjes. Please have a look at the [LICENSE.md](https://github.com/notpointless/brute/blob/main/LICENSE.md) for more details.
