@@ -57,7 +57,7 @@ impl Validate for Individual {
             self.protocol = "SSH".to_string();
         }
         
-        validate_and_check_ip(&self.ip())?;
+        validate_and_check_ip(self.ip())?;
         Ok(())
     }
 }

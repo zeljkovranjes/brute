@@ -639,32 +639,32 @@ pub mod reporter {
             let start = Instant::now();
             let transaction = self.brute.db_pool.begin().await.unwrap();
             // Report individual
-            let individual = Individual::report(&self, &payload).await?;
+            let individual = Individual::report(self, &payload).await?;
 
             // Report processed individual
-            let processed_individual = ProcessedIndividual::report(&self, &individual).await?;
+            let processed_individual = ProcessedIndividual::report(self, &individual).await?;
 
             // Report top statistics
-            TopUsername::report(&self, &individual).await?;
-            TopPassword::report(&self, &individual).await?;
-            TopIp::report(&self, &individual).await?;
-            TopProtocol::report(&self, &individual).await?;
+            TopUsername::report(self, &individual).await?;
+            TopPassword::report(self, &individual).await?;
+            TopIp::report(self, &individual).await?;
+            TopProtocol::report(self, &individual).await?;
 
             // Report location details
-            TopCity::report(&self, &processed_individual).await?;
-            TopRegion::report(&self, &processed_individual).await?;
-            TopCountry::report(&self, &processed_individual).await?;
-            TopTimezone::report(&self, &processed_individual).await?;
-            TopOrg::report(&self, &processed_individual).await?;
-            TopPostal::report(&self, &processed_individual).await?;
-            TopLocation::report(&self, &processed_individual).await?;
+            TopCity::report(self, &processed_individual).await?;
+            TopRegion::report(self, &processed_individual).await?;
+            TopCountry::report(self, &processed_individual).await?;
+            TopTimezone::report(self, &processed_individual).await?;
+            TopOrg::report(self, &processed_individual).await?;
+            TopPostal::report(self, &processed_individual).await?;
+            TopLocation::report(self, &processed_individual).await?;
 
             // Report combination and time-based statistics
-            TopUsrPassCombo::report(&self, &individual).await?;
-            TopHourly::report(&self, &0).await?;
-            TopDaily::report(&self, &0).await?;
-            TopWeekly::report(&self, &0).await?;
-            TopYearly::report(&self, &0).await?;
+            TopUsrPassCombo::report(self, &individual).await?;
+            TopHourly::report(self, &0).await?;
+            TopDaily::report(self, &0).await?;
+            TopWeekly::report(self, &0).await?;
+            TopYearly::report(self, &0).await?;
 
             let elasped_time = start.elapsed();
             info!(
@@ -705,10 +705,10 @@ pub mod reporter {
             // Execute the query and get the inserted data
             let inserted = sqlx::query_as::<_, Individual>(query)
                 .bind(&new_id)
-                .bind(&model.username())
-                .bind(&model.password())
-                .bind(&model.ip())
-                .bind(&model.protocol())
+                .bind(model.username())
+                .bind(model.password())
+                .bind(model.ip())
+                .bind(model.protocol())
                 .bind(new_timestamp)
                 .fetch_one(pool)
                 .await?;
@@ -792,7 +792,7 @@ pub mod reporter {
             };
 
             let ip_exists = sqlx::query_as::<_, ProcessedIndividual>(select_query)
-                .bind(&model.ip())
+                .bind(model.ip())
                 .fetch_optional(pool)
                 .await?;
 
@@ -805,50 +805,50 @@ pub mod reporter {
                     }
                     info!("Reusing cached results for IP: {}", model.ip());
                     sqlx::query_as::<_, ProcessedIndividual>(insert_query)
-                        .bind(&model.id())
-                        .bind(&model.username())
-                        .bind(&model.password())
-                        .bind(&model.ip())
-                        .bind(&model.protocol())
-                        .bind(&result.hostname())
-                        .bind(&result.city())
-                        .bind(&result.region())
-                        .bind(&result.country())
-                        .bind(&result.loc())
-                        .bind(&result.org())
-                        .bind(&result.postal())
-                        .bind(&result.asn())
-                        .bind(&result.asn_name())
-                        .bind(&result.asn_domain())
-                        .bind(&result.asn_route())
-                        .bind(&result.asn_type())
-                        .bind(&result.company_name())
-                        .bind(&result.company_domain())
-                        .bind(&result.company_type())
-                        .bind(&result.vpn())
-                        .bind(&result.proxy())
-                        .bind(&result.tor())
-                        .bind(&result.relay())
-                        .bind(&result.hosting())
-                        .bind(&result.service())
-                        .bind(&result.abuse_address())
-                        .bind(&result.abuse_country())
-                        .bind(&result.abuse_email())
-                        .bind(&result.abuse_name())
-                        .bind(&result.abuse_network())
-                        .bind(&result.abuse_phone())
-                        .bind(&result.domain_ip())
-                        .bind(result.domain_total().unwrap() as i64)
-                        .bind(&result.domains())
+                        .bind(model.id())
+                        .bind(model.username())
+                        .bind(model.password())
+                        .bind(model.ip())
+                        .bind(model.protocol())
+                        .bind(result.hostname())
+                        .bind(result.city())
+                        .bind(result.region())
+                        .bind(result.country())
+                        .bind(result.loc())
+                        .bind(result.org())
+                        .bind(result.postal())
+                        .bind(result.asn())
+                        .bind(result.asn_name())
+                        .bind(result.asn_domain())
+                        .bind(result.asn_route())
+                        .bind(result.asn_type())
+                        .bind(result.company_name())
+                        .bind(result.company_domain())
+                        .bind(result.company_type())
+                        .bind(result.vpn())
+                        .bind(result.proxy())
+                        .bind(result.tor())
+                        .bind(result.relay())
+                        .bind(result.hosting())
+                        .bind(result.service())
+                        .bind(result.abuse_address())
+                        .bind(result.abuse_country())
+                        .bind(result.abuse_email())
+                        .bind(result.abuse_name())
+                        .bind(result.abuse_network())
+                        .bind(result.abuse_phone())
+                        .bind(result.domain_ip())
+                        .bind(result.domain_total().unwrap())
+                        .bind(result.domains())
                         .bind(model.timestamp)
-                        .bind(&result.timezone())
+                        .bind(result.timezone())
                         .fetch_one(pool)
                         .await?;
                     result
                 }
                 _ => {
                     info!("Fetching new details from ipinfo for IP: {}", model.ip());
-                    let mut ip_details = ipinfo_lock.lookup(&model.ip()).await?;
+                    let mut ip_details = ipinfo_lock.lookup(model.ip()).await?;
 
                     let asn_details = ip_details.asn.as_ref().unwrap_or(&asn_default);
                     let company_details = ip_details.company.as_ref().unwrap_or(&company_default);
@@ -862,11 +862,11 @@ pub mod reporter {
 
                     // Insert the new details
                     sqlx::query_as::<_, ProcessedIndividual>(insert_query)
-                        .bind(&model.id())
-                        .bind(&model.username())
-                        .bind(&model.password())
-                        .bind(&model.ip())
-                        .bind(&model.protocol())
+                        .bind(model.id())
+                        .bind(model.username())
+                        .bind(model.password())
+                        .bind(model.ip())
+                        .bind(model.protocol())
                         .bind(&ip_details.hostname)
                         .bind(&ip_details.city)
                         .bind(&ip_details.region)
