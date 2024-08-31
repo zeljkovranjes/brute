@@ -603,10 +603,7 @@ pub mod reporter {
     };
     use ipinfo::{AbuseDetails, AsnDetails, CompanyDetails, DomainsDetails, PrivacyDetails};
     use log::info;
-    use std::{
-        sync::Arc,
-        time::{SystemTime, UNIX_EPOCH},
-    };
+    use std::time::{SystemTime, UNIX_EPOCH};
     use tokio::time::Instant;
     use uuid::Uuid;
 
@@ -623,7 +620,7 @@ pub mod reporter {
 
     #[derive(Clone)]
     pub struct BruteReporter<T: Brute> {
-        brute: T, // Use Arc to handle shared ownership
+        brute: T,
     }
 
     impl BruteReporter<BruteSystem> {
