@@ -67,7 +67,7 @@ impl BruteSystem {
 
     /// Reports data to the database.
     pub fn reporter(&self) -> BruteReporter<BruteSystem> {
-        let brute_system = Arc::new(self.clone());
+        let brute_system = self.clone();
         BruteReporter::new(brute_system)
     }
 }
@@ -623,11 +623,11 @@ pub mod reporter {
 
     #[derive(Clone)]
     pub struct BruteReporter<T: Brute> {
-        brute: Arc<T>, // Use Arc to handle shared ownership
+        brute: T, // Use Arc to handle shared ownership
     }
 
     impl BruteReporter<BruteSystem> {
-        pub fn new(brute: Arc<BruteSystem>) -> Self {
+        pub fn new(brute: BruteSystem) -> Self {
             BruteReporter { brute }
         }
 
