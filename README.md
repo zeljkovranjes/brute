@@ -1,7 +1,7 @@
 # Brute
-[<img alt="github" src="https://img.shields.io/badge/%20GitHub-notpointless%2Fbrute-orange" height="20">](https://github.com/notpointless/brute)
+[<img alt="github" src="https://img.shields.io/badge/%20GitHub-chomnr%2Fbrute-orange" height="20">](https://github.com/chomnr/brute)
 [<img alt="os" src="https://img.shields.io/badge/%20OS-Linux,%20Windows,%20MacOS-blue" height="20">](/)
-[<img alt="version" src="https://img.shields.io/badge/%20Release-v1.1.0-green" height="20">](https://github.com/notpointless/brute/releases/tag/v1.1.0)
+[<img alt="version" src="https://img.shields.io/badge/%20Release-v1.1.0-green" height="20">](https://github.com/chomnr/brute/releases/tag/v1.1.0)
 
 Brute is a project for monitoring authentication attempts on servers using OpenSSH. It tracks and records each attempt
 and provides detailed information about the person who made the attempt.
@@ -42,7 +42,7 @@ Non-docker installation
 1. Clone the repository:
 
     ```sh
-    git clone https://github.com/notpointless/brute
+    git clone https://github.com/chomnr/brute
     ```
 2. Go into the repository:
     ```sh
@@ -89,7 +89,7 @@ Docker installation
 1. Clone the repository:
 
     ```sh
-    git clone https://github.com/notpointless/brute
+    git clone https://github.com/chomnr/brute
     ```
 2. Go into your DockerFile
     ```
@@ -156,7 +156,7 @@ sudo apt install autoconf
 ```
 ### Daemon
 Supports SSH and FTP. You can easily integrate your own protocols just call /brute/attack/add then specify the protocol in the payload. This is a great alternative if you don't want to go through the openssh route. But ensure that you use this on a dummy server not a production server. 
-https://github.com/notpointless/brute-daemon
+https://github.com/chomnr/brute-daemon
 
 Please ensure you have OpenSSH and any FTP server uninstalled before proceeding.
 
@@ -165,7 +165,7 @@ Please ensure you have OpenSSH and any FTP server uninstalled before proceeding.
 1. Clone the repository:
 
     ```sh
-    git clone https://github.com/notpointless/brute-daemon
+    git clone https://github.com/chomnr/brute-daemon
     ```
 2. Go into the repository:
     ```sh
@@ -230,7 +230,7 @@ Please ensure you have OpenSSH and any FTP server uninstalled before proceeding.
 1. Clone the repository:
 
     ```sh
-    git clone https://github.com/notpointless/openssh-9.8-patched
+    git clone https://github.com/chomnr/openssh-9.8-patched
     ```
 
 2. Go into the repository:
@@ -269,7 +269,7 @@ Please ensure you have OpenSSH and any FTP server uninstalled before proceeding.
     ```
 8. Ok, now we need to setup the PAM module first clone it:
     ```sh
-    git clone https://github.com/notpointless/brute_pam
+    git clone https://github.com/chomnr/brute_pam
     ```
 8. Make and install the PAM module:
     ```sh
@@ -301,4 +301,4 @@ Please ensure you have OpenSSH and any FTP server uninstalled before proceeding.
 </details>
 
 ## License
-The MIT License (MIT) 2024 - Zeljko Vranjes. Please have a look at the [LICENSE.md](https://github.com/notpointless/brute/blob/main/LICENSE.md) for more details.
+The MIT License (MIT) 2024 - Zeljko Vranjes. Please have a look at the [LICENSE.md](https://github.com/chomnr/brute/blob/main/LICENSE.md) for more details.
