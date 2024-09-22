@@ -10,32 +10,32 @@ authors = [
 opt-level = 3
 
 [dependencies]
-tokio = { version = "1.2.0", default-features = false, features = [
+tokio = { version = "1.40.0", default-features = false, features = [
     "macros",
     "rt-multi-thread",
 ]}
 # Actor
 actix = "0.13.5"
 # Web
-actix-web = { version = "4", features = ["rustls-0_23"] }
+actix-web = { version = "4.9", features = ["rustls-0_23"] }
 rustls = "0.23.12"
 rustls-pemfile = "2"
 actix-rt = "2.10.0"
 actix-cors = "0.7.0"
 actix-web-httpauth = "0.8.2"
-sqlx = { version = "0.8.0", features = [ "runtime-tokio", "tls-rustls", "postgres", "derive"] }
-ipinfo = "3.0.0"
-serde = { version = "1.0.130", features = ["derive"] }
+sqlx = { version = "0.8.2", features = [ "runtime-tokio", "tls-rustls", "postgres", "derive"] }
+ipinfo = "3.0.1"
+serde = { version = "1.0.210", features = ["derive"] }
 env_logger = "0.11.5"
 log = "0.4.22"
 dotenvy = "0.15.7"
-anyhow = "1.0.86"
-clap = { version = "4.5.11", features = ["derive", "env"] }
-derive-getters = "0.4.0"
-regex = "1.10.5"
+anyhow = "1.0.89"
+clap = { version = "4.5.18", features = ["derive", "env"] }
+regex = "1.10.6"
+derive-getters = "0.5.0"
 ipnetwork = "0.20.0"
-actix-web-actors = "4.3.0"
-serde_json = "1.0.122"
+actix-web-actors = "4.3.1+deprecated"
+serde_json = "1.0.128"
 once_cell = "1.19.0"
 [dependencies.uuid]
 version = "1.10.0"
