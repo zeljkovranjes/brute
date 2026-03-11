@@ -7,6 +7,7 @@ use actix_web::{
     web::{self, Data},
     App, HttpServer,
 };
+use socket2::{Domain, Socket, Type};
 use get::{
     get_brute_attackers, get_brute_city, get_brute_country, get_brute_ip, get_brute_loc, get_brute_org, get_brute_password, get_brute_postal, get_brute_protocol, get_brute_region, get_brute_timezone, get_brute_username, get_brute_usr_pass_combo, get_hourly, get_websocket
 };
@@ -44,12 +45,20 @@ pub async fn serve(
     bearer_token: String,
 ) -> anyhow::Result<()> {
     info!("Listening on {}:{}", ip, port);
+    let addr: std::net::SocketAddr = format!("{}:{}", ip, port).parse()?;
+    let socket = Socket::new(Domain::for_address(addr), Type::STREAM, None)?;
+    socket.set_reuse_address(true)?;
+    socket.set_nodelay(true)?;
+    socket.bind(&addr.into())?;
+    socket.listen(128)?;
+    let listener: std::net::TcpListener = socket.into();
+    listener.set_nonblocking(true)?;
     HttpServer::new(move || {
         configure_app(brute_actor.clone(), bearer_token.clone())
             .service(web::scope("auth").service(post_brute_fake_http_login))
             .service(get_websocket)
     })
-    .bind((ip, port))?
+    .listen(listener)?
     .run()
     .await?;
     Ok(())
@@ -67,11 +76,19 @@ pub async fn serve_tls(
     bearer_token: String,
 ) -> anyhow::Result<()> {
     info!("(TLS) Listening on {}:{}", ip, port);
+    let addr: std::net::SocketAddr = format!("{}:{}", ip, port).parse()?;
+    let socket = Socket::new(Domain::for_address(addr), Type::STREAM, None)?;
+    socket.set_reuse_address(true)?;
+    socket.set_nodelay(true)?;
+    socket.bind(&addr.into())?;
+    socket.listen(128)?;
+    let listener: std::net::TcpListener = socket.into();
+    listener.set_nonblocking(true)?;
     HttpServer::new(move || {
         configure_app(brute_actor.clone(), bearer_token.clone())
             .service(web::scope("auth").service(post_brute_fake_https_login))
     })
-    .bind_rustls_0_23((ip, port), tls_config)?
+    .listen_rustls_0_23(listener, tls_config)?
     .run()
     .await?;
     Ok(())
@@ -258,14 +275,11 @@ pub mod websocket {
             ctx.run_interval(HEARTBEAT_INTERVAL, |act, ctx| {
                 // check client heartbeats
                 if Instant::now().duration_since(act.hb) > CLIENT_TIMEOUT {
-                    // heartbeat timed out
+                    // heartbeat timed out — remove directly so the entry is
+                    // never skipped even if BruteServer's mailbox is full
                     println!("Websocket Client heartbeat failed, disconnecting!");
-
-                    act.addr.do_send(Disconnect { id: act.id.clone() });
-
+                    CLIENTS.lock().unwrap().remove(&act.id);
                     ctx.stop();
-
-                    // don't try to send a ping
                     return;
                 }
 
@@ -305,10 +319,11 @@ pub mod websocket {
         }
 
         fn stopping(&mut self, _: &mut Self::Context) -> Running {
-            // notify chat server
-            self.addr.do_send(Disconnect {
-                id: self.id.clone(),
-            });
+            // Remove directly from CLIENTS so the entry is always cleaned up,
+            // regardless of whether BruteServer's mailbox has capacity.
+            if CLIENTS.lock().unwrap().remove(&self.id).is_some() {
+                info!("{} has disconnected", self.id);
+            }
             Running::Stop
         }
     }
