@@ -207,9 +207,12 @@ impl Handler<RequestWithLimit<ProcessedIndividual>> for BruteSystem {
                 .await;
             match rows {
                 Ok(rows) => Ok(rows),
-                Err(_) => Err(BruteResponeError::InternalError(
-                    "something definitely broke on our side".to_string(),
-                )),
+                Err(e) => {
+                    log::error!("processed_individual query failed: {:?}", e);
+                    Err(BruteResponeError::InternalError(
+                        "something definitely broke on our side".to_string(),
+                    ))
+                }
             }
         };
         Box::pin(fut)
