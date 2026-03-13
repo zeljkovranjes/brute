@@ -525,6 +525,62 @@ async fn get_yearly(
 
 ////////////
 /// GET ///
+/////////////////////////////////////////////////////
+/// brute/export/blocklist?format={}&limit={}     ///
+///////////////////////////////////////////////////
+#[derive(Deserialize)]
+struct BlocklistParams {
+    format: Option<String>,
+    limit: Option<usize>,
+}
+
+#[get("/export/blocklist")]
+async fn get_blocklist(
+    state: web::Data<AppState>,
+    params: web::Query<BlocklistParams>,
+) -> impl Responder {
+    let limit = params.limit.unwrap_or(500).min(500);
+    let request = RequestWithLimit {
+        table: TopIp::default(),
+        limit,
+        max_limit: 500,
+    };
+    let ips = match state.actor.send(request).await {
+        Ok(Ok(v)) => v,
+        _ => return HttpResponse::InternalServerError().finish(),
+    };
+
+    let fmt = params.format.as_deref().unwrap_or("plain");
+    let body = match fmt {
+        "iptables" => ips
+            .iter()
+            .map(|r| format!("-A INPUT -s {} -j DROP", r.ip()))
+            .collect::<Vec<_>>()
+            .join("\n"),
+        "nginx" => ips
+            .iter()
+            .map(|r| format!("deny {};", r.ip()))
+            .collect::<Vec<_>>()
+            .join("\n"),
+        "fail2ban" => ips
+            .iter()
+            .map(|r| format!("fail2ban-client set sshd banip {}", r.ip()))
+            .collect::<Vec<_>>()
+            .join("\n"),
+        _ => ips
+            .iter()
+            .map(|r| r.ip().as_str())
+            .collect::<Vec<_>>()
+            .join("\n"),
+    };
+
+    HttpResponse::Ok()
+        .content_type("text/plain; charset=utf-8")
+        .body(body)
+}
+
+////////////
+/// GET ///
 /////////////////////////////////
 /// ws://localhost:7000/ws   ///
 /// wss://localhost:7443/ws ///
