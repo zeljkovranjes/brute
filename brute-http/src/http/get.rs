@@ -12,8 +12,8 @@ use crate::{
     },
     model::{
         HeatmapCell, ProcessedIndividual, TopCity, TopCountry, TopDaily, TopHourly, TopIp,
-        TopLocation, TopOrg, TopPassword, TopPostal, TopProtocol, TopRegion, TopTimezone,
-        TopUsername, TopUsrPassCombo, TopWeekly, TopYearly,
+        TopLocation, TopOrg, TopPassword, TopPostal, TopProtocol, TopRegion, TopSubnet,
+        TopTimezone, TopUsername, TopUsrPassCombo, TopWeekly, TopYearly,
     },
     system::RequestWithLimit,
 };
@@ -374,6 +374,31 @@ async fn get_hourly(
     match state.actor.send(request).await {
         Ok(result) => HttpResponse::Ok().json(result.unwrap()),
         Err(er) => HttpResponse::Ok().body(format!("{}", er.to_string())),
+    }
+}
+
+////////////
+/// GET ///
+/////////////////////////////////////////////
+/// brute/stats/subnet?limit={amount}     ///
+///////////////////////////////////////////
+#[get("/stats/subnet")]
+async fn get_subnet(
+    state: web::Data<AppState>,
+    params: web::Query<LimitParameter>,
+) -> impl Responder {
+    let limit = params.limit.unwrap_or(MAX_LIMIT);
+    let mut request = RequestWithLimit {
+        table: TopSubnet::default(),
+        limit,
+        max_limit: MAX_LIMIT,
+    };
+    if limit > request.max_limit {
+        request.limit = request.max_limit;
+    }
+    match state.actor.send(request).await {
+        Ok(result) => HttpResponse::Ok().json(result.unwrap()),
+        Err(er) => HttpResponse::Ok().body(er.to_string()),
     }
 }
 

@@ -312,3 +312,13 @@ pub struct HeatmapCell {
 impl Message for RequestWithLimit<HeatmapCell> {
     type Result = Result<Vec<HeatmapCell>, BruteResponeError>;
 }
+
+#[derive(Default, Debug, sqlx::FromRow, Getters, Serialize, Deserialize)]
+pub struct TopSubnet {
+    pub subnet: String,
+    pub amount: i64,
+}
+
+impl Message for RequestWithLimit<TopSubnet> {
+    type Result = Result<Vec<TopSubnet>, BruteResponeError>;
+}

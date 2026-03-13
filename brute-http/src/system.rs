@@ -13,8 +13,8 @@ use crate::{
     error::BruteResponeError,
     model::{
         HeatmapCell, Individual, ProcessedIndividual, TopCity, TopCountry, TopDaily, TopHourly,
-        TopIp, TopLocation, TopOrg, TopPassword, TopPostal, TopProtocol, TopRegion, TopTimezone,
-        TopUsername, TopUsrPassCombo, TopWeekly, TopYearly,
+        TopIp, TopLocation, TopOrg, TopPassword, TopPostal, TopProtocol, TopRegion, TopSubnet,
+        TopTimezone, TopUsername, TopUsrPassCombo, TopWeekly, TopYearly,
     },
 };
 
@@ -584,6 +584,42 @@ impl Handler<RequestWithLimit<TopHourly>> for BruteSystem {
                 Err(_) => Err(BruteResponeError::InternalError(
                     "something definitely broke on our side".to_string(),
                 )),
+            }
+        };
+        Box::pin(fut)
+    }
+}
+
+////////////////
+// TOP SUBNET //
+///////////////
+impl Handler<RequestWithLimit<TopSubnet>> for BruteSystem {
+    type Result = ResponseFuture<Result<Vec<TopSubnet>, BruteResponeError>>;
+
+    fn handle(
+        &mut self,
+        msg: RequestWithLimit<TopSubnet>,
+        _: &mut Self::Context,
+    ) -> Self::Result {
+        let db_pool = self.db_pool.clone();
+        let limit = msg.limit;
+        let fut = async move {
+            let rows = sqlx::query_as::<_, TopSubnet>(
+                r#"SELECT
+                    regexp_replace(ip, '(\d+\.\d+\.\d+)\.\d+', '\1.0/24') AS subnet,
+                    COUNT(*)::bigint AS amount
+                FROM processed_individual
+                WHERE ip ~ '^\d+\.\d+\.\d+\.\d+$'
+                GROUP BY subnet
+                ORDER BY amount DESC
+                LIMIT $1"#,
+            )
+            .bind(limit as i64)
+            .fetch_all(&db_pool)
+            .await;
+            match rows {
+                Ok(r) => Ok(r),
+                Err(_) => Err(BruteResponeError::InternalError("something broke".to_string())),
             }
         };
         Box::pin(fut)
