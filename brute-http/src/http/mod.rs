@@ -11,8 +11,8 @@ use socket2::{Domain, Socket, Type};
 use get::{
     get_brute_attackers, get_brute_city, get_brute_country, get_brute_ip, get_brute_loc,
     get_brute_org, get_brute_password, get_brute_postal, get_brute_protocol, get_brute_region,
-    get_brute_timezone, get_brute_username, get_brute_usr_pass_combo, get_daily, get_hourly,
-    get_weekly, get_websocket, get_yearly,
+    get_brute_timezone, get_brute_username, get_brute_usr_pass_combo, get_daily, get_heatmap,
+    get_hourly, get_weekly, get_websocket, get_yearly,
 };
 use log::info;
 use post::{
@@ -150,7 +150,8 @@ fn configure_app(
                 .service(get_hourly)
                 .service(get_daily)
                 .service(get_weekly)
-                .service(get_yearly),
+                .service(get_yearly)
+                .service(get_heatmap),
         )
         .service(get_websocket)
 }

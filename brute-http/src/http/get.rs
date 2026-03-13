@@ -11,9 +11,9 @@ use crate::{
         AppState,
     },
     model::{
-        ProcessedIndividual, TopCity, TopCountry, TopDaily, TopHourly, TopIp, TopLocation, TopOrg,
-        TopPassword, TopPostal, TopProtocol, TopRegion, TopTimezone, TopUsername, TopUsrPassCombo,
-        TopWeekly, TopYearly,
+        HeatmapCell, ProcessedIndividual, TopCity, TopCountry, TopDaily, TopHourly, TopIp,
+        TopLocation, TopOrg, TopPassword, TopPostal, TopProtocol, TopRegion, TopTimezone,
+        TopUsername, TopUsrPassCombo, TopWeekly, TopYearly,
     },
     system::RequestWithLimit,
 };
@@ -374,6 +374,24 @@ async fn get_hourly(
     match state.actor.send(request).await {
         Ok(result) => HttpResponse::Ok().json(result.unwrap()),
         Err(er) => HttpResponse::Ok().body(format!("{}", er.to_string())),
+    }
+}
+
+////////////
+/// GET ///
+/////////////////////////////
+/// brute/stats/heatmap   ///
+/////////////////////////////
+#[get("/stats/heatmap")]
+async fn get_heatmap(state: web::Data<AppState>) -> impl Responder {
+    let request = RequestWithLimit {
+        table: HeatmapCell::default(),
+        limit: 168,
+        max_limit: 168,
+    };
+    match state.actor.send(request).await {
+        Ok(result) => HttpResponse::Ok().json(result.unwrap()),
+        Err(er) => HttpResponse::Ok().body(er.to_string()),
     }
 }
 
