@@ -14,10 +14,11 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use crate::{
     error::BruteResponeError,
     model::{
-        AttackVelocity, HeatmapCell, Individual, IpAbuse, IpSeen, ProcessedIndividual,
-        ProtocolCombo, ProtocolComboRequest, TopCity, TopCountry, TopDaily, TopHourly, TopIp,
-        TopLocation, TopOrg, TopPassword, TopPostal, TopProtocol, TopRegion, TopSubnet,
-        TopTimezone, TopUsername, TopUsrPassCombo, TopWeekly, TopYearly,
+        AttackVelocity, GetRollingStats, HeatmapCell, Individual, IpAbuse, IpSeen,
+        ProcessedIndividual, ProtocolCombo, ProtocolComboRequest, RollingStats, TopCity,
+        TopCountry, TopDaily, TopHourly, TopIp, TopLocation, TopOrg, TopPassword, TopPostal,
+        TopProtocol, TopRegion, TopSubnet, TopTimezone, TopUsername, TopUsrPassCombo, TopWeekly,
+        TopYearly,
     },
 };
 
@@ -89,6 +90,7 @@ impl Handler<Individual> for BruteSystem {
 
     fn handle(&mut self, msg: Individual, _: &mut Self::Context) -> Self::Result {
         let reporter = self.reporter();
+        let db_pool = self.db_pool.clone();
         let fut = async move {
             match reporter.start_report(msg).await {
                 Ok(result) => {
@@ -104,6 +106,42 @@ impl Handler<Individual> for BruteSystem {
                         result.country().as_ref().unwrap_or(&"{EMPTY}".to_string()),
                         result.postal().as_ref().unwrap_or(&"{EMPTY}".to_string())
                     );
+                    // Broadcast rolling stats asynchronously after each attack
+                    tokio::spawn(async move {
+                        let total: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM individual")
+                            .fetch_one(&db_pool)
+                            .await
+                            .unwrap_or(0);
+                        let last_hour: i32 = sqlx::query_scalar(
+                            "SELECT COALESCE(amount, 0) FROM top_hourly ORDER BY timestamp DESC LIMIT 1",
+                        )
+                        .fetch_optional(&db_pool)
+                        .await
+                        .unwrap_or(None)
+                        .unwrap_or(0);
+                        let top_protocol: Option<String> = sqlx::query_scalar(
+                            "SELECT protocol FROM top_protocol ORDER BY amount DESC LIMIT 1",
+                        )
+                        .fetch_optional(&db_pool)
+                        .await
+                        .unwrap_or(None);
+                        let top_country: Option<String> = sqlx::query_scalar(
+                            "SELECT country FROM top_country ORDER BY amount DESC LIMIT 1",
+                        )
+                        .fetch_optional(&db_pool)
+                        .await
+                        .unwrap_or(None);
+                        let stats = RollingStats {
+                            total_attacks: total,
+                            attacks_last_hour: last_hour,
+                            top_protocol,
+                            top_country,
+                        };
+                        crate::http::websocket::BruteServer::broadcast(
+                            crate::http::websocket::ParseType::RollingStats,
+                            stats,
+                        );
+                    });
                     Ok(result)
                 }
                 Err(e) => {
@@ -613,6 +651,49 @@ impl Handler<RequestWithLimit<IpAbuse>> for BruteSystem {
                 Ok(r) => Ok(r),
                 Err(_) => Err(BruteResponeError::InternalError("query failed".to_string())),
             }
+        };
+        Box::pin(fut)
+    }
+}
+
+/////////////////////
+// ROLLING STATS  //
+///////////////////
+impl Handler<GetRollingStats> for BruteSystem {
+    type Result = ResponseFuture<Result<RollingStats, BruteResponeError>>;
+
+    fn handle(&mut self, _: GetRollingStats, _: &mut Self::Context) -> Self::Result {
+        let db_pool = self.db_pool.clone();
+        let fut = async move {
+            let total: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM individual")
+                .fetch_one(&db_pool)
+                .await
+                .unwrap_or(0);
+            let last_hour: i32 = sqlx::query_scalar(
+                "SELECT COALESCE(amount, 0) FROM top_hourly ORDER BY timestamp DESC LIMIT 1",
+            )
+            .fetch_optional(&db_pool)
+            .await
+            .unwrap_or(None)
+            .unwrap_or(0);
+            let top_protocol: Option<String> = sqlx::query_scalar(
+                "SELECT protocol FROM top_protocol ORDER BY amount DESC LIMIT 1",
+            )
+            .fetch_optional(&db_pool)
+            .await
+            .unwrap_or(None);
+            let top_country: Option<String> = sqlx::query_scalar(
+                "SELECT country FROM top_country ORDER BY amount DESC LIMIT 1",
+            )
+            .fetch_optional(&db_pool)
+            .await
+            .unwrap_or(None);
+            Ok(RollingStats {
+                total_attacks: total,
+                attacks_last_hour: last_hour,
+                top_protocol,
+                top_country,
+            })
         };
         Box::pin(fut)
     }

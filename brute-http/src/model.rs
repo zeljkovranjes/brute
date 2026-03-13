@@ -373,3 +373,17 @@ pub struct IpAbuse {
 impl Message for RequestWithLimit<IpAbuse> {
     type Result = Result<Vec<IpAbuse>, BruteResponeError>;
 }
+
+#[derive(Default, Debug, Clone, Serialize, Deserialize)]
+pub struct RollingStats {
+    pub total_attacks: i64,
+    pub attacks_last_hour: i32,
+    pub top_protocol: Option<String>,
+    pub top_country: Option<String>,
+}
+
+pub struct GetRollingStats;
+
+impl Message for GetRollingStats {
+    type Result = Result<RollingStats, BruteResponeError>;
+}

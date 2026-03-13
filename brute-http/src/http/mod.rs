@@ -13,7 +13,7 @@ use get::{
     get_brute_loc, get_brute_org, get_brute_password, get_brute_postal, get_brute_protocol,
     get_brute_region, get_brute_timezone, get_brute_username, get_brute_usr_pass_combo, get_daily,
     get_heatmap, get_hourly, get_ip_abuse, get_ip_seen, get_protocol_combo, get_subnet,
-    get_velocity, get_weekly, get_websocket, get_yearly,
+    get_summary, get_velocity, get_weekly, get_websocket, get_yearly,
 };
 use log::info;
 use post::{
@@ -158,7 +158,8 @@ fn configure_app(
                 .service(get_blocklist)
                 .service(get_ip_seen)
                 .service(get_velocity)
-                .service(get_ip_abuse),
+                .service(get_ip_abuse)
+                .service(get_summary),
         )
         .service(get_websocket)
 }
@@ -186,6 +187,7 @@ pub mod websocket {
         ProcessedIndividual, // u can add more here...
                              // this is used so the client side knows
                              // how to parse the data.
+        RollingStats,
     }
 
     // todo find another way of doing without using a static
