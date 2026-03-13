@@ -12,6 +12,7 @@ use protocol::mqtt::start_mqtt_server;
 use protocol::mysql::start_mysql_server;
 use protocol::postgres::start_postgres_server;
 use protocol::smtp::start_smtps_server;
+use protocol::imap::start_imaps_server;
 use protocol::tls::create_tls_acceptor;
 
 mod protocol;
@@ -20,9 +21,9 @@ mod payload;
 //////////////////////////
 // SUPPORTED PROTOCOLS //
 ////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////
-// SSH, FTP, Telnet, SMTP/SMTPS, POP3, IMAP, LDAP, Redis, HTTP/8080, MQTT, MySQL, PostgreSQL         //
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// SSH, FTP, Telnet, SMTP/SMTPS, POP3, IMAP/IMAPS, LDAP, Redis, HTTP/8080, MQTT, MySQL, PostgreSQL       //
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -37,7 +38,7 @@ async fn main() -> anyhow::Result<()> {
     
     let tls_acceptor = create_tls_acceptor().expect("Failed to create TLS acceptor");
 
-    let (ssh, ftp, telnet, smtp, pop3, imap, ldap, redis, http, mqtt, mysql, postgres, smtps) = tokio::join!(
+    let (ssh, ftp, telnet, smtp, pop3, imap, ldap, redis, http, mqtt, mysql, postgres, smtps, imaps) = tokio::join!(
         start_ssh_server(),
         start_ftp_server(),
         start_telnet_server(),
@@ -50,7 +51,8 @@ async fn main() -> anyhow::Result<()> {
         start_mqtt_server(),
         start_mysql_server(),
         start_postgres_server(),
-        start_smtps_server(tls_acceptor.clone())
+        start_smtps_server(tls_acceptor.clone()),
+        start_imaps_server(tls_acceptor.clone())
     );
 
     ssh.unwrap();
@@ -66,5 +68,6 @@ async fn main() -> anyhow::Result<()> {
     mysql.unwrap();
     postgres.unwrap();
     smtps.unwrap();
+    imaps.unwrap();
     Ok(())
 }
