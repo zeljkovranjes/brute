@@ -11,7 +11,9 @@ use crate::{
         AppState,
     },
     model::{
-        ProcessedIndividual, TopCity, TopCountry, TopHourly, TopIp, TopLocation, TopOrg, TopPassword, TopPostal, TopProtocol, TopRegion, TopTimezone, TopUsername, TopUsrPassCombo
+        ProcessedIndividual, TopCity, TopCountry, TopDaily, TopHourly, TopIp, TopLocation, TopOrg,
+        TopPassword, TopPostal, TopProtocol, TopRegion, TopTimezone, TopUsername, TopUsrPassCombo,
+        TopWeekly, TopYearly,
     },
     system::RequestWithLimit,
 };
@@ -363,6 +365,81 @@ async fn get_hourly(
     let limit = params.limit.unwrap_or(MAX_LIMIT);
     let mut request = RequestWithLimit {
         table: TopHourly::default(),
+        limit,
+        max_limit: MAX_LIMIT,
+    };
+    if limit > request.max_limit {
+        request.limit = request.max_limit;
+    }
+    match state.actor.send(request).await {
+        Ok(result) => HttpResponse::Ok().json(result.unwrap()),
+        Err(er) => HttpResponse::Ok().body(format!("{}", er.to_string())),
+    }
+}
+
+////////////
+/// GET ///
+/////////////////////////////////////////
+/// brute/stats/daily?limit={amount} ///
+///////////////////////////////////////
+#[get("/stats/daily")]
+async fn get_daily(
+    state: web::Data<AppState>,
+    params: web::Query<LimitParameter>,
+) -> impl Responder {
+    let limit = params.limit.unwrap_or(MAX_LIMIT);
+    let mut request = RequestWithLimit {
+        table: TopDaily::default(),
+        limit,
+        max_limit: MAX_LIMIT,
+    };
+    if limit > request.max_limit {
+        request.limit = request.max_limit;
+    }
+    match state.actor.send(request).await {
+        Ok(result) => HttpResponse::Ok().json(result.unwrap()),
+        Err(er) => HttpResponse::Ok().body(format!("{}", er.to_string())),
+    }
+}
+
+////////////
+/// GET ///
+//////////////////////////////////////////
+/// brute/stats/weekly?limit={amount} ///
+////////////////////////////////////////
+#[get("/stats/weekly")]
+async fn get_weekly(
+    state: web::Data<AppState>,
+    params: web::Query<LimitParameter>,
+) -> impl Responder {
+    let limit = params.limit.unwrap_or(MAX_LIMIT);
+    let mut request = RequestWithLimit {
+        table: TopWeekly::default(),
+        limit,
+        max_limit: MAX_LIMIT,
+    };
+    if limit > request.max_limit {
+        request.limit = request.max_limit;
+    }
+    match state.actor.send(request).await {
+        Ok(result) => HttpResponse::Ok().json(result.unwrap()),
+        Err(er) => HttpResponse::Ok().body(format!("{}", er.to_string())),
+    }
+}
+
+////////////
+/// GET ///
+//////////////////////////////////////////
+/// brute/stats/yearly?limit={amount} ///
+////////////////////////////////////////
+#[get("/stats/yearly")]
+async fn get_yearly(
+    state: web::Data<AppState>,
+    params: web::Query<LimitParameter>,
+) -> impl Responder {
+    let limit = params.limit.unwrap_or(MAX_LIMIT);
+    let mut request = RequestWithLimit {
+        table: TopYearly::default(),
         limit,
         max_limit: MAX_LIMIT,
     };
