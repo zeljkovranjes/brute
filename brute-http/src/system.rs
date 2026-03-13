@@ -1312,7 +1312,13 @@ pub mod reporter {
                 }
                 _ => {
                     info!("Fetching new details from ipinfo for IP: {}", model.ip());
-                    let mut ip_details = ipinfo_lock.lookup(model.ip()).await?;
+                    let mut ip_details = match ipinfo_lock.lookup(model.ip()).await {
+                        Ok(d) => d,
+                        Err(e) => {
+                            log::error!("IPinfo lookup failed for {}: {:?}", model.ip(), e);
+                            return Err(anyhow::anyhow!("IPinfo lookup failed: {}", e));
+                        }
+                    };
 
                     let asn_details = ip_details.asn.as_ref().unwrap_or(&asn_default);
                     let company_details = ip_details.company.as_ref().unwrap_or(&company_default);
