@@ -72,7 +72,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // SQLX //
     /////////
     let db = PgPoolOptions::new()
-        .connect(&config.database_url)
+        .connect_with(
+            config.database_url.parse::<sqlx::postgres::PgConnectOptions>()
+                .unwrap()
+                .statement_cache_capacity(0),
+        )
         .await
         .map_err(|e| format!("Failed to connect to the database: {}", e))
         .unwrap();
