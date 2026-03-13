@@ -9,6 +9,7 @@ use protocol::ldap::start_ldap_server;
 use protocol::redis::start_redis_server;
 use protocol::http::start_http_server;
 use protocol::mqtt::start_mqtt_server;
+use protocol::mysql::start_mysql_server;
 
 mod protocol;
 mod payload;
@@ -16,9 +17,9 @@ mod payload;
 //////////////////////////
 // SUPPORTED PROTOCOLS //
 ////////////////////////
-///////////////////////////////////////////////////////////////////////////
-// SSH, FTP, Telnet, SMTP, POP3, IMAP, LDAP, Redis, HTTP/8080, MQTT   //
-/////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////
+// SSH, FTP, Telnet, SMTP, POP3, IMAP, LDAP, Redis, HTTP/8080, MQTT, MySQL   //
+////////////////////////////////////////////////////////////////////////////////
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -31,7 +32,7 @@ async fn main() -> anyhow::Result<()> {
     #[cfg(debug_assertions)]
     dotenvy::dotenv().unwrap();
     
-    let (ssh, ftp, telnet, smtp, pop3, imap, ldap, redis, http, mqtt) = tokio::join!(
+    let (ssh, ftp, telnet, smtp, pop3, imap, ldap, redis, http, mqtt, mysql) = tokio::join!(
         start_ssh_server(),
         start_ftp_server(),
         start_telnet_server(),
@@ -41,7 +42,8 @@ async fn main() -> anyhow::Result<()> {
         start_ldap_server(),
         start_redis_server(),
         start_http_server(),
-        start_mqtt_server()
+        start_mqtt_server(),
+        start_mysql_server()
     );
 
     ssh.unwrap();
@@ -54,5 +56,6 @@ async fn main() -> anyhow::Result<()> {
     redis.unwrap();
     http.unwrap();
     mqtt.unwrap();
+    mysql.unwrap();
     Ok(())
 }
