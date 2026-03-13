@@ -5,13 +5,13 @@
 use std::env;
 
 use log::info;
-use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
+use tokio::io::{AsyncBufReadExt, AsyncRead, AsyncWrite, AsyncWriteExt, BufReader};
 use tokio::net::{TcpListener, TcpStream};
+use tokio_rustls::TlsAcceptor;
 
 use crate::payload;
 
-/// Parse: <tag> LOGIN <user> <pass>
-/// Usernames and passwords may be quoted or unquoted.
+/// Parse: `<tag> LOGIN <user> <pass>` with optional double-quote wrapping.
 fn parse_imap_login(line: &str) -> Option<(String, String, String)> {
     let mut parts = line.splitn(4, ' ');
     let tag = parts.next()?.to_string();
@@ -20,7 +20,7 @@ fn parse_imap_login(line: &str) -> Option<(String, String, String)> {
         return None;
     }
     let rest = parts.next()?;
-    // Unquote a single token from the front of `s`
+
     fn unquote(s: &str) -> (&str, &str) {
         let s = s.trim_start();
         if s.starts_with('"') {
@@ -28,7 +28,6 @@ fn parse_imap_login(line: &str) -> Option<(String, String, String)> {
                 return (&s[1..end + 1], s[end + 2..].trim_start());
             }
         }
-        // unquoted: split on first space
         match s.find(' ') {
             Some(i) => (&s[..i], s[i..].trim_start()),
             None => (s, ""),
@@ -42,7 +41,10 @@ fn parse_imap_login(line: &str) -> Option<(String, String, String)> {
     Some((tag, user.to_string(), pass.to_string()))
 }
 
-async fn handle_client(stream: TcpStream, addr: std::net::SocketAddr) {
+async fn handle_client<S>(stream: S, addr: std::net::SocketAddr)
+where
+    S: AsyncRead + AsyncWrite + Unpin + Send,
+{
     let ip = addr.ip().to_string();
     if ip == "127.0.0.1" || ip == "::1" {
         return;
@@ -53,7 +55,7 @@ async fn handle_client(stream: TcpStream, addr: std::net::SocketAddr) {
         Err(_) => return,
     };
 
-    let (reader, mut writer) = stream.into_split();
+    let (reader, mut writer) = tokio::io::split(stream);
     let mut reader = BufReader::new(reader);
     let mut line = String::new();
 
@@ -117,6 +119,26 @@ pub async fn start_imap_server() -> anyhow::Result<()> {
             }
             Err(e) => {
                 log::error!("IMAP accept error: {}", e);
+            }
+        }
+    }
+}
+
+pub async fn start_imaps_server(acceptor: TlsAcceptor) -> anyhow::Result<()> {
+    let listener = TcpListener::bind("0.0.0.0:993").await?;
+    info!("IMAPS server listening on port 993");
+    loop {
+        match listener.accept().await {
+            Ok((stream, addr)) => {
+                let acceptor = acceptor.clone();
+                tokio::spawn(async move {
+                    if let Ok(tls) = acceptor.accept(stream).await {
+                        handle_client(tls, addr).await;
+                    }
+                });
+            }
+            Err(e) => {
+                log::error!("IMAPS accept error: {}", e);
             }
         }
     }
