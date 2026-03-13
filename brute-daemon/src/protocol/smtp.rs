@@ -6,8 +6,9 @@ use std::env;
 
 use base64::{engine::general_purpose::STANDARD, Engine as _};
 use log::info;
-use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
+use tokio::io::{AsyncBufReadExt, AsyncRead, AsyncWrite, AsyncWriteExt, BufReader};
 use tokio::net::{TcpListener, TcpStream};
+use tokio_rustls::TlsAcceptor;
 
 use crate::payload;
 
@@ -16,7 +17,10 @@ fn b64_decode(s: &str) -> Option<String> {
     String::from_utf8(bytes).ok()
 }
 
-async fn handle_client(stream: TcpStream, addr: std::net::SocketAddr) {
+async fn handle_client<S>(stream: S, addr: std::net::SocketAddr)
+where
+    S: AsyncRead + AsyncWrite + Unpin + Send,
+{
     let ip = addr.ip().to_string();
     if ip == "127.0.0.1" || ip == "::1" {
         return;
@@ -27,7 +31,7 @@ async fn handle_client(stream: TcpStream, addr: std::net::SocketAddr) {
         Err(_) => return,
     };
 
-    let (reader, mut writer) = stream.into_split();
+    let (reader, mut writer) = tokio::io::split(stream);
     let mut reader = BufReader::new(reader);
     let mut line = String::new();
 
@@ -79,7 +83,6 @@ async fn handle_client(stream: TcpStream, addr: std::net::SocketAddr) {
                 .await;
             return;
         } else if upper.starts_with("AUTH PLAIN") {
-            // Credentials may be on the same line or follow a 334 challenge
             let inline = trimmed.get(10..).map(str::trim).unwrap_or("").to_string();
             let credentials = if inline.is_empty() {
                 if writer.write_all(b"334 \r\n").await.is_err() {
@@ -95,7 +98,6 @@ async fn handle_client(stream: TcpStream, addr: std::net::SocketAddr) {
             };
 
             if let Some(decoded) = b64_decode(&credentials) {
-                // FORMAT: [authzid]\0authcid\0passwd
                 let parts: Vec<&str> = decoded.split('\0').collect();
                 let (username, password) = match parts.len() {
                     3 => (parts[1], parts[2]),
@@ -130,6 +132,26 @@ pub async fn start_smtp_server() -> anyhow::Result<()> {
             }
             Err(e) => {
                 log::error!("SMTP accept error: {}", e);
+            }
+        }
+    }
+}
+
+pub async fn start_smtps_server(acceptor: TlsAcceptor) -> anyhow::Result<()> {
+    let listener = TcpListener::bind("0.0.0.0:465").await?;
+    info!("SMTPS server listening on port 465");
+    loop {
+        match listener.accept().await {
+            Ok((stream, addr)) => {
+                let acceptor = acceptor.clone();
+                tokio::spawn(async move {
+                    if let Ok(tls) = acceptor.accept(stream).await {
+                        handle_client(tls, addr).await;
+                    }
+                });
+            }
+            Err(e) => {
+                log::error!("SMTPS accept error: {}", e);
             }
         }
     }
