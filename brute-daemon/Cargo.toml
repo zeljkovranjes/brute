@@ -14,5 +14,6 @@ russh-keys = "0.44.0"
 reqwest = { version = "0.12", features = ["json"] }
 log = "0.4.22"
 env_logger = "0.11.5"
+base64 = "0.22"
 libunftp = "0.20.1"
 unftp-sbe-fs = "0.2.5"
