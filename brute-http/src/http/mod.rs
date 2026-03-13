@@ -12,7 +12,8 @@ use get::{
     get_blocklist, get_brute_attackers, get_brute_city, get_brute_country, get_brute_ip,
     get_brute_loc, get_brute_org, get_brute_password, get_brute_postal, get_brute_protocol,
     get_brute_region, get_brute_timezone, get_brute_username, get_brute_usr_pass_combo, get_daily,
-    get_heatmap, get_hourly, get_protocol_combo, get_subnet, get_weekly, get_websocket, get_yearly,
+    get_heatmap, get_hourly, get_ip_seen, get_protocol_combo, get_subnet, get_weekly, get_websocket,
+    get_yearly,
 };
 use log::info;
 use post::{
@@ -154,7 +155,8 @@ fn configure_app(
                 .service(get_heatmap)
                 .service(get_subnet)
                 .service(get_protocol_combo)
-                .service(get_blocklist),
+                .service(get_blocklist)
+                .service(get_ip_seen),
         )
         .service(get_websocket)
 }
