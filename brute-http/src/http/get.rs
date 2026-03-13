@@ -11,9 +11,10 @@ use crate::{
         AppState,
     },
     model::{
-        HeatmapCell, ProcessedIndividual, TopCity, TopCountry, TopDaily, TopHourly, TopIp,
-        TopLocation, TopOrg, TopPassword, TopPostal, TopProtocol, TopRegion, TopSubnet,
-        TopTimezone, TopUsername, TopUsrPassCombo, TopWeekly, TopYearly,
+        HeatmapCell, ProcessedIndividual, ProtocolCombo, ProtocolComboRequest, TopCity,
+        TopCountry, TopDaily, TopHourly, TopIp, TopLocation, TopOrg, TopPassword, TopPostal,
+        TopProtocol, TopRegion, TopSubnet, TopTimezone, TopUsername, TopUsrPassCombo, TopWeekly,
+        TopYearly,
     },
     system::RequestWithLimit,
 };
@@ -374,6 +375,33 @@ async fn get_hourly(
     match state.actor.send(request).await {
         Ok(result) => HttpResponse::Ok().json(result.unwrap()),
         Err(er) => HttpResponse::Ok().body(format!("{}", er.to_string())),
+    }
+}
+
+////////////
+/// GET ///
+////////////////////////////////////////////////////
+/// brute/stats/combo/protocol?protocol={}&limit={} ///
+////////////////////////////////////////////////////
+#[derive(Deserialize)]
+struct ProtocolComboParams {
+    protocol: String,
+    limit: Option<usize>,
+}
+
+#[get("/stats/combo/protocol")]
+async fn get_protocol_combo(
+    state: web::Data<AppState>,
+    params: web::Query<ProtocolComboParams>,
+) -> impl Responder {
+    let limit = params.limit.unwrap_or(MAX_LIMIT).min(MAX_LIMIT);
+    let request = ProtocolComboRequest {
+        protocol: params.protocol.clone(),
+        limit,
+    };
+    match state.actor.send(request).await {
+        Ok(result) => HttpResponse::Ok().json(result.unwrap()),
+        Err(er) => HttpResponse::Ok().body(er.to_string()),
     }
 }
 

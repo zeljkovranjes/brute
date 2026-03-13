@@ -322,3 +322,19 @@ pub struct TopSubnet {
 impl Message for RequestWithLimit<TopSubnet> {
     type Result = Result<Vec<TopSubnet>, BruteResponeError>;
 }
+
+#[derive(Default, Debug, sqlx::FromRow, Getters, Serialize, Deserialize)]
+pub struct ProtocolCombo {
+    pub username: String,
+    pub password: String,
+    pub amount: i64,
+}
+
+pub struct ProtocolComboRequest {
+    pub protocol: String,
+    pub limit: usize,
+}
+
+impl Message for ProtocolComboRequest {
+    type Result = Result<Vec<ProtocolCombo>, BruteResponeError>;
+}

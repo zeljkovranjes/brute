@@ -12,9 +12,10 @@ use tokio::sync::Mutex;
 use crate::{
     error::BruteResponeError,
     model::{
-        HeatmapCell, Individual, ProcessedIndividual, TopCity, TopCountry, TopDaily, TopHourly,
-        TopIp, TopLocation, TopOrg, TopPassword, TopPostal, TopProtocol, TopRegion, TopSubnet,
-        TopTimezone, TopUsername, TopUsrPassCombo, TopWeekly, TopYearly,
+        HeatmapCell, Individual, ProcessedIndividual, ProtocolCombo, ProtocolComboRequest,
+        TopCity, TopCountry, TopDaily, TopHourly, TopIp, TopLocation, TopOrg, TopPassword,
+        TopPostal, TopProtocol, TopRegion, TopSubnet, TopTimezone, TopUsername, TopUsrPassCombo,
+        TopWeekly, TopYearly,
     },
 };
 
@@ -584,6 +585,30 @@ impl Handler<RequestWithLimit<TopHourly>> for BruteSystem {
                 Err(_) => Err(BruteResponeError::InternalError(
                     "something definitely broke on our side".to_string(),
                 )),
+            }
+        };
+        Box::pin(fut)
+    }
+}
+
+//////////////////////
+// PROTOCOL COMBO  //
+////////////////////
+impl Handler<ProtocolComboRequest> for BruteSystem {
+    type Result = ResponseFuture<Result<Vec<ProtocolCombo>, BruteResponeError>>;
+
+    fn handle(&mut self, msg: ProtocolComboRequest, _: &mut Self::Context) -> Self::Result {
+        let db_pool = self.db_pool.clone();
+        let fut = async move {
+            let query = "SELECT username, password, COUNT(*)::bigint AS amount FROM individual WHERE protocol = $1 GROUP BY username, password ORDER BY amount DESC LIMIT $2;";
+            let rows = sqlx::query_as::<_, ProtocolCombo>(query)
+                .bind(&msg.protocol)
+                .bind(msg.limit as i64)
+                .fetch_all(&db_pool)
+                .await;
+            match rows {
+                Ok(r) => Ok(r),
+                Err(_) => Err(BruteResponeError::InternalError("query failed".to_string())),
             }
         };
         Box::pin(fut)
