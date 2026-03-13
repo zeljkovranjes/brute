@@ -7,3 +7,4 @@ pub mod imap;
 pub mod ldap;
 pub mod redis;
 pub mod http;
+pub mod mqtt;
