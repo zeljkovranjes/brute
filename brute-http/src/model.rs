@@ -109,6 +109,7 @@ impl Message for RequestWithLimit<TopUsername> {
 pub struct TopPassword {
     password: String,
     amount: i32,
+    is_breached: bool,
 }
 
 impl TopPassword {
