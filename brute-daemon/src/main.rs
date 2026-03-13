@@ -2,6 +2,7 @@ use log::LevelFilter;
 use protocol::ftp::start_ftp_server;
 use protocol::ssh::start_ssh_server;
 use protocol::telnet::start_telnet_server;
+use protocol::smtp::start_smtp_server;
 
 mod protocol;
 mod payload;
@@ -9,9 +10,9 @@ mod payload;
 //////////////////////////
 // SUPPORTED PROTOCOLS //
 ////////////////////////
-/////////////////////
-// SSH, FTP, Telnet //
-////////////////////
+//////////////////////////////
+// SSH, FTP, Telnet, SMTP  //
+////////////////////////////
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -24,14 +25,16 @@ async fn main() -> anyhow::Result<()> {
     #[cfg(debug_assertions)]
     dotenvy::dotenv().unwrap();
     
-    let (ssh, ftp, telnet) = tokio::join!(
+    let (ssh, ftp, telnet, smtp) = tokio::join!(
         start_ssh_server(),
         start_ftp_server(),
-        start_telnet_server()
+        start_telnet_server(),
+        start_smtp_server()
     );
 
     ssh.unwrap();
     ftp.unwrap();
     telnet.unwrap();
+    smtp.unwrap();
     Ok(())
 }
