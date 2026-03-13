@@ -5,3 +5,4 @@ pub mod smtp;
 pub mod pop3;
 pub mod imap;
 pub mod ldap;
+pub mod redis;
