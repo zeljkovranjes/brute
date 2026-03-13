@@ -14,10 +14,10 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use crate::{
     error::BruteResponeError,
     model::{
-        AttackVelocity, HeatmapCell, Individual, IpSeen, ProcessedIndividual, ProtocolCombo,
-        ProtocolComboRequest, TopCity, TopCountry, TopDaily, TopHourly, TopIp, TopLocation,
-        TopOrg, TopPassword, TopPostal, TopProtocol, TopRegion, TopSubnet, TopTimezone,
-        TopUsername, TopUsrPassCombo, TopWeekly, TopYearly,
+        AttackVelocity, HeatmapCell, Individual, IpAbuse, IpSeen, ProcessedIndividual,
+        ProtocolCombo, ProtocolComboRequest, TopCity, TopCountry, TopDaily, TopHourly, TopIp,
+        TopLocation, TopOrg, TopPassword, TopPostal, TopProtocol, TopRegion, TopSubnet,
+        TopTimezone, TopUsername, TopUsrPassCombo, TopWeekly, TopYearly,
     },
 };
 
@@ -593,6 +593,31 @@ impl Handler<RequestWithLimit<TopHourly>> for BruteSystem {
     }
 }
 
+////////////////
+// IP ABUSE   //
+///////////////
+impl Handler<RequestWithLimit<IpAbuse>> for BruteSystem {
+    type Result = ResponseFuture<Result<Vec<IpAbuse>, BruteResponeError>>;
+
+    fn handle(&mut self, msg: RequestWithLimit<IpAbuse>, _: &mut Self::Context) -> Self::Result {
+        let db_pool = self.db_pool.clone();
+        let limit = msg.limit;
+        let fut = async move {
+            let rows = sqlx::query_as::<_, IpAbuse>(
+                "SELECT * FROM ip_abuse ORDER BY confidence_score DESC LIMIT $1;",
+            )
+            .bind(limit as i64)
+            .fetch_all(&db_pool)
+            .await;
+            match rows {
+                Ok(r) => Ok(r),
+                Err(_) => Err(BruteResponeError::InternalError("query failed".to_string())),
+            }
+        };
+        Box::pin(fut)
+    }
+}
+
 //////////////////////
 // ATTACK VELOCITY //
 ////////////////////
@@ -869,6 +894,18 @@ pub mod reporter {
         brute: T,
     }
 
+    #[derive(serde::Deserialize)]
+    struct AbuseIpDbResponse {
+        data: AbuseIpDbData,
+    }
+
+    #[derive(serde::Deserialize)]
+    #[serde(rename_all = "camelCase")]
+    struct AbuseIpDbData {
+        abuse_confidence_score: i32,
+        total_reports: i32,
+    }
+
     impl BruteReporter<BruteSystem> {
         pub fn new(brute: BruteSystem) -> Self {
             BruteReporter { brute }
@@ -916,6 +953,66 @@ pub mod reporter {
                 elasped_time
             );
             transaction.commit().await.unwrap();
+
+            // AbuseIPDB check — fire and forget
+            if let Ok(api_key) = std::env::var("ABUSEIPDB_KEY") {
+                let ip = individual.ip().to_string();
+                let pool = self.brute.db_pool.clone();
+                tokio::spawn(async move {
+                    // skip if recently checked (< 24h)
+                    let existing: Option<i64> = sqlx::query_scalar(
+                        "SELECT checked_at FROM ip_abuse WHERE ip = $1",
+                    )
+                    .bind(&ip)
+                    .fetch_optional(&pool)
+                    .await
+                    .unwrap_or(None);
+
+                    let now = SystemTime::now()
+                        .duration_since(UNIX_EPOCH)
+                        .unwrap()
+                        .as_millis() as i64;
+                    if let Some(t) = existing {
+                        if now - t < 86_400_000 {
+                            return;
+                        }
+                    }
+
+                    let url = format!(
+                        "https://api.abuseipdb.com/api/v2/check?ipAddress={}&maxAgeInDays=90",
+                        ip
+                    );
+                    let client = reqwest::Client::new();
+                    if let Ok(resp) = client
+                        .get(&url)
+                        .header("Key", &api_key)
+                        .header("Accept", "application/json")
+                        .send()
+                        .await
+                    {
+                        if let Ok(data) = resp.json::<AbuseIpDbResponse>().await {
+                            sqlx::query(
+                                r#"
+                                INSERT INTO ip_abuse (ip, confidence_score, total_reports, checked_at)
+                                VALUES ($1, $2, $3, $4)
+                                ON CONFLICT (ip) DO UPDATE SET
+                                    confidence_score = EXCLUDED.confidence_score,
+                                    total_reports = EXCLUDED.total_reports,
+                                    checked_at = EXCLUDED.checked_at
+                            "#,
+                            )
+                            .bind(&ip)
+                            .bind(data.data.abuse_confidence_score)
+                            .bind(data.data.total_reports)
+                            .bind(now)
+                            .execute(&pool)
+                            .await
+                            .ok();
+                        }
+                    }
+                });
+            }
+
             Ok(processed_individual)
         }
     }

@@ -360,3 +360,15 @@ pub struct AttackVelocity {
 impl Message for RequestWithLimit<AttackVelocity> {
     type Result = Result<Vec<AttackVelocity>, BruteResponeError>;
 }
+
+#[derive(Default, Debug, Clone, sqlx::FromRow, Getters, Serialize, Deserialize)]
+pub struct IpAbuse {
+    pub ip: String,
+    pub confidence_score: i32,
+    pub total_reports: i32,
+    pub checked_at: i64,
+}
+
+impl Message for RequestWithLimit<IpAbuse> {
+    type Result = Result<Vec<IpAbuse>, BruteResponeError>;
+}
