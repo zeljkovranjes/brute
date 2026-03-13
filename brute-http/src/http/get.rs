@@ -11,10 +11,10 @@ use crate::{
         AppState,
     },
     model::{
-        AttackVelocity, HeatmapCell, IpAbuse, IpSeen, ProcessedIndividual, ProtocolCombo,
-        ProtocolComboRequest, TopCity, TopCountry, TopDaily, TopHourly, TopIp, TopLocation,
-        TopOrg, TopPassword, TopPostal, TopProtocol, TopRegion, TopSubnet, TopTimezone,
-        TopUsername, TopUsrPassCombo, TopWeekly, TopYearly,
+        AttackVelocity, GetRollingStats, HeatmapCell, IpAbuse, IpSeen, ProcessedIndividual,
+        ProtocolCombo, ProtocolComboRequest, TopCity, TopCountry, TopDaily, TopHourly, TopIp,
+        TopLocation, TopOrg, TopPassword, TopPostal, TopProtocol, TopRegion, TopSubnet,
+        TopTimezone, TopUsername, TopUsrPassCombo, TopWeekly, TopYearly,
     },
     system::RequestWithLimit,
 };
@@ -592,6 +592,19 @@ async fn get_yearly(
     match state.actor.send(request).await {
         Ok(result) => HttpResponse::Ok().json(result.unwrap()),
         Err(er) => HttpResponse::Ok().body(format!("{}", er.to_string())),
+    }
+}
+
+////////////
+/// GET ///
+/////////////////////////////
+/// brute/stats/summary   ///
+/////////////////////////////
+#[get("/stats/summary")]
+async fn get_summary(state: web::Data<AppState>) -> impl Responder {
+    match state.actor.send(GetRollingStats).await {
+        Ok(result) => HttpResponse::Ok().json(result.unwrap()),
+        Err(er) => HttpResponse::Ok().body(er.to_string()),
     }
 }
 
