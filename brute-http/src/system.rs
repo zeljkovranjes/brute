@@ -874,6 +874,7 @@ pub mod reporter {
     };
     use ipinfo::{AbuseDetails, AsnDetails, CompanyDetails, DomainsDetails, PrivacyDetails};
     use log::info;
+    use sha1::{Digest, Sha1};
     use std::time::{SystemTime, UNIX_EPOCH};
     use tokio::time::Instant;
     use uuid::Uuid;
@@ -1008,6 +1009,47 @@ pub mod reporter {
                             .execute(&pool)
                             .await
                             .ok();
+                        }
+                    }
+                });
+            }
+
+            // HIBP check — fire and forget
+            {
+                let password = individual.password().to_string();
+                let pool = self.brute.db_pool.clone();
+                tokio::spawn(async move {
+                    // Compute SHA1 of the password
+                    let mut hasher = Sha1::new();
+                    hasher.update(password.as_bytes());
+                    let hash_bytes = hasher.finalize();
+                    let hex = format!("{:X}", hash_bytes);
+                    let (prefix, suffix) = (&hex[..5], &hex[5..]);
+
+                    let client = reqwest::Client::new();
+                    let url = format!("https://api.pwnedpasswords.com/range/{}", prefix);
+                    if let Ok(resp) = client
+                        .get(&url)
+                        .header("Add-Padding", "true")
+                        .send()
+                        .await
+                    {
+                        if let Ok(body) = resp.text().await {
+                            let breached = body.lines().any(|line| {
+                                line.split(':')
+                                    .next()
+                                    .map(|h| h.eq_ignore_ascii_case(suffix))
+                                    .unwrap_or(false)
+                            });
+                            if breached {
+                                sqlx::query(
+                                    "UPDATE top_password SET is_breached = TRUE WHERE password = $1",
+                                )
+                                .bind(&password)
+                                .execute(&pool)
+                                .await
+                                .ok();
+                            }
                         }
                     }
                 });
