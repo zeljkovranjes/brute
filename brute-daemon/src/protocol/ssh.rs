@@ -50,12 +50,15 @@ impl russh::server::Handler for SshSession {
 
     #[allow(unused_variables)]
     async fn auth_password(&mut self, user: &str, password: &str) -> Result<Auth, Self::Error> {
-        let binding = self.ip.unwrap();
-        let ip = binding.ip().to_string();
+        let ip = match self.ip {
+            Some(addr) => addr.ip().to_string(),
+            None => return Ok(Auth::Reject { proceed_with_methods: None }),
+        };
         let endpoint = env::var("ADD_ATTACK_ENDPOINT")?;
-        if !ip.eq("127.0.0.1") {
+        let is_loopback = ip == "127.0.0.1" || ip == "::1";
+        if !is_loopback {
             info!("Recieved an auth request sending to {}", endpoint);
-            payload::Payload::post(&user, &password, &ip, "SSH").await?;
+            payload::Payload::post(user, password, &ip, "SSH").await.ok();
         } else {
             info!("Recieved request but not sending because of debug. {}", endpoint);
         }
