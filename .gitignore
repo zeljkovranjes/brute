@@ -6,3 +6,5 @@ target/
 # Don't exclude readme
 !brute-http/certs/README.md
 !brute-daemon/README.md
+
+/.env
