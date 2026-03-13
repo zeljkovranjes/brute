@@ -20,9 +20,12 @@ impl Authenticator<DefaultUser> for BruteAuthenticator {
         let endpoint = env::var("ADD_ATTACK_ENDPOINT").unwrap();
         let ip = creds.source_ip.to_string();
 
-        if !username.is_empty() && creds.password.is_some() && !ip.eq_ignore_ascii_case("127.0.0.1") {
-            info!("Recieved an auth request sending to {}", endpoint);
-            payload::Payload::post(&username, &<std::option::Option<std::string::String> as Clone>::clone(&creds.password).unwrap(), &ip, "FTP").await.unwrap();
+        let is_loopback = ip.eq_ignore_ascii_case("127.0.0.1") || ip.eq_ignore_ascii_case("::1");
+        if !username.is_empty() && !is_loopback {
+            if let Some(ref password) = creds.password {
+                info!("Recieved an auth request sending to {}", endpoint);
+                payload::Payload::post(username, password, &ip, "FTP").await.ok();
+            }
         }
         Err(AuthenticationError::BadUser)
     }
