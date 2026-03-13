@@ -1,5 +1,5 @@
 # Stage 1: Build
-FROM rust:1.78 as builder
+FROM rust:1.85 as builder
 
 WORKDIR /usr/src/brute-http
 
@@ -28,7 +28,6 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /usr/src/brute-http/target/release/brute-http ./brute-http
-COPY brute-http/.env .env
 COPY --from=builder /usr/src/brute-http/migrations migrations
 COPY --from=builder /usr/src/brute-http/certs certs
 
@@ -36,7 +35,7 @@ ENV DATABASE_URL=postgresql://chomnr:{password}@{host}:{port}/brute
 ENV BEARER_TOKEN=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ENV IPINFO_TOKEN=xxxxxxxxxxxxxx
 ENV RUST_LOG=trace
-ENV RUST_LOG_STYLE=alwayss
+ENV RUST_LOG_STYLE=always
 ENV LISTEN_ADDRESS=0.0.0.0:7000
 ENV LISTEN_ADDRESS_TLS=0.0.0.0:7443
 ENV RUNNING_IN_DOCKER=true
