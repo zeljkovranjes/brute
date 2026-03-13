@@ -272,20 +272,32 @@ impl Message for RequestWithLimit<TopHourly> {
     type Result = Result<Vec<TopHourly>, BruteResponeError>;
 }
 
-#[derive(Debug, Clone, sqlx::FromRow, Getters)]
+#[derive(Default, Debug, Clone, sqlx::FromRow, Getters, Serialize, Deserialize)]
 pub struct TopDaily {
     pub timestamp: i64,
     pub amount: i32,
 }
 
-#[derive(Debug, Clone, sqlx::FromRow, Getters)]
+impl Message for RequestWithLimit<TopDaily> {
+    type Result = Result<Vec<TopDaily>, BruteResponeError>;
+}
+
+#[derive(Default, Debug, Clone, sqlx::FromRow, Getters, Serialize, Deserialize)]
 pub struct TopWeekly {
     pub timestamp: i64,
     pub amount: i32,
 }
 
-#[derive(Debug, Clone, sqlx::FromRow, Getters)]
+impl Message for RequestWithLimit<TopWeekly> {
+    type Result = Result<Vec<TopWeekly>, BruteResponeError>;
+}
+
+#[derive(Default, Debug, Clone, sqlx::FromRow, Getters, Serialize, Deserialize)]
 pub struct TopYearly {
     pub timestamp: i64,
     pub amount: i32,
+}
+
+impl Message for RequestWithLimit<TopYearly> {
+    type Result = Result<Vec<TopYearly>, BruteResponeError>;
 }
