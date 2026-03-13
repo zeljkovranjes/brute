@@ -1,5 +1,5 @@
 # Stage 1: Build
-FROM rust:1.85 as builder
+FROM rust:1.88 as builder
 
 WORKDIR /usr/src/brute-http
 
