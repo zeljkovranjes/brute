@@ -5,7 +5,7 @@ use brute_http::{config::Config, http::{serve, serve_tls}, system::BruteSystem};
 use clap::Parser;
 use ipinfo::{IpInfo, IpInfoConfig};
 use log::info;
-use sqlx::{migrate::Migrator, postgres::PgPoolOptions};
+use sqlx::{migrate::Migrator, postgres::{PgConnectOptions, PgPoolOptions}, Connection, PgConnection};
 
 static CERTS_DIRECTORY: &str = "certs";
 
@@ -87,11 +87,18 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         Path::new("..\\migrations\\")
     };
 
+    let mut migration_conn = PgConnection::connect_with(
+        &config.database_url.parse::<PgConnectOptions>().unwrap().statement_cache_capacity(0)
+    )
+    .await
+    .map_err(|e| format!("Failed to connect for migrations: {}", e))
+    .unwrap();
+
     Migrator::new(migration_path)
         .await
         .map_err(|e| format!("Failed to create migrator: {}", e))
         .unwrap()
-        .run(&db)
+        .run(&mut migration_conn)
         .await
         .map_err(|e| format!("Failed to run migrations: {}", e))
         .unwrap();
