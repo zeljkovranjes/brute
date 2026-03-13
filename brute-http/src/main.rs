@@ -71,6 +71,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // SQLX //
     /////////
     let db = PgPoolOptions::new()
+        .after_connect(|conn, _| Box::pin(async move {
+            sqlx::query("DEALLOCATE ALL").execute(conn).await?;
+            Ok(())
+        }))
         .connect_with(
             config.database_url.parse::<sqlx::postgres::PgConnectOptions>()
                 .unwrap()
