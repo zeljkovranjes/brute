@@ -94,6 +94,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     .map_err(|e| format!("Failed to connect for migrations: {}", e))
     .unwrap();
 
+    sqlx::query("DEALLOCATE ALL").execute(&mut migration_conn).await.ok();
+
     Migrator::new(migration_path)
         .await
         .map_err(|e| format!("Failed to create migrator: {}", e))
