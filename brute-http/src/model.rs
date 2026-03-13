@@ -301,3 +301,14 @@ pub struct TopYearly {
 impl Message for RequestWithLimit<TopYearly> {
     type Result = Result<Vec<TopYearly>, BruteResponeError>;
 }
+
+#[derive(Default, Debug, sqlx::FromRow, Getters, Serialize, Deserialize)]
+pub struct HeatmapCell {
+    pub day_of_week: i32,
+    pub hour_of_day: i32,
+    pub amount: i64,
+}
+
+impl Message for RequestWithLimit<HeatmapCell> {
+    type Result = Result<Vec<HeatmapCell>, BruteResponeError>;
+}

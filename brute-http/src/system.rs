@@ -12,8 +12,8 @@ use tokio::sync::Mutex;
 use crate::{
     error::BruteResponeError,
     model::{
-        Individual, ProcessedIndividual, TopCity, TopCountry, TopDaily, TopHourly, TopIp,
-        TopLocation, TopOrg, TopPassword, TopPostal, TopProtocol, TopRegion, TopTimezone,
+        HeatmapCell, Individual, ProcessedIndividual, TopCity, TopCountry, TopDaily, TopHourly,
+        TopIp, TopLocation, TopOrg, TopPassword, TopPostal, TopProtocol, TopRegion, TopTimezone,
         TopUsername, TopUsrPassCombo, TopWeekly, TopYearly,
     },
 };
@@ -584,6 +584,39 @@ impl Handler<RequestWithLimit<TopHourly>> for BruteSystem {
                 Err(_) => Err(BruteResponeError::InternalError(
                     "something definitely broke on our side".to_string(),
                 )),
+            }
+        };
+        Box::pin(fut)
+    }
+}
+
+///////////////////
+// HEATMAP CELL //
+/////////////////
+impl Handler<RequestWithLimit<HeatmapCell>> for BruteSystem {
+    type Result = ResponseFuture<Result<Vec<HeatmapCell>, BruteResponeError>>;
+
+    fn handle(
+        &mut self,
+        _msg: RequestWithLimit<HeatmapCell>,
+        _: &mut Self::Context,
+    ) -> Self::Result {
+        let db_pool = self.db_pool.clone();
+        let fut = async move {
+            let rows = sqlx::query_as::<_, HeatmapCell>(
+                r#"SELECT
+                    EXTRACT(DOW FROM to_timestamp(timestamp / 1000.0))::int AS day_of_week,
+                    EXTRACT(HOUR FROM to_timestamp(timestamp / 1000.0))::int AS hour_of_day,
+                    COUNT(*)::bigint AS amount
+                FROM processed_individual
+                GROUP BY day_of_week, hour_of_day
+                ORDER BY day_of_week, hour_of_day"#,
+            )
+            .fetch_all(&db_pool)
+            .await;
+            match rows {
+                Ok(r) => Ok(r),
+                Err(_) => Err(BruteResponeError::InternalError("something broke".to_string())),
             }
         };
         Box::pin(fut)
