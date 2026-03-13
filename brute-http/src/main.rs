@@ -46,22 +46,19 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .install_default()
         .unwrap();
 
-    let mut certs_file =
-        BufReader::new(File::open(format!("{}/cert.pem", CERTS_DIRECTORY)).unwrap());
-    let mut key_file = BufReader::new(File::open(format!("{}/key.pem", CERTS_DIRECTORY)).unwrap());
-
-    let tls_certs = rustls_pemfile::certs(&mut certs_file)
-        .collect::<Result<Vec<_>, _>>()
-        .unwrap();
-    let tls_key = rustls_pemfile::pkcs8_private_keys(&mut key_file)
-        .next()
-        .unwrap()
-        .unwrap();
-
-    let tls_config = rustls::ServerConfig::builder()
-        .with_no_client_auth()
-        .with_single_cert(tls_certs, rustls::pki_types::PrivateKeyDer::Pkcs8(tls_key))
-        .unwrap();
+    let tls_config = File::open(format!("{}/cert.pem", CERTS_DIRECTORY))
+        .ok()
+        .and_then(|cert_file| File::open(format!("{}/key.pem", CERTS_DIRECTORY)).ok().map(|kf| (cert_file, kf)))
+        .and_then(|(cert_file, key_file)| {
+            let mut certs_reader = BufReader::new(cert_file);
+            let mut key_reader = BufReader::new(key_file);
+            let certs = rustls_pemfile::certs(&mut certs_reader).collect::<Result<Vec<_>, _>>().ok()?;
+            let key = rustls_pemfile::pkcs8_private_keys(&mut key_reader).next()?.ok()?;
+            rustls::ServerConfig::builder()
+                .with_no_client_auth()
+                .with_single_cert(certs, rustls::pki_types::PrivateKeyDer::Pkcs8(key))
+                .ok()
+        });
 
     ///////////
     // CLAP //
@@ -129,8 +126,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .split_once(':')
         .expect("Invalid LISTEN_ADDRESS format. Expected format: IP:PORT");
 
-    let serve_tls_future = serve_tls(ip_tls, port_tls.parse::<u16>().unwrap(), brute_actor.clone(), tls_config, bearer_token.clone());
-    let serve_future = serve(ip, port.parse::<u16>().unwrap(), brute_actor, bearer_token);
-    tokio::try_join!(serve_tls_future, serve_future)?;
+    let serve_future = serve(ip, port.parse::<u16>().unwrap(), brute_actor.clone(), bearer_token.clone());
+    if let Some(tls) = tls_config {
+        info!("TLS certificates found, starting TLS server on {}", listen_address_tls);
+        let serve_tls_future = serve_tls(ip_tls, port_tls.parse::<u16>().unwrap(), brute_actor, tls, bearer_token);
+        tokio::try_join!(serve_tls_future, serve_future)?;
+    } else {
+        info!("No TLS certificates found, skipping TLS server.");
+        serve_future.await?;
+    }
     Ok(())
 }
