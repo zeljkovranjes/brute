@@ -9,13 +9,15 @@ use sqlx::{Pool, Postgres};
 use std::sync::Arc;
 use tokio::sync::Mutex;
 
+use std::time::{SystemTime, UNIX_EPOCH};
+
 use crate::{
     error::BruteResponeError,
     model::{
-        HeatmapCell, Individual, IpSeen, ProcessedIndividual, ProtocolCombo, ProtocolComboRequest,
-        TopCity, TopCountry, TopDaily, TopHourly, TopIp, TopLocation, TopOrg, TopPassword,
-        TopPostal, TopProtocol, TopRegion, TopSubnet, TopTimezone, TopUsername, TopUsrPassCombo,
-        TopWeekly, TopYearly,
+        AttackVelocity, HeatmapCell, Individual, IpSeen, ProcessedIndividual, ProtocolCombo,
+        ProtocolComboRequest, TopCity, TopCountry, TopDaily, TopHourly, TopIp, TopLocation,
+        TopOrg, TopPassword, TopPostal, TopProtocol, TopRegion, TopSubnet, TopTimezone,
+        TopUsername, TopUsrPassCombo, TopWeekly, TopYearly,
     },
 };
 
@@ -585,6 +587,48 @@ impl Handler<RequestWithLimit<TopHourly>> for BruteSystem {
                 Err(_) => Err(BruteResponeError::InternalError(
                     "something definitely broke on our side".to_string(),
                 )),
+            }
+        };
+        Box::pin(fut)
+    }
+}
+
+//////////////////////
+// ATTACK VELOCITY //
+////////////////////
+impl Handler<RequestWithLimit<AttackVelocity>> for BruteSystem {
+    type Result = ResponseFuture<Result<Vec<AttackVelocity>, BruteResponeError>>;
+
+    fn handle(
+        &mut self,
+        msg: RequestWithLimit<AttackVelocity>,
+        _: &mut Self::Context,
+    ) -> Self::Result {
+        let db_pool = self.db_pool.clone();
+        let limit = msg.limit;
+        let fut = async move {
+            let now = SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .unwrap()
+                .as_millis() as i64;
+            let since = now - 3_600_000;
+            let rows = sqlx::query_as::<_, AttackVelocity>(
+                r#"SELECT
+                    (timestamp / 60000) * 60000 AS minute_bucket,
+                    COUNT(*)::bigint AS amount
+                FROM processed_individual
+                WHERE timestamp > $1
+                GROUP BY minute_bucket
+                ORDER BY minute_bucket DESC
+                LIMIT $2"#,
+            )
+            .bind(since)
+            .bind(limit as i64)
+            .fetch_all(&db_pool)
+            .await;
+            match rows {
+                Ok(r) => Ok(r),
+                Err(_) => Err(BruteResponeError::InternalError("something broke".to_string())),
             }
         };
         Box::pin(fut)

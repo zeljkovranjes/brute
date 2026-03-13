@@ -350,3 +350,13 @@ pub struct IpSeen {
 impl Message for RequestWithLimit<IpSeen> {
     type Result = Result<Vec<IpSeen>, BruteResponeError>;
 }
+
+#[derive(Default, Debug, sqlx::FromRow, Getters, Serialize, Deserialize)]
+pub struct AttackVelocity {
+    pub minute_bucket: i64,
+    pub amount: i64,
+}
+
+impl Message for RequestWithLimit<AttackVelocity> {
+    type Result = Result<Vec<AttackVelocity>, BruteResponeError>;
+}

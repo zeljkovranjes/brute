@@ -11,10 +11,10 @@ use crate::{
         AppState,
     },
     model::{
-        HeatmapCell, IpSeen, ProcessedIndividual, ProtocolCombo, ProtocolComboRequest, TopCity,
-        TopCountry, TopDaily, TopHourly, TopIp, TopLocation, TopOrg, TopPassword, TopPostal,
-        TopProtocol, TopRegion, TopSubnet, TopTimezone, TopUsername, TopUsrPassCombo, TopWeekly,
-        TopYearly,
+        AttackVelocity, HeatmapCell, IpSeen, ProcessedIndividual, ProtocolCombo,
+        ProtocolComboRequest, TopCity, TopCountry, TopDaily, TopHourly, TopIp, TopLocation,
+        TopOrg, TopPassword, TopPostal, TopProtocol, TopRegion, TopSubnet, TopTimezone,
+        TopUsername, TopUsrPassCombo, TopWeekly, TopYearly,
     },
     system::RequestWithLimit,
 };
@@ -398,6 +398,28 @@ async fn get_protocol_combo(
     let request = ProtocolComboRequest {
         protocol: params.protocol.clone(),
         limit,
+    };
+    match state.actor.send(request).await {
+        Ok(result) => HttpResponse::Ok().json(result.unwrap()),
+        Err(er) => HttpResponse::Ok().body(er.to_string()),
+    }
+}
+
+////////////
+/// GET ///
+//////////////////////////////////////////////////
+/// brute/stats/velocity?limit={amount}         ///
+//////////////////////////////////////////////////
+#[get("/stats/velocity")]
+async fn get_velocity(
+    state: web::Data<AppState>,
+    params: web::Query<LimitParameter>,
+) -> impl Responder {
+    let limit = params.limit.unwrap_or(60).min(MAX_LIMIT);
+    let request = RequestWithLimit {
+        table: AttackVelocity::default(),
+        limit,
+        max_limit: MAX_LIMIT,
     };
     match state.actor.send(request).await {
         Ok(result) => HttpResponse::Ok().json(result.unwrap()),
