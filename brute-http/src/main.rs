@@ -93,23 +93,27 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         Path::new("..\\migrations\\")
     };
 
-    let mut migration_conn = PgConnection::connect_with(
-        &config.database_url.parse::<PgConnectOptions>().unwrap().statement_cache_capacity(0)
-    )
-    .await
-    .map_err(|e| format!("Failed to connect for migrations: {}", e))
-    .unwrap();
-
-    sqlx::query("DEALLOCATE ALL").execute(&mut migration_conn).await.ok();
-
-    Migrator::new(migration_path)
+    let pg_opts = config.database_url.parse::<PgConnectOptions>().unwrap().statement_cache_capacity(0);
+    let migrator = Migrator::new(migration_path)
         .await
         .map_err(|e| format!("Failed to create migrator: {}", e))
-        .unwrap()
-        .run(&mut migration_conn)
-        .await
-        .map_err(|e| format!("Failed to run migrations: {}", e))
         .unwrap();
+
+    loop {
+        let mut migration_conn = PgConnection::connect_with(&pg_opts)
+            .await
+            .map_err(|e| format!("Failed to connect for migrations: {}", e))
+            .unwrap();
+        sqlx::query("DEALLOCATE ALL").execute(&mut migration_conn).await.ok();
+        match migrator.run(&mut migration_conn).await {
+            Ok(_) => break,
+            Err(e) if e.to_string().contains("already exists") => {
+                log::warn!("Prepared statement conflict during migration, retrying...");
+                continue;
+            }
+            Err(e) => panic!("Failed to run migrations: {}", e),
+        }
+    }
 
     info!("Migration process completed successfully.");
 
