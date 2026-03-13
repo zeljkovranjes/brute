@@ -11,6 +11,8 @@ use protocol::http::start_http_server;
 use protocol::mqtt::start_mqtt_server;
 use protocol::mysql::start_mysql_server;
 use protocol::postgres::start_postgres_server;
+use protocol::smtp::start_smtps_server;
+use protocol::tls::create_tls_acceptor;
 
 mod protocol;
 mod payload;
@@ -18,9 +20,9 @@ mod payload;
 //////////////////////////
 // SUPPORTED PROTOCOLS //
 ////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////
-// SSH, FTP, Telnet, SMTP, POP3, IMAP, LDAP, Redis, HTTP/8080, MQTT, MySQL, PostgreSQL  //
-////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
+// SSH, FTP, Telnet, SMTP/SMTPS, POP3, IMAP, LDAP, Redis, HTTP/8080, MQTT, MySQL, PostgreSQL         //
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -33,7 +35,9 @@ async fn main() -> anyhow::Result<()> {
     #[cfg(debug_assertions)]
     dotenvy::dotenv().unwrap();
     
-    let (ssh, ftp, telnet, smtp, pop3, imap, ldap, redis, http, mqtt, mysql, postgres) = tokio::join!(
+    let tls_acceptor = create_tls_acceptor().expect("Failed to create TLS acceptor");
+
+    let (ssh, ftp, telnet, smtp, pop3, imap, ldap, redis, http, mqtt, mysql, postgres, smtps) = tokio::join!(
         start_ssh_server(),
         start_ftp_server(),
         start_telnet_server(),
@@ -45,7 +49,8 @@ async fn main() -> anyhow::Result<()> {
         start_http_server(),
         start_mqtt_server(),
         start_mysql_server(),
-        start_postgres_server()
+        start_postgres_server(),
+        start_smtps_server(tls_acceptor.clone())
     );
 
     ssh.unwrap();
@@ -60,5 +65,6 @@ async fn main() -> anyhow::Result<()> {
     mqtt.unwrap();
     mysql.unwrap();
     postgres.unwrap();
+    smtps.unwrap();
     Ok(())
 }
