@@ -7,6 +7,7 @@ use protocol::pop3::start_pop3_server;
 use protocol::imap::start_imap_server;
 use protocol::ldap::start_ldap_server;
 use protocol::redis::start_redis_server;
+use protocol::http::start_http_server;
 
 mod protocol;
 mod payload;
@@ -14,9 +15,9 @@ mod payload;
 //////////////////////////
 // SUPPORTED PROTOCOLS //
 ////////////////////////
-////////////////////////////////////////////////////////
-// SSH, FTP, Telnet, SMTP, POP3, IMAP, LDAP, Redis //
-//////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////
+// SSH, FTP, Telnet, SMTP, POP3, IMAP, LDAP, Redis, HTTP/8080 //
+/////////////////////////////////////////////////////////////////
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -29,7 +30,7 @@ async fn main() -> anyhow::Result<()> {
     #[cfg(debug_assertions)]
     dotenvy::dotenv().unwrap();
     
-    let (ssh, ftp, telnet, smtp, pop3, imap, ldap, redis) = tokio::join!(
+    let (ssh, ftp, telnet, smtp, pop3, imap, ldap, redis, http) = tokio::join!(
         start_ssh_server(),
         start_ftp_server(),
         start_telnet_server(),
@@ -37,7 +38,8 @@ async fn main() -> anyhow::Result<()> {
         start_pop3_server(),
         start_imap_server(),
         start_ldap_server(),
-        start_redis_server()
+        start_redis_server(),
+        start_http_server()
     );
 
     ssh.unwrap();
@@ -48,5 +50,6 @@ async fn main() -> anyhow::Result<()> {
     imap.unwrap();
     ldap.unwrap();
     redis.unwrap();
+    http.unwrap();
     Ok(())
 }
