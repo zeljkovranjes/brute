@@ -12,7 +12,7 @@ use tokio::sync::Mutex;
 use crate::{
     error::BruteResponeError,
     model::{
-        HeatmapCell, Individual, ProcessedIndividual, ProtocolCombo, ProtocolComboRequest,
+        HeatmapCell, Individual, IpSeen, ProcessedIndividual, ProtocolCombo, ProtocolComboRequest,
         TopCity, TopCountry, TopDaily, TopHourly, TopIp, TopLocation, TopOrg, TopPassword,
         TopPostal, TopProtocol, TopRegion, TopSubnet, TopTimezone, TopUsername, TopUsrPassCombo,
         TopWeekly, TopYearly,
@@ -591,6 +591,31 @@ impl Handler<RequestWithLimit<TopHourly>> for BruteSystem {
     }
 }
 
+////////////////
+// IP SEEN    //
+///////////////
+impl Handler<RequestWithLimit<IpSeen>> for BruteSystem {
+    type Result = ResponseFuture<Result<Vec<IpSeen>, BruteResponeError>>;
+
+    fn handle(&mut self, msg: RequestWithLimit<IpSeen>, _: &mut Self::Context) -> Self::Result {
+        let db_pool = self.db_pool.clone();
+        let limit = msg.limit;
+        let fut = async move {
+            let rows = sqlx::query_as::<_, IpSeen>(
+                "SELECT * FROM ip_seen ORDER BY total_sessions DESC LIMIT $1;",
+            )
+            .bind(limit as i64)
+            .fetch_all(&db_pool)
+            .await;
+            match rows {
+                Ok(r) => Ok(r),
+                Err(_) => Err(BruteResponeError::InternalError("query failed".to_string())),
+            }
+        };
+        Box::pin(fut)
+    }
+}
+
 //////////////////////
 // PROTOCOL COMBO  //
 ////////////////////
@@ -774,7 +799,7 @@ impl Handler<RequestWithLimit<TopYearly>> for BruteSystem {
 pub mod reporter {
     use super::{Brute, BruteSystem};
     use crate::model::{
-        Individual, ProcessedIndividual, TopCity, TopCountry, TopDaily, TopHourly, TopIp,
+        Individual, IpSeen, ProcessedIndividual, TopCity, TopCountry, TopDaily, TopHourly, TopIp,
         TopLocation, TopOrg, TopPassword, TopPostal, TopProtocol, TopRegion, TopTimezone,
         TopUsername, TopUsrPassCombo, TopWeekly, TopYearly,
     };
@@ -822,6 +847,7 @@ pub mod reporter {
             TopUsername::report(self, &individual).await?;
             TopPassword::report(self, &individual).await?;
             TopIp::report(self, &individual).await?;
+            IpSeen::report(self, &individual).await?;
             TopProtocol::report(self, &individual).await?;
 
             // Report location details
@@ -1632,6 +1658,31 @@ pub mod reporter {
                     })
                 }
             }
+        }
+    }
+
+    impl Reportable<BruteReporter<BruteSystem>, Individual> for IpSeen {
+        async fn report(
+            reporter: &BruteReporter<BruteSystem>,
+            model: &Individual,
+        ) -> anyhow::Result<Self> {
+            let pool = &reporter.brute.db_pool;
+            let now = SystemTime::now().duration_since(UNIX_EPOCH)?.as_millis() as i64;
+            let result = sqlx::query_as::<_, IpSeen>(
+                r#"
+                INSERT INTO ip_seen (ip, first_seen, last_seen, total_sessions)
+                VALUES ($1, $2, $2, 1)
+                ON CONFLICT (ip) DO UPDATE SET
+                    last_seen = EXCLUDED.last_seen,
+                    total_sessions = ip_seen.total_sessions + 1
+                RETURNING *;
+            "#,
+            )
+            .bind(model.ip())
+            .bind(now)
+            .fetch_one(pool)
+            .await?;
+            Ok(result)
         }
     }
 }

@@ -11,7 +11,7 @@ use crate::{
         AppState,
     },
     model::{
-        HeatmapCell, ProcessedIndividual, ProtocolCombo, ProtocolComboRequest, TopCity,
+        HeatmapCell, IpSeen, ProcessedIndividual, ProtocolCombo, ProtocolComboRequest, TopCity,
         TopCountry, TopDaily, TopHourly, TopIp, TopLocation, TopOrg, TopPassword, TopPostal,
         TopProtocol, TopRegion, TopSubnet, TopTimezone, TopUsername, TopUsrPassCombo, TopWeekly,
         TopYearly,
@@ -399,6 +399,31 @@ async fn get_protocol_combo(
         protocol: params.protocol.clone(),
         limit,
     };
+    match state.actor.send(request).await {
+        Ok(result) => HttpResponse::Ok().json(result.unwrap()),
+        Err(er) => HttpResponse::Ok().body(er.to_string()),
+    }
+}
+
+////////////
+/// GET ///
+//////////////////////////////////////////////////
+/// brute/stats/ip/seen?limit={amount}          ///
+//////////////////////////////////////////////////
+#[get("/stats/ip/seen")]
+async fn get_ip_seen(
+    state: web::Data<AppState>,
+    params: web::Query<LimitParameter>,
+) -> impl Responder {
+    let limit = params.limit.unwrap_or(MAX_LIMIT);
+    let mut request = RequestWithLimit {
+        table: IpSeen::default(),
+        limit,
+        max_limit: MAX_LIMIT,
+    };
+    if limit > request.max_limit {
+        request.limit = request.max_limit;
+    }
     match state.actor.send(request).await {
         Ok(result) => HttpResponse::Ok().json(result.unwrap()),
         Err(er) => HttpResponse::Ok().body(er.to_string()),

@@ -338,3 +338,15 @@ pub struct ProtocolComboRequest {
 impl Message for ProtocolComboRequest {
     type Result = Result<Vec<ProtocolCombo>, BruteResponeError>;
 }
+
+#[derive(Default, Debug, Clone, sqlx::FromRow, Getters, Serialize, Deserialize)]
+pub struct IpSeen {
+    pub ip: String,
+    pub first_seen: i64,
+    pub last_seen: i64,
+    pub total_sessions: i64,
+}
+
+impl Message for RequestWithLimit<IpSeen> {
+    type Result = Result<Vec<IpSeen>, BruteResponeError>;
+}
