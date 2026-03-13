@@ -6,7 +6,7 @@ use std::env;
 
 use log::info;
 use tokio::io::{AsyncBufReadExt, AsyncRead, AsyncWrite, AsyncWriteExt, BufReader};
-use tokio::net::{TcpListener, TcpStream};
+use tokio::net::TcpListener;
 use tokio_rustls::TlsAcceptor;
 
 use crate::payload;
