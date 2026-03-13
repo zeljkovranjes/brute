@@ -114,7 +114,7 @@ pub struct TopPassword {
 
 impl TopPassword {
     pub fn new(password: String, amount: i32) -> Self {
-        TopPassword { password, amount }
+        TopPassword { password, amount, is_breached: false }
     }
 }
 

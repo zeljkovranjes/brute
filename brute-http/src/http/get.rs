@@ -12,7 +12,7 @@ use crate::{
     },
     model::{
         AttackVelocity, GetRollingStats, HeatmapCell, IpAbuse, IpSeen, ProcessedIndividual,
-        ProtocolCombo, ProtocolComboRequest, TopCity, TopCountry, TopDaily, TopHourly, TopIp,
+        ProtocolComboRequest, TopCity, TopCountry, TopDaily, TopHourly, TopIp,
         TopLocation, TopOrg, TopPassword, TopPostal, TopProtocol, TopRegion, TopSubnet,
         TopTimezone, TopUsername, TopUsrPassCombo, TopWeekly, TopYearly,
     },
