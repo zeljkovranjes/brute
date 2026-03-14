@@ -16,7 +16,7 @@ command = "cargo install worker-build && worker-build --release"
 # Create your database: wrangler d1 create brute
 # Then fill in the database_id below.
 [[d1_databases]]
-binding = "DB"
+binding = "D1"
 database_name = "brute"
 database_id = "YOUR_D1_DATABASE_ID"
 
