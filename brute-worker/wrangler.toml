@@ -48,9 +48,16 @@ database_id = "YOUR_D1_DATABASE_ID"
 # tag = "v1"
 # new_classes = ["WsBroadcaster"]
 
+# ── Cron Triggers ────────────────────────────────────────────────────────────
+[triggers]
+crons = ["0 3 * * *"]  # runs at 3am UTC daily
+
 # ── Environment variables ─────────────────────────────────────────────────────
 [vars]
 BEARER_TOKEN = ""
 # Optional — enables IP abuse reputation scoring via AbuseIPDB.
 # Leave empty to disable.
 ABUSEIPDB_KEY = ""
+# Number of days to retain attack records in D1.
+# Rows older than this threshold are pruned by the daily cron at 3am UTC.
+DATA_RETENTION_DAYS = "90"
