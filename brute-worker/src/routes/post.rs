@@ -238,6 +238,35 @@ pub async fn add_attack(mut req: Request, ctx: RouteContext<()>) -> worker::Resu
         }
     }
 
+    // Broadcast to connected WebSocket clients via the shared Durable Object.
+    // Fire-and-forget — a broadcast failure must not fail the attack ingestion.
+    #[cfg(feature = "paid")]
+    {
+        if let Ok(namespace) = env.durable_object("WS_BROADCASTER") {
+            if let Ok(id) = namespace.id_from_name("global") {
+                if let Ok(stub) = id.get_stub() {
+                    if let Ok(msg_str) = serde_json::to_string(&serde_json::json!({
+                        "parse_type": "ProcessedIndividual",
+                        "message": serde_json::to_string(&processed).unwrap_or_default()
+                    })) {
+                        let mut headers = worker::Headers::new();
+                        let _ = headers.set("Content-Type", "application/json");
+                        let mut init = worker::RequestInit::new();
+                        init.with_method(worker::Method::Post)
+                            .with_body(Some(wasm_bindgen::JsValue::from_str(&msg_str)))
+                            .with_headers(headers);
+                        if let Ok(broadcast_req) = worker::Request::new_with_init(
+                            "https://do/internal/broadcast",
+                            &init,
+                        ) {
+                            let _ = stub.fetch_with_request(broadcast_req).await;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     Response::ok("OK")
 }
 
