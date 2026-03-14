@@ -7,6 +7,21 @@ mod db;
 mod geo;
 mod routes;
 
+fn allowed_origin(origin: &str) -> bool {
+    // Strip scheme
+    let host = origin
+        .strip_prefix("https://")
+        .or_else(|| origin.strip_prefix("http://"))
+        .unwrap_or(origin);
+    // Strip optional port
+    let host = host.split(':').next().unwrap_or(host);
+
+    host == "zeljko.me"
+        || host.ends_with(".zeljko.me")
+        || host == "zeljkovranjes.com"
+        || host.ends_with(".zeljkovranjes.com")
+}
+
 #[event(scheduled)]
 async fn scheduled(_event: ScheduledEvent, env: Env, _ctx: ScheduleContext) -> Result<()> {
     cron::retention::run(&env).await?;
@@ -23,10 +38,20 @@ async fn main(req: Request, env: Env, _ctx: Context) -> Result<Response> {
         req.url().map(|u| u.to_string()).unwrap_or_default()
     );
 
+    let origin = req
+        .headers()
+        .get("Origin")
+        .ok()
+        .flatten()
+        .filter(|o| allowed_origin(o));
+
     // Handle CORS preflight
     if req.method() == Method::Options {
         let mut headers = Headers::new();
-        headers.set("Access-Control-Allow-Origin", "*")?;
+        if let Some(ref o) = origin {
+            headers.set("Access-Control-Allow-Origin", o)?;
+            headers.set("Vary", "Origin")?;
+        }
         headers.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")?;
         headers.set("Access-Control-Allow-Headers", "Authorization, Content-Type, Accept")?;
         headers.set("Access-Control-Max-Age", "3600")?;
@@ -74,6 +99,12 @@ async fn main(req: Request, env: Env, _ctx: Context) -> Result<Response> {
         .run(req, env)
         .await?;
 
-    response.headers_mut().set("Access-Control-Allow-Origin", "*")?;
+    // WebSocket upgrade responses (101) are immutable — skip CORS injection.
+    if response.status_code() != 101 {
+        if let Some(o) = origin {
+            response.headers_mut().set("Access-Control-Allow-Origin", &o)?;
+            response.headers_mut().set("Vary", "Origin")?;
+        }
+    }
     Ok(response)
 }
