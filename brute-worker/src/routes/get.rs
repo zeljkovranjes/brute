@@ -1,5 +1,4 @@
 use brute_core::traits::database::BruteDb;
-use std::time::{SystemTime, UNIX_EPOCH};
 use worker::{Request, Response, RouteContext};
 
 use crate::db::d1::D1Db;
@@ -31,10 +30,7 @@ fn get_db(ctx: &RouteContext<()>) -> worker::Result<D1Db> {
 }
 
 fn now_ms() -> i64 {
-    SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .unwrap_or_default()
-        .as_millis() as i64
+    js_sys::Date::now() as i64
 }
 
 /// GET /brute/stats/attack
