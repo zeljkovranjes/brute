@@ -88,9 +88,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // SQLX MIGRATION //
     ///////////////////
     let migration_path = if running_in_docker.parse::<bool>().unwrap_or(false) {
-        Path::new("migrations")
+        Path::new("migrations/postgres")
     } else {
-        Path::new("..\\migrations\\")
+        Path::new("../migrations/postgres")
     };
 
     let pg_opts = config.database_url.parse::<PgConnectOptions>().unwrap().statement_cache_capacity(0);
