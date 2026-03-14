@@ -4,6 +4,7 @@ use brute_core::{
     traits::geo::{GeoData, GeoProvider},
 };
 use log::warn;
+use moka::future::Cache;
 use reqwest::Client;
 use serde::Deserialize;
 use std::{
@@ -18,19 +19,29 @@ use tokio::sync::Mutex;
 /// When a 429 is received the `X-RateLimit-Reset` header (Unix timestamp)
 /// is read and the task sleeps until that moment before retrying. If the
 /// header is absent a 60-second fallback is used.
+///
+/// Hot IPs are served from an in-memory LRU cache (10k entries, 5-minute TTL)
+/// before falling back to the PostgreSQL cache or a live API call.
 pub struct IpInfoProvider {
     pub token: String,
     pub client: Client,
     /// Shared across all callers — set to the reset timestamp on 429, cleared after waking.
     pub rate_limited_until: Arc<Mutex<Option<SystemTime>>>,
+    /// In-memory cache of recent lookups to avoid redundant API calls.
+    pub cache: Cache<String, GeoData>,
 }
 
 impl IpInfoProvider {
     pub fn new(token: String) -> Self {
+        let cache = Cache::builder()
+            .max_capacity(10_000)
+            .time_to_live(Duration::from_secs(300))
+            .build();
         Self {
             token,
             client: Client::new(),
             rate_limited_until: Arc::new(Mutex::new(None)),
+            cache,
         }
     }
 }
@@ -104,6 +115,11 @@ struct IpInfoDomains {
 #[async_trait]
 impl GeoProvider for IpInfoProvider {
     async fn lookup(&self, ip: &str) -> Result<GeoData, BruteError> {
+        // Check the in-memory cache first — avoids DB and API hits for hot IPs.
+        if let Some(cached) = self.cache.get(ip).await {
+            return Ok(cached);
+        }
+
         // If another task already determined we are rate-limited, wait it out
         // before even sending a request.
         {
@@ -153,7 +169,7 @@ impl GeoProvider for IpInfoProvider {
                 .await
                 .map_err(|e| BruteError::Geo(format!("IPinfo parse failed for {}: {}", ip, e)))?;
 
-            return Ok(GeoData {
+            let geo = GeoData {
                 hostname: info.hostname,
                 city: info.city,
                 region: info.region,
@@ -189,7 +205,12 @@ impl GeoProvider for IpInfoProvider {
                 domain_ip: info.domains.as_ref().and_then(|d| d.ip.clone()),
                 domain_total: info.domains.as_ref().and_then(|d| d.total),
                 domains: info.domains.as_ref().and_then(|d| d.domains.clone()),
-            });
+            };
+
+            // Insert into in-memory cache before returning.
+            self.cache.insert(ip.to_string(), geo.clone()).await;
+
+            return Ok(geo);
         }
     }
 }
