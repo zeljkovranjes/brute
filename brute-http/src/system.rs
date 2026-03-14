@@ -1587,7 +1587,10 @@ pub mod reporter {
                     .bind(&ip)
                     .fetch_optional(&pool)
                     .await
-                    .unwrap_or(None);
+                    .unwrap_or_else(|e| {
+                        log::error!("AbuseIPDB: failed to query existing record for {}: {}", ip, e);
+                        None
+                    });
 
                     let now = SystemTime::now()
                         .duration_since(UNIX_EPOCH)
@@ -1604,31 +1607,44 @@ pub mod reporter {
                         ip
                     );
                     let client = reqwest::Client::new();
-                    if let Ok(resp) = client
+                    match client
                         .get(&url)
                         .header("Key", &api_key)
                         .header("Accept", "application/json")
                         .send()
                         .await
                     {
-                        if let Ok(data) = resp.json::<AbuseIpDbResponse>().await {
-                            sqlx::query(
-                                r#"
-                                INSERT INTO ip_abuse (ip, confidence_score, total_reports, checked_at)
-                                VALUES ($1, $2, $3, $4)
-                                ON CONFLICT (ip) DO UPDATE SET
-                                    confidence_score = EXCLUDED.confidence_score,
-                                    total_reports = EXCLUDED.total_reports,
-                                    checked_at = EXCLUDED.checked_at
-                            "#,
-                            )
-                            .bind(&ip)
-                            .bind(data.data.abuse_confidence_score)
-                            .bind(data.data.total_reports)
-                            .bind(now)
-                            .execute(&pool)
-                            .await
-                            .ok();
+                        Ok(resp) => {
+                            match resp.json::<AbuseIpDbResponse>().await {
+                                Ok(data) => {
+                                    sqlx::query(
+                                        r#"
+                                        INSERT INTO ip_abuse (ip, confidence_score, total_reports, checked_at)
+                                        VALUES ($1, $2, $3, $4)
+                                        ON CONFLICT (ip) DO UPDATE SET
+                                            confidence_score = EXCLUDED.confidence_score,
+                                            total_reports = EXCLUDED.total_reports,
+                                            checked_at = EXCLUDED.checked_at
+                                    "#,
+                                    )
+                                    .bind(&ip)
+                                    .bind(data.data.abuse_confidence_score)
+                                    .bind(data.data.total_reports)
+                                    .bind(now)
+                                    .execute(&pool)
+                                    .await
+                                    .unwrap_or_else(|e| {
+                                        log::error!("AbuseIPDB: failed to upsert abuse record for {}: {}", ip, e);
+                                        Default::default()
+                                    });
+                                }
+                                Err(e) => {
+                                    log::error!("AbuseIPDB: failed to parse response for {}: {}", ip, e);
+                                }
+                            }
+                        }
+                        Err(e) => {
+                            log::error!("AbuseIPDB: HTTP request failed for {}: {}", ip, e);
                         }
                     }
                 });
@@ -1648,28 +1664,41 @@ pub mod reporter {
 
                     let client = reqwest::Client::new();
                     let url = format!("https://api.pwnedpasswords.com/range/{}", prefix);
-                    if let Ok(resp) = client
+                    match client
                         .get(&url)
                         .header("Add-Padding", "true")
                         .send()
                         .await
                     {
-                        if let Ok(body) = resp.text().await {
-                            let breached = body.lines().any(|line| {
-                                line.split(':')
-                                    .next()
-                                    .map(|h| h.eq_ignore_ascii_case(suffix))
-                                    .unwrap_or(false)
-                            });
-                            if breached {
-                                sqlx::query(
-                                    "UPDATE top_password SET is_breached = TRUE WHERE password = $1",
-                                )
-                                .bind(&password)
-                                .execute(&pool)
-                                .await
-                                .ok();
+                        Ok(resp) => {
+                            match resp.text().await {
+                                Ok(body) => {
+                                    let breached = body.lines().any(|line| {
+                                        line.split(':')
+                                            .next()
+                                            .map(|h| h.eq_ignore_ascii_case(suffix))
+                                            .unwrap_or(false)
+                                    });
+                                    if breached {
+                                        sqlx::query(
+                                            "UPDATE top_password SET is_breached = TRUE WHERE password = $1",
+                                        )
+                                        .bind(&password)
+                                        .execute(&pool)
+                                        .await
+                                        .unwrap_or_else(|e| {
+                                            log::error!("HIBP: failed to mark password as breached: {}", e);
+                                            Default::default()
+                                        });
+                                    }
+                                }
+                                Err(e) => {
+                                    log::error!("HIBP: failed to read response body: {}", e);
+                                }
                             }
+                        }
+                        Err(e) => {
+                            log::error!("HIBP: HTTP request failed for password hash prefix {}: {}", prefix, e);
                         }
                     }
                 });
