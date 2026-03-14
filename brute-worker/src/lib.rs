@@ -74,6 +74,12 @@ async fn main(req: Request, env: Env, _ctx: Context) -> Result<Response> {
         .run(req, env)
         .await?;
 
-    response.headers_mut().set("Access-Control-Allow-Origin", "*")?;
+    // 101 Switching Protocols (WebSocket upgrade) responses are immutable in
+    // the Workers runtime — attempting to set headers on them returns an error
+    // and the client receives a 500 instead of the upgrade. Skip CORS mutation
+    // for WebSocket responses; browsers don't enforce CORS on WS connections.
+    if response.status_code() != 101 {
+        response.headers_mut().set("Access-Control-Allow-Origin", "*")?;
+    }
     Ok(response)
 }
