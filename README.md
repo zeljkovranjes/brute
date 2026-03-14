@@ -29,7 +29,6 @@ brute/
 ├── brute-http/       # Standalone server (Tokio + Actix, PostgreSQL, IPinfo)
 ├── brute-worker/     # Cloudflare Workers (D1 + Analytics Engine + Durable Objects)
 ├── brute-daemon/     # Traffic source daemon (SSH, FTP)
-├── brute-pam/        # PAM module for OpenSSH integration
 └── migrations/
     ├── postgres/     # PostgreSQL migration files (used by brute-http)
     └── d1/           # SQLite schema files (used by brute-worker via wrangler)
