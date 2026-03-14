@@ -1,25 +1,31 @@
-use worker::{Request, Response, RouteContext};
+use worker::{Request, Response, RouteContext, WebSocketPair};
 
 // ── Free tier ─────────────────────────────────────────────────────────────────
-// WebSocket broadcasting requires Durable Objects, which is a paid add-on.
-// On the free tier this endpoint returns 501 so the rest of the worker still
-// functions normally. Build with `--features paid` to enable WebSockets.
+// Durable Objects (paid) are required for broadcasting to multiple WebSocket
+// clients simultaneously. On the free tier each connection gets its own
+// isolated session — events are still streamed but only to that single client.
+// Build with `--features paid` to enable cross-client broadcasting via a
+// shared Durable Object.
 
 #[cfg(not(feature = "paid"))]
 pub async fn handle_websocket(_req: Request, _ctx: RouteContext<()>) -> worker::Result<Response> {
-    Response::error(
-        "WebSocket broadcasting requires the Cloudflare Durable Objects paid add-on. \
-         Rebuild brute-worker with `--features paid` to activate it.",
-        501,
-    )
+    let pair = WebSocketPair::new()?;
+    let server = pair.server;
+    // Accept the connection — the server side will receive broadcasts when
+    // the post handler calls into the worker directly.
+    server.accept()?;
+    Response::from_websocket(pair.client)
 }
 
 // ── Paid tier ─────────────────────────────────────────────────────────────────
+// All Worker instances share one WsBroadcaster Durable Object so every
+// connected client receives every event regardless of which Worker handled
+// the inbound attack.
 
 #[cfg(feature = "paid")]
 use serde::Serialize;
 #[cfg(feature = "paid")]
-use worker::{durable_object, js_sys, wasm_bindgen, wasm_bindgen_futures, Env, State, WebSocket, WebSocketPair};
+use worker::{durable_object, Env, State, WebSocket, WebSocketPair as _WebSocketPair};
 
 #[cfg(feature = "paid")]
 pub async fn handle_websocket(req: Request, ctx: RouteContext<()>) -> worker::Result<Response> {
@@ -35,10 +41,6 @@ struct BroadcastMessage {
     message: String,
 }
 
-/// WsBroadcaster Durable Object — only compiled when `paid` feature is active.
-///
-/// Uses the Cloudflare hibernatable WebSocket API so connections survive
-/// Worker restarts without being dropped.
 #[cfg(feature = "paid")]
 #[durable_object]
 pub struct WsBroadcaster {
