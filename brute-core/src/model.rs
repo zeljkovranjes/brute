@@ -1,4 +1,32 @@
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize};
+
+/// Deserializes `Option<Vec<String>>` from either a JSON array or a
+/// JSON-encoded string (e.g. `"[\"a\",\"b\"]"`), as D1/SQLite stores arrays
+/// as TEXT. Returns `None` for SQL NULL or an empty/invalid string.
+fn deserialize_string_or_vec<'de, D>(de: D) -> Result<Option<Vec<String>>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let v: serde_json::Value = serde_json::Value::deserialize(de)?;
+    match v {
+        serde_json::Value::Null => Ok(None),
+        serde_json::Value::Array(arr) => {
+            let strings = arr
+                .into_iter()
+                .filter_map(|x| x.as_str().map(|s| s.to_owned()))
+                .collect();
+            Ok(Some(strings))
+        }
+        serde_json::Value::String(s) if s.is_empty() => Ok(None),
+        serde_json::Value::String(s) => {
+            match serde_json::from_str::<Vec<String>>(&s) {
+                Ok(v) => Ok(Some(v)),
+                Err(_) => Ok(None),
+            }
+        }
+        _ => Ok(None),
+    }
+}
 
 #[derive(Default, Clone, Debug, Serialize, Deserialize)]
 pub struct Individual {
@@ -78,6 +106,7 @@ pub struct ProcessedIndividual {
     pub abuse_phone: Option<String>,
     pub domain_ip: Option<String>,
     pub domain_total: Option<i64>,
+    #[serde(deserialize_with = "deserialize_string_or_vec")]
     pub domains: Option<Vec<String>>,
     pub timestamp: i64,
 }
