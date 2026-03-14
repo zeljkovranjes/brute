@@ -1,0 +1,8 @@
+[workspace]
+members = [
+    "brute-core",
+    "brute-http",
+    "brute-worker",
+    "brute-daemon",
+]
+resolver = "2"
