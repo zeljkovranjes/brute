@@ -7,21 +7,6 @@ mod db;
 mod geo;
 mod routes;
 
-fn allowed_origin(origin: &str) -> bool {
-    // Strip scheme
-    let host = origin
-        .strip_prefix("https://")
-        .or_else(|| origin.strip_prefix("http://"))
-        .unwrap_or(origin);
-    // Strip optional port
-    let host = host.split(':').next().unwrap_or(host);
-
-    host == "zeljko.me"
-        || host.ends_with(".zeljko.me")
-        || host == "zeljkovranjes.com"
-        || host.ends_with(".zeljkovranjes.com")
-}
-
 #[event(scheduled)]
 async fn scheduled(_event: ScheduledEvent, env: Env, _ctx: ScheduleContext) -> Result<()> {
     cron::retention::run(&env).await?;
@@ -38,20 +23,10 @@ async fn main(req: Request, env: Env, _ctx: Context) -> Result<Response> {
         req.url().map(|u| u.to_string()).unwrap_or_default()
     );
 
-    let origin = req
-        .headers()
-        .get("Origin")
-        .ok()
-        .flatten()
-        .filter(|o| allowed_origin(o));
-
     // Handle CORS preflight
     if req.method() == Method::Options {
         let mut headers = Headers::new();
-        if let Some(ref o) = origin {
-            headers.set("Access-Control-Allow-Origin", o)?;
-            headers.set("Vary", "Origin")?;
-        }
+        headers.set("Access-Control-Allow-Origin", "*")?;
         headers.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")?;
         headers.set("Access-Control-Allow-Headers", "Authorization, Content-Type, Accept")?;
         headers.set("Access-Control-Max-Age", "3600")?;
@@ -99,6 +74,12 @@ async fn main(req: Request, env: Env, _ctx: Context) -> Result<Response> {
         .run(req, env)
         .await?;
 
-    response.headers_mut().set("Access-Control-Allow-Origin", "*")?;
+    // 101 Switching Protocols (WebSocket upgrade) responses are immutable in
+    // the Workers runtime — attempting to set headers on them returns an error
+    // and the client receives a 500 instead of the upgrade. Skip CORS mutation
+    // for WebSocket responses; browsers don't enforce CORS on WS connections.
+    if response.status_code() != 101 {
+        response.headers_mut().set("Access-Control-Allow-Origin", "*")?;
+    }
     Ok(response)
 }
