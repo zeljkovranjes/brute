@@ -1,5 +1,5 @@
 use brute_core::{
-    model::{Individual, TopProtocol},
+    model::Individual,
     traits::{
         analytics::BruteAnalytics,
         database::BruteDb,

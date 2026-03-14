@@ -148,13 +148,13 @@ impl BruteAnalytics for D1Analytics {
             );
         }
 
-        if let Some(ref tz) = processed.timezone {
+        if !processed.timezone.is_empty() {
             stmts.push(
                 db.prepare(
                     "INSERT INTO top_timezone (timezone, amount) VALUES (?1, 1)
                      ON CONFLICT (timezone) DO UPDATE SET amount = amount + 1",
                 )
-                .bind(&[tz.clone().into()])
+                .bind(&[processed.timezone.clone().into()])
                 .map_err(|e| BruteError::Database(e.to_string()))?,
             );
         }

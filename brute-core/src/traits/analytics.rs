@@ -7,7 +7,8 @@ use crate::model::{Individual, ProcessedIndividual};
 ///
 /// In brute-http this updates the top_* aggregation tables in PostgreSQL.
 /// In brute-worker this writes data points to Cloudflare Analytics Engine.
-#[async_trait]
+#[cfg_attr(feature = "wasm", async_trait(?Send))]
+#[cfg_attr(not(feature = "wasm"), async_trait)]
 pub trait BruteAnalytics: Send + Sync {
     /// Record a raw attack event from an individual attempt.
     async fn record_attack_event(
