@@ -58,7 +58,7 @@ impl russh::server::Handler for SshSession {
         let is_loopback = ip == "127.0.0.1" || ip == "::1";
         if !is_loopback {
             info!("Recieved an auth request sending to {}", endpoint);
-            payload::Payload::post(user, password, &ip, "SSH").await.ok();
+            payload::post(user, password, &ip, "SSH").await;
         } else {
             info!("Recieved request but not sending because of debug. {}", endpoint);
         }

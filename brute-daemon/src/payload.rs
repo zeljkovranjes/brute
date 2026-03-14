@@ -1,12 +1,21 @@
 use std::collections::HashMap;
-use std::env;
 use std::sync::{Mutex, OnceLock};
 use std::time::{Duration, Instant};
 
 use reqwest::Client;
 use serde::Serialize;
 
-// ─── Rate limiter ────────────────────────────────────────────────────────────
+// ─── Shared HTTP client ───────────────────────────────────────────────────────
+
+/// Single client instance reused across all requests.
+/// reqwest::Client manages a connection pool internally.
+static CLIENT: OnceLock<Client> = OnceLock::new();
+
+fn client() -> &'static Client {
+    CLIENT.get_or_init(Client::new)
+}
+
+// ─── Rate limiter ─────────────────────────────────────────────────────────────
 
 /// Maximum attempts from a single IP within the window before we stop posting.
 const RATE_LIMIT: u32 = 30;
@@ -27,7 +36,7 @@ fn is_rate_limited(ip: &str) -> bool {
     let entry = map.entry(ip.to_string()).or_insert((0, now));
 
     if now.duration_since(entry.1) >= WINDOW {
-        // Window has expired — reset the counter
+        // Window has expired — reset the counter.
         *entry = (1, now);
         false
     } else {
@@ -36,71 +45,67 @@ fn is_rate_limited(ip: &str) -> bool {
     }
 }
 
-// ─── Payload ─────────────────────────────────────────────────────────────────
+// ─── Startup config ───────────────────────────────────────────────────────────
+
+/// Cached at startup — see `validate_config()` in main.rs.
+static ENDPOINT: OnceLock<String> = OnceLock::new();
+static BEARER_TOKEN: OnceLock<String> = OnceLock::new();
+
+/// Validate and cache required env vars. Call once at startup before any
+/// protocol server is started. Panics with a clear message if either var is
+/// missing or empty.
+pub fn validate_config() {
+    let url = std::env::var("ADD_ATTACK_ENDPOINT")
+        .expect("ADD_ATTACK_ENDPOINT must be set (e.g. http://localhost:7000/brute/attack/add)");
+    let token = std::env::var("BEARER_TOKEN")
+        .expect("BEARER_TOKEN must be set and must match the brute-http BEARER_TOKEN");
+
+    if url.is_empty() {
+        panic!("ADD_ATTACK_ENDPOINT is set but empty");
+    }
+    if token.is_empty() {
+        panic!("BEARER_TOKEN is set but empty");
+    }
+
+    ENDPOINT.set(url).ok();
+    BEARER_TOKEN.set(token).ok();
+}
+
+// ─── Payload ──────────────────────────────────────────────────────────────────
 
 #[derive(Serialize)]
-pub struct Payload {
-    username: String,
-    password: String,
-    ip_address: String,
-    protocol: String,
+struct Payload<'a> {
+    username: &'a str,
+    password: &'a str,
+    ip_address: &'a str,
+    protocol: &'a str,
 }
 
-pub struct PayloadConfig {
-    url: String,
-    bearer_token: String,
-}
-
-impl Payload {
-    pub fn new(
-        username: String,
-        password: String,
-        ip_address: String,
-        protocol: String,
-        url: String,
-        bearer_token: String,
-    ) -> anyhow::Result<(Payload, PayloadConfig)> {
-        let payload = Payload {
-            username,
-            password,
-            ip_address,
-            protocol,
-        };
-        let config = PayloadConfig {
-            url: String::from(url),
-            bearer_token: String::from(bearer_token),
-        };
-        Ok((payload, config))
+/// Post an attack attempt to the brute-http endpoint.
+///
+/// Silently skips if the IP is rate-limited. Logs a warning if the HTTP
+/// request itself fails so that credential loss is never completely silent.
+pub async fn post(username: &str, password: &str, ip_address: &str, protocol: &str) {
+    if is_rate_limited(ip_address) {
+        log::debug!("Rate limited IP: {} ({})", ip_address, protocol);
+        return;
     }
 
-    pub async fn post(username: &str, password: &str, ip_address: &str, protocol: &str) -> anyhow::Result<()> {
-        if is_rate_limited(ip_address) {
-            log::debug!("Rate limited IP: {} ({})", ip_address, protocol);
-            return Ok(());
-        }
+    let url = ENDPOINT.get().expect("validate_config() was not called");
+    let token = BEARER_TOKEN.get().expect("validate_config() was not called");
 
-        let url = env::var("ADD_ATTACK_ENDPOINT")?;
-        let bearer_token = env::var("BEARER_TOKEN")?;
-        let payload = Self::new(
-            String::from(username),
-            String::from(password),
-            String::from(ip_address),
-            String::from(protocol),
-            url,
-            bearer_token,
-        )?;
-        Self::create_post(payload.0, payload.1).await?;
-        Ok(())
-    }
+    let payload = Payload { username, password, ip_address, protocol };
 
-    async fn create_post(payload: Payload, config: PayloadConfig) -> anyhow::Result<()> {
-        let client = Client::new();
-        client
-            .post(&config.url)
-            .bearer_auth(&config.bearer_token)
-            .json(&payload)
-            .send()
-            .await?;
-        Ok(())
+    if let Err(e) = client()
+        .post(url)
+        .bearer_auth(token)
+        .json(&payload)
+        .send()
+        .await
+    {
+        log::warn!(
+            "Failed to post attack to {}: {} | ip={} protocol={}",
+            url, e, ip_address, protocol
+        );
     }
 }

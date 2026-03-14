@@ -80,7 +80,7 @@ where
         if upper.contains("LOGIN") {
             if let Some((tag, username, password)) = parse_imap_login(trimmed) {
                 info!("IMAP LOGIN attempt from {} - sending to {}", ip, endpoint);
-                payload::Payload::post(&username, &password, &ip, "IMAP").await.ok();
+                payload::post(&username, &password, &ip, "IMAP").await;
                 let resp = format!(
                     "{} NO [AUTHENTICATIONFAILED] Invalid credentials\r\n",
                     tag

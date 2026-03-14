@@ -204,7 +204,7 @@ async fn handle_client(mut stream: TcpStream, addr: std::net::SocketAddr) {
 
     if let Some((username, password)) = parse_connect(&body) {
         info!("MQTT CONNECT attempt from {} - sending to {}", ip, endpoint);
-        payload::Payload::post(&username, &password, &ip, "MQTT").await.ok();
+        payload::post(&username, &password, &ip, "MQTT").await;
     }
 
     let _ = stream.write_all(&build_connack(level)).await;

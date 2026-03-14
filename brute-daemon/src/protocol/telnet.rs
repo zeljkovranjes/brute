@@ -77,7 +77,7 @@ async fn handle_client(mut stream: TcpStream, addr: std::net::SocketAddr) {
 
     if !password.is_empty() {
         info!("Telnet auth attempt from {} - sending to {}", ip, endpoint);
-        payload::Payload::post(&username, &password, &ip, "Telnet").await.ok();
+        payload::post(&username, &password, &ip, "Telnet").await;
     }
 
     let _ = stream.write_all(b"\r\nLogin incorrect\r\n\r\n").await;
