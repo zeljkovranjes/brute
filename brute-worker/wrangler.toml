@@ -30,7 +30,10 @@ database_id = "YOUR_D1_DATABASE_ID"
 # binding = "ANALYTICS"
 # dataset = "brute_attacks"
 
-# ── Durable Objects (WebSocket broadcasting) ──────────────────────────────────
+# ── Durable Objects (shared WebSocket broadcasting) ───────────────────────────
+# WebSocket connections work on the free tier but each client is isolated to
+# the Worker instance that served it. Durable Objects (paid) allow all clients
+# across every Worker instance to receive every event simultaneously.
 # Requires the Workers Paid plan ($5/month).
 # To enable:
 #   1. Uncomment both sections below.
