@@ -1,6 +1,7 @@
 use brute_core::{
     model::Individual,
     traits::{
+        abuse::AbuseProvider,
         analytics::BruteAnalytics,
         database::BruteDb,
         geo::GeoProvider,
@@ -13,10 +14,16 @@ use uuid::Uuid;
 use worker::{Env, Request, Response, RouteContext};
 
 use crate::{
-    analytics::engine::AnalyticsEngine,
+    abuse::WorkerAbuseIpDb,
     db::d1::D1Db,
     geo::{cf::CfGeoProvider, ipinfo::IpInfoProvider},
 };
+
+#[cfg(feature = "paid")]
+use crate::analytics::engine::AnalyticsEngine;
+
+#[cfg(not(feature = "paid"))]
+use crate::analytics::d1::D1Analytics;
 
 #[derive(Deserialize)]
 struct IndividualPayload {
@@ -85,11 +92,6 @@ pub async fn add_attack(mut req: Request, ctx: RouteContext<()>) -> worker::Resu
     let d1 = match env.d1("DB") {
         Ok(db) => D1Db::new(db),
         Err(e) => return Response::error(format!("DB binding error: {}", e), 500),
-    };
-
-    let analytics_ds = match env.analytics_engine("ANALYTICS") {
-        Ok(ds) => AnalyticsEngine::new(ds),
-        Err(e) => return Response::error(format!("Analytics binding error: {}", e), 500),
     };
 
     // Geo lookup — IPinfo first, Cloudflare cf object as fallback.
@@ -215,8 +217,30 @@ pub async fn add_attack(mut req: Request, ctx: RouteContext<()>) -> worker::Resu
         .upsert_top_combo(&combo_id, &individual.username, &individual.password)
         .await;
 
+    // AbuseIPDB check — fire-and-forget, errors are silently dropped
+    {
+        if let Ok(db) = env.d1("DB") {
+            let abuse = WorkerAbuseIpDb::from_env(&env, db);
+            let _ = abuse.check(&individual.ip).await;
+        }
+    }
+
     // Record analytics event
-    let _ = analytics_ds.record_attack_event(&individual, &processed).await;
+    #[cfg(feature = "paid")]
+    {
+        if let Ok(ds) = env.analytics_engine("ANALYTICS") {
+            let analytics = AnalyticsEngine::new(ds);
+            let _ = analytics.record_attack_event(&individual, &processed).await;
+        }
+    }
+
+    #[cfg(not(feature = "paid"))]
+    {
+        if let Ok(db) = env.d1("DB") {
+            let analytics = D1Analytics::new(db);
+            let _ = analytics.record_attack_event(&individual, &processed).await;
+        }
+    }
 
     Response::ok("OK")
 }
@@ -239,16 +263,25 @@ pub async fn increment_protocol(mut req: Request, ctx: RouteContext<()>) -> work
         Err(e) => return Response::error(format!("DB binding error: {}", e), 500),
     };
 
-    let analytics_ds = match env.analytics_engine("ANALYTICS") {
-        Ok(ds) => AnalyticsEngine::new(ds),
-        Err(e) => return Response::error(format!("Analytics binding error: {}", e), 500),
-    };
-
     if let Err(e) = d1.upsert_top_protocol(&payload.protocol, payload.amount).await {
         return Response::error(format!("DB error: {}", e), 500);
     }
 
-    let _ = analytics_ds.record_protocol_event(&payload.protocol, payload.amount).await;
+    #[cfg(feature = "paid")]
+    {
+        if let Ok(ds) = env.analytics_engine("ANALYTICS") {
+            let analytics = AnalyticsEngine::new(ds);
+            let _ = analytics.record_protocol_event(&payload.protocol, payload.amount).await;
+        }
+    }
+
+    #[cfg(not(feature = "paid"))]
+    {
+        if let Ok(db) = env.d1("DB") {
+            let analytics = D1Analytics::new(db);
+            let _ = analytics.record_protocol_event(&payload.protocol, payload.amount).await;
+        }
+    }
 
     Response::ok("OK")
 }
