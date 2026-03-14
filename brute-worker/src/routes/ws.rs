@@ -25,7 +25,7 @@ pub async fn handle_websocket(_req: Request, _ctx: RouteContext<()>) -> worker::
 #[cfg(feature = "paid")]
 use serde::Serialize;
 #[cfg(feature = "paid")]
-use worker::{durable_object, Env, State, WebSocket, WebSocketPair as _WebSocketPair};
+use worker::{durable_object, DurableObject, Env, State, WebSocket, WebSocketPair as _WebSocketPair};
 
 #[cfg(feature = "paid")]
 pub async fn handle_websocket(req: Request, ctx: RouteContext<()>) -> worker::Result<Response> {
@@ -54,7 +54,7 @@ impl DurableObject for WsBroadcaster {
         Self { state, env }
     }
 
-    async fn fetch(&mut self, mut req: Request) -> worker::Result<Response> {
+    async fn fetch(&self, mut req: Request) -> worker::Result<Response> {
         let url = req.url()?;
         let path = url.path();
 
@@ -77,16 +77,16 @@ impl DurableObject for WsBroadcaster {
         }
     }
 
-    async fn web_socket_message(
-        &mut self,
+    async fn websocket_message(
+        &self,
         _ws: WebSocket,
         _message: worker::WebSocketIncomingMessage,
     ) -> worker::Result<()> {
         Ok(())
     }
 
-    async fn web_socket_close(
-        &mut self,
+    async fn websocket_close(
+        &self,
         ws: WebSocket,
         _code: usize,
         _reason: String,
@@ -96,8 +96,8 @@ impl DurableObject for WsBroadcaster {
         Ok(())
     }
 
-    async fn web_socket_error(
-        &mut self,
+    async fn websocket_error(
+        &self,
         _ws: WebSocket,
         _error: worker::Error,
     ) -> worker::Result<()> {
