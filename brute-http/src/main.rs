@@ -120,7 +120,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     /////////////
     // IPINFO //
     ///////////
-    let geo = IpInfoProvider::new(config.ipinfo_token.to_string());
+    let geo = IpInfoProvider::new(config.ipinfo_token.clone(), config.ipinfo_base_url.clone());
 
     ////////////
     // ACTOR //

@@ -23,6 +23,7 @@ use tokio::sync::Mutex;
 /// Hot IPs are served from an in-memory LRU cache (10k entries, 5-minute TTL)
 /// before falling back to the PostgreSQL cache or a live API call.
 pub struct IpInfoProvider {
+    pub base_url: String,
     pub token: String,
     pub client: Client,
     /// Shared across all callers — set to the reset timestamp on 429, cleared after waking.
@@ -32,12 +33,22 @@ pub struct IpInfoProvider {
 }
 
 impl IpInfoProvider {
-    pub fn new(token: String) -> Self {
+    /// `token`    — IPinfo API token. Pass an empty string when using a proxy
+    ///              that handles auth internally.
+    /// `base_url` — Either `"https://ipinfo.io"` or a self-hosted round-robin
+    ///              proxy URL. Pass an empty string to use `https://ipinfo.io`.
+    pub fn new(token: String, base_url: String) -> Self {
         let cache = Cache::builder()
             .max_capacity(10_000)
             .time_to_live(Duration::from_secs(300))
             .build();
+        let base_url = if base_url.is_empty() {
+            "https://ipinfo.io".to_string()
+        } else {
+            base_url.trim_end_matches('/').to_string()
+        };
         Self {
+            base_url,
             token,
             client: Client::new(),
             rate_limited_until: Arc::new(Mutex::new(None)),
@@ -136,7 +147,11 @@ impl GeoProvider for IpInfoProvider {
             }
         }
 
-        let url = format!("https://ipinfo.io/{}?token={}", ip, self.token);
+        let url = if self.token.is_empty() {
+            format!("{}/{}", self.base_url, ip)
+        } else {
+            format!("{}/{}?token={}", self.base_url, ip, self.token)
+        };
 
         loop {
             let resp = self
