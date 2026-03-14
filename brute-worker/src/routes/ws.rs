@@ -8,12 +8,52 @@ use worker::{Request, Response, RouteContext, WebSocketPair};
 // shared Durable Object.
 
 #[cfg(not(feature = "paid"))]
-pub async fn handle_websocket(_req: Request, _ctx: RouteContext<()>) -> worker::Result<Response> {
+pub async fn handle_websocket(_req: Request, ctx: RouteContext<()>) -> worker::Result<Response> {
+    use crate::db::d1::D1Db;
+    use brute_core::traits::database::BruteDb;
+
     let pair = WebSocketPair::new()?;
     let server = pair.server;
-    // Accept the connection — the server side will receive broadcasts when
-    // the post handler calls into the worker directly.
     server.accept()?;
+
+    if let Ok(raw_db) = ctx.env.d1("worker_brute_d1") {
+        let db = D1Db::new(raw_db);
+        let ws = server.clone();
+
+        wasm_bindgen_futures::spawn_local(async move {
+            let mut last_ts = js_sys::Date::now() as i64;
+            loop {
+                worker::Delay::from(std::time::Duration::from_secs(2)).await;
+
+                let attacks = match db.get_attacks(50).await {
+                    Ok(a) => a,
+                    Err(_) => continue,
+                };
+
+                let new_attacks: Vec<_> = attacks
+                    .into_iter()
+                    .filter(|a| a.timestamp > last_ts)
+                    .collect();
+
+                if let Some(newest) = new_attacks.iter().map(|a| a.timestamp).max() {
+                    last_ts = newest;
+                }
+
+                for attack in new_attacks {
+                    let msg = serde_json::json!({
+                        "parse_type": "ProcessedIndividual",
+                        "message": serde_json::to_string(&attack).unwrap_or_default()
+                    });
+                    if let Ok(text) = serde_json::to_string(&msg) {
+                        if ws.send_with_str(&text).is_err() {
+                            return; // client disconnected
+                        }
+                    }
+                }
+            }
+        });
+    }
+
     Response::from_websocket(pair.client)
 }
 

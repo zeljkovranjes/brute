@@ -28,6 +28,7 @@ async-trait = "0.1"
 sha1 = "0.10"
 js-sys = "0.3"
 wasm-bindgen = "0.2"
+wasm-bindgen-futures = "0.4"
 uuid = { version = "1", features = ["v4", "js"] }
 
 [profile.release]
