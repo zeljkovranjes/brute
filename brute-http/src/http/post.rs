@@ -1,6 +1,11 @@
 use actix_web::{post, web, HttpRequest, HttpResponse};
 use actix_web_httpauth::extractors::bearer::BearerAuth;
 use serde::Deserialize;
+use subtle::ConstantTimeEq;
+
+fn token_matches(provided: &str, expected: &str) -> bool {
+    provided.as_bytes().ct_eq(expected.as_bytes()).into()
+}
 
 use crate::{
     error::BruteResponeError,
@@ -27,7 +32,7 @@ async fn post_brute_attack_add(
     payload: web::Json<IndividualPayload>,
     bearer: BearerAuth,
 ) -> Result<HttpResponse, BruteResponeError> {
-    if !bearer.token().eq(&state.bearer) {
+    if !token_matches(bearer.token(), &state.bearer) {
         return Ok(HttpResponse::Unauthorized().body("body"));
     }
 
@@ -69,7 +74,7 @@ async fn post_brute_protocol_increment(
     payload: web::Json<ProtocolPayload>,
     bearer: BearerAuth,
 ) -> Result<HttpResponse, BruteResponeError> {
-    if !bearer.token().eq(&state.bearer) {
+    if !token_matches(bearer.token(), &state.bearer) {
         return Ok(HttpResponse::Unauthorized().body("body"));
     }
 
