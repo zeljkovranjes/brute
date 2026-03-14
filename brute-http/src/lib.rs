@@ -4,6 +4,7 @@ pub mod config;
 pub mod db;
 pub mod error;
 pub mod geo;
+pub mod hibp;
 pub mod http;
 pub mod model;
 pub mod system;
