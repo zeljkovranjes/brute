@@ -89,7 +89,7 @@ pub async fn add_attack(mut req: Request, ctx: RouteContext<()>) -> worker::Resu
     }
 
     // Build dependencies from Worker bindings
-    let d1 = match env.d1("DB") {
+    let d1 = match env.d1("worker_brute_d1") {
         Ok(db) => D1Db::new(db),
         Err(e) => return Response::error(format!("DB binding error: {}", e), 500),
     };
@@ -219,7 +219,7 @@ pub async fn add_attack(mut req: Request, ctx: RouteContext<()>) -> worker::Resu
 
     // AbuseIPDB check — fire-and-forget, errors are silently dropped
     {
-        if let Ok(db) = env.d1("DB") {
+        if let Ok(db) = env.d1("worker_brute_d1") {
             let abuse = WorkerAbuseIpDb::from_env(&env, db);
             let _ = abuse.check(&individual.ip).await;
         }
@@ -236,7 +236,7 @@ pub async fn add_attack(mut req: Request, ctx: RouteContext<()>) -> worker::Resu
 
     #[cfg(not(feature = "paid"))]
     {
-        if let Ok(db) = env.d1("DB") {
+        if let Ok(db) = env.d1("worker_brute_d1") {
             let analytics = D1Analytics::new(db);
             let _ = analytics.record_attack_event(&individual, &processed).await;
         }
@@ -258,7 +258,7 @@ pub async fn increment_protocol(mut req: Request, ctx: RouteContext<()>) -> work
         Err(e) => return Response::error(format!("Bad request: {}", e), 400),
     };
 
-    let d1 = match env.d1("DB") {
+    let d1 = match env.d1("worker_brute_d1") {
         Ok(db) => D1Db::new(db),
         Err(e) => return Response::error(format!("DB binding error: {}", e), 500),
     };
@@ -277,7 +277,7 @@ pub async fn increment_protocol(mut req: Request, ctx: RouteContext<()>) -> work
 
     #[cfg(not(feature = "paid"))]
     {
-        if let Ok(db) = env.d1("DB") {
+        if let Ok(db) = env.d1("worker_brute_d1") {
             let analytics = D1Analytics::new(db);
             let _ = analytics.record_protocol_event(&payload.protocol, payload.amount).await;
         }

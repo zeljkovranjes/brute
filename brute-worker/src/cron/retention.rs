@@ -1,7 +1,7 @@
 use worker::Env;
 
 pub async fn run(env: &Env) -> worker::Result<()> {
-    let db = env.d1("DB")?;
+    let db = env.d1("worker_brute_d1")?;
     let retention_days: i64 = env
         .var("DATA_RETENTION_DAYS")
         .map(|v| v.to_string().parse().unwrap_or(90))

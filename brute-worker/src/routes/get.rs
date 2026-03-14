@@ -27,7 +27,7 @@ fn parse_str_param(req: &Request, key: &str) -> Option<String> {
 }
 
 fn get_db(ctx: &RouteContext<()>) -> worker::Result<D1Db> {
-    ctx.env.d1("DB").map(D1Db::new)
+    ctx.env.d1("worker_brute_d1").map(D1Db::new)
 }
 
 fn now_ms() -> i64 {

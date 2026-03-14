@@ -1,4 +1,4 @@
-name = "brute-worker"
+name = "worker-brute"
 main = "build/worker/shim.mjs"
 compatibility_date = "2024-01-01"
 compatibility_flags = ["nodejs_compat"]
@@ -13,11 +13,11 @@ command = "cargo install worker-build && worker-build --release"
 
 # ── D1 Database ───────────────────────────────────────────────────────────────
 # Available on the free tier.
-# Create your database: wrangler d1 create brute
+# Create your database: wrangler d1 create worker_brute_d1
 # Then fill in the database_id below.
 [[d1_databases]]
-binding = "DB"
-database_name = "brute"
+binding = "worker_brute_d1"
+database_name = "worker_brute_d1"
 database_id = "YOUR_D1_DATABASE_ID"
 
 # ── Analytics Engine ──────────────────────────────────────────────────────────
