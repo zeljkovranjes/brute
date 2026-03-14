@@ -2,12 +2,11 @@ use actix::{
     Actor, ActorFutureExt, AsyncContext, Context, Handler, ResponseActFuture, ResponseFuture,
     WrapFuture,
 };
-use ipinfo::IpInfo;
+use crate::geo::ipinfo::IpInfoProvider;
 use log::{error, info};
 use reporter::BruteReporter;
 use sqlx::{Pool, Postgres};
 use std::sync::Arc;
-use tokio::sync::Mutex;
 
 use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -42,8 +41,8 @@ pub struct BruteSystem {
     /// PostgreSQL connection pool.
     pub db_pool: Pool<Postgres>,
 
-    /// IP info client with shared access.
-    pub ipinfo_client: Arc<Mutex<IpInfo>>,
+    /// IP geolocation provider.
+    pub geo: Arc<IpInfoProvider>,
 }
 
 impl BruteSystem {
@@ -62,10 +61,10 @@ impl BruteSystem {
     /// // Create an instance of BruteSystem
     /// let brute_system = BruteSystem::new(brute_config); // as an actor you will append .start() at the end.s
     /// ```
-    pub async fn new_brute(pg_pool: Pool<Postgres>, ipinfo_client: IpInfo) -> Self {
+    pub async fn new_brute(pg_pool: Pool<Postgres>, geo: IpInfoProvider) -> Self {
         Self {
             db_pool: pg_pool,
-            ipinfo_client: Arc::new(Mutex::new(ipinfo_client)),
+            geo: Arc::new(geo),
         }
     }
 
@@ -956,7 +955,7 @@ pub mod reporter {
         TopLocation, TopOrg, TopPassword, TopPostal, TopProtocol, TopRegion, TopTimezone,
         TopUsername, TopUsrPassCombo, TopWeekly, TopYearly,
     };
-    use ipinfo::{AbuseDetails, AsnDetails, CompanyDetails, DomainsDetails, PrivacyDetails};
+    use brute_core::traits::geo::GeoProvider;
     use log::info;
     use sha1::{Digest, Sha1};
     use std::time::{SystemTime, UNIX_EPOCH};
@@ -1191,7 +1190,7 @@ pub mod reporter {
             model: &'a Individual,
         ) -> anyhow::Result<ProcessedIndividual> {
             let pool = &reporter.brute.db_pool;
-            let ipinfo = &reporter.brute.ipinfo_client;
+            let geo = &reporter.brute.geo;
             let now = SystemTime::now().duration_since(UNIX_EPOCH)?.as_millis() as i64;
 
             let select_query = "
@@ -1219,51 +1218,11 @@ pub mod reporter {
             ) RETURNING *;
             ";
 
-            // Default values for IP details
-            let asn_default = AsnDetails {
-                asn: String::default(),
-                name: String::default(),
-                domain: String::default(),
-                route: String::default(),
-                asn_type: String::default(),
-            };
-
-            let company_default = CompanyDetails {
-                name: String::default(),
-                domain: String::default(),
-                company_type: String::default(),
-            };
-
-            let abuse_default = AbuseDetails {
-                address: String::default(),
-                country: String::default(),
-                email: String::default(),
-                name: String::default(),
-                network: String::default(),
-                phone: String::default(),
-            };
-
-            let privacy_default = PrivacyDetails {
-                vpn: false,
-                proxy: false,
-                tor: false,
-                relay: false,
-                hosting: false,
-                service: String::default(),
-            };
-
-            let domain_default = DomainsDetails {
-                ip: Some(String::default()),
-                total: 0,
-                domains: Vec::default(),
-            };
-
             let ip_exists = sqlx::query_as::<_, ProcessedIndividual>(select_query)
                 .bind(model.ip())
                 .fetch_optional(pool)
                 .await?;
 
-            let mut ipinfo_lock = ipinfo.lock().await;
             let ip_details = match ip_exists {
                 Some(mut result) if now - result.timestamp <= 300_000 => {
                     if result.postal().is_none() {
@@ -1314,8 +1273,8 @@ pub mod reporter {
                     result
                 }
                 _ => {
-                    info!("Fetching new details from ipinfo for IP: {}", model.ip());
-                    let mut ip_details = match ipinfo_lock.lookup(model.ip()).await {
+                    info!("Fetching new details from IPinfo for IP: {}", model.ip());
+                    let g = match geo.lookup(model.ip()).await {
                         Ok(d) => d,
                         Err(e) => {
                             log::error!("IPinfo lookup failed for {}: {:?}", model.ip(), e);
@@ -1323,55 +1282,44 @@ pub mod reporter {
                         }
                     };
 
-                    let asn_details = ip_details.asn.as_ref().unwrap_or(&asn_default);
-                    let company_details = ip_details.company.as_ref().unwrap_or(&company_default);
-                    let abuse_details = ip_details.abuse.as_ref().unwrap_or(&abuse_default);
-                    let domain_details = ip_details.domains.as_ref().unwrap_or(&domain_default);
-                    let privacy_details = ip_details.privacy.as_ref().unwrap_or(&privacy_default);
-                    if ip_details.postal.is_none() {
-                        // fix unwrap error.
-                        ip_details.postal = Some(String::default())
-                    }
-
-                    // Insert the new details
                     sqlx::query_as::<_, ProcessedIndividual>(insert_query)
                         .bind(model.id())
                         .bind(model.username())
                         .bind(model.password())
                         .bind(model.ip())
                         .bind(model.protocol())
-                        .bind(&ip_details.hostname)
-                        .bind(&ip_details.city)
-                        .bind(&ip_details.region)
-                        .bind(&ip_details.country)
-                        .bind(&ip_details.loc)
-                        .bind(&ip_details.org)
-                        .bind(&ip_details.postal)
-                        .bind(&asn_details.asn)
-                        .bind(&asn_details.name)
-                        .bind(&asn_details.domain)
-                        .bind(&asn_details.route)
-                        .bind(&asn_details.asn_type)
-                        .bind(&company_details.name)
-                        .bind(&company_details.domain)
-                        .bind(&company_details.company_type)
-                        .bind(privacy_details.vpn)
-                        .bind(privacy_details.proxy)
-                        .bind(privacy_details.tor)
-                        .bind(privacy_details.relay)
-                        .bind(privacy_details.hosting)
-                        .bind(&privacy_details.service)
-                        .bind(&abuse_details.address)
-                        .bind(&abuse_details.country)
-                        .bind(&abuse_details.email)
-                        .bind(&abuse_details.name)
-                        .bind(&abuse_details.network)
-                        .bind(&abuse_details.phone)
-                        .bind(&domain_details.ip)
-                        .bind(domain_details.total as i64)
-                        .bind(&domain_details.domains)
+                        .bind(&g.hostname)
+                        .bind(&g.city)
+                        .bind(&g.region)
+                        .bind(&g.country)
+                        .bind(&g.loc)
+                        .bind(&g.org)
+                        .bind(g.postal.as_deref().or(Some("")))
+                        .bind(&g.asn)
+                        .bind(&g.asn_name)
+                        .bind(&g.asn_domain)
+                        .bind(&g.asn_route)
+                        .bind(&g.asn_type)
+                        .bind(&g.company_name)
+                        .bind(&g.company_domain)
+                        .bind(&g.company_type)
+                        .bind(g.vpn.unwrap_or(false))
+                        .bind(g.proxy.unwrap_or(false))
+                        .bind(g.tor.unwrap_or(false))
+                        .bind(g.relay.unwrap_or(false))
+                        .bind(g.hosting.unwrap_or(false))
+                        .bind(g.service.as_deref().unwrap_or(""))
+                        .bind(&g.abuse_address)
+                        .bind(&g.abuse_country)
+                        .bind(&g.abuse_email)
+                        .bind(&g.abuse_name)
+                        .bind(&g.abuse_network)
+                        .bind(&g.abuse_phone)
+                        .bind(&g.domain_ip)
+                        .bind(g.domain_total.unwrap_or(0))
+                        .bind(&g.domains)
                         .bind(model.timestamp)
-                        .bind(&ip_details.timezone)
+                        .bind(&g.timezone)
                         .fetch_one(pool)
                         .await?
                 }
