@@ -1,39 +1,52 @@
-use serde::Serialize;
-use worker::{
-    durable_object, js_sys, wasm_bindgen, wasm_bindgen_futures, Env, Request, Response,
-    RouteContext, State, WebSocket, WebSocketPair,
-};
+use worker::{Request, Response, RouteContext};
 
-/// Handle the initial WebSocket upgrade request.
-/// Forwards the connection to the WsBroadcaster Durable Object.
+// ── Free tier ─────────────────────────────────────────────────────────────────
+// WebSocket broadcasting requires Durable Objects, which is a paid add-on.
+// On the free tier this endpoint returns 501 so the rest of the worker still
+// functions normally. Build with `--features paid` to enable WebSockets.
+
+#[cfg(not(feature = "paid"))]
+pub async fn handle_websocket(_req: Request, _ctx: RouteContext<()>) -> worker::Result<Response> {
+    Response::error(
+        "WebSocket broadcasting requires the Cloudflare Durable Objects paid add-on. \
+         Rebuild brute-worker with `--features paid` to activate it.",
+        501,
+    )
+}
+
+// ── Paid tier ─────────────────────────────────────────────────────────────────
+
+#[cfg(feature = "paid")]
+use serde::Serialize;
+#[cfg(feature = "paid")]
+use worker::{durable_object, js_sys, wasm_bindgen, wasm_bindgen_futures, Env, State, WebSocket, WebSocketPair};
+
+#[cfg(feature = "paid")]
 pub async fn handle_websocket(req: Request, ctx: RouteContext<()>) -> worker::Result<Response> {
     let namespace = ctx.env.durable_object("WS_BROADCASTER")?;
-    // Use a single global instance so all connections share the same broadcaster
     let stub = namespace.id_from_name("global")?.get_stub()?;
     stub.fetch_with_request(req).await
 }
 
+#[cfg(feature = "paid")]
 #[derive(Serialize)]
 struct BroadcastMessage {
     parse_type: String,
     message: String,
 }
 
-/// WsBroadcaster Durable Object.
+/// WsBroadcaster Durable Object — only compiled when `paid` feature is active.
 ///
-/// Uses the Cloudflare hibernatable WebSocket API:
-///   - `webSocketMessage` is called when a client sends a message
-///   - `webSocketClose` / `webSocketError` handle disconnection
-///   - `broadcast` is a custom method called via internal fetch from the worker
-///
-/// Since all Worker instances share one Durable Object, WebSocket connections
-/// from both TLS and non-TLS clients are maintained in the same place.
+/// Uses the Cloudflare hibernatable WebSocket API so connections survive
+/// Worker restarts without being dropped.
+#[cfg(feature = "paid")]
 #[durable_object]
 pub struct WsBroadcaster {
     state: State,
     env: Env,
 }
 
+#[cfg(feature = "paid")]
 #[durable_object]
 impl DurableObject for WsBroadcaster {
     fn new(state: State, env: Env) -> Self {
@@ -45,18 +58,15 @@ impl DurableObject for WsBroadcaster {
         let path = url.path();
 
         match path {
-            // WebSocket upgrade endpoint — clients connect here
             "/ws" => {
                 let pair = WebSocketPair::new()?;
                 let server = pair.server;
                 self.state.accept_web_socket(&server);
                 Response::from_websocket(pair.client)
             }
-            // Internal broadcast endpoint — called by the fetch handler
             "/internal/broadcast" => {
                 let msg: BroadcastMessage = req.json().await?;
-                let text = serde_json::to_string(&msg)
-                    .unwrap_or_else(|_| "{}".to_string());
+                let text = serde_json::to_string(&msg).unwrap_or_else(|_| "{}".to_string());
                 for ws in self.state.get_web_sockets() {
                     ws.send_with_str(&text).ok();
                 }
@@ -71,7 +81,6 @@ impl DurableObject for WsBroadcaster {
         _ws: WebSocket,
         _message: worker::WebSocketIncomingMessage,
     ) -> worker::Result<()> {
-        // This is a unidirectional broadcast socket — clients don't send data.
         Ok(())
     }
 
