@@ -9,7 +9,6 @@ use brute_core::{
     validator::Validate,
 };
 use serde::Deserialize;
-use std::time::{SystemTime, UNIX_EPOCH};
 use uuid::Uuid;
 use worker::{Env, Request, Response, RouteContext};
 
@@ -54,10 +53,7 @@ fn check_bearer(req: &Request, env: &Env) -> bool {
 }
 
 fn now_ms() -> i64 {
-    SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .unwrap_or_default()
-        .as_millis() as i64
+    js_sys::Date::now() as i64
 }
 
 /// POST /brute/attack/add
