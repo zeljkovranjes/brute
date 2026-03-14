@@ -82,7 +82,7 @@ pub async fn add_attack(mut req: Request, ctx: RouteContext<()>) -> worker::Resu
     }
 
     // Build dependencies from Worker bindings
-    let d1 = match env.d1("DB") {
+    let d1 = match env.d1("D1") {
         Ok(db) => D1Db::new(db),
         Err(e) => return Response::error(format!("DB binding error: {}", e), 500),
     };
@@ -232,7 +232,7 @@ pub async fn increment_protocol(mut req: Request, ctx: RouteContext<()>) -> work
         Err(e) => return Response::error(format!("Bad request: {}", e), 400),
     };
 
-    let d1 = match env.d1("DB") {
+    let d1 = match env.d1("D1") {
         Ok(db) => D1Db::new(db),
         Err(e) => return Response::error(format!("DB binding error: {}", e), 500),
     };
