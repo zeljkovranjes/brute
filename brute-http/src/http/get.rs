@@ -5,6 +5,11 @@ use actix_web::{get, web, HttpRequest, HttpResponse, Responder};
 use actix_web_httpauth::extractors::bearer::BearerAuth;
 use actix_web_actors::ws;
 use serde::Deserialize;
+use subtle::ConstantTimeEq;
+
+fn token_matches(provided: &str, expected: &str) -> bool {
+    provided.as_bytes().ct_eq(expected.as_bytes()).into()
+}
 
 use crate::{
     http::{
@@ -626,7 +631,7 @@ async fn get_blocklist(
     params: web::Query<BlocklistParams>,
     bearer: BearerAuth,
 ) -> impl Responder {
-    if !bearer.token().eq(&state.bearer) {
+    if !token_matches(bearer.token(), &state.bearer) {
         return HttpResponse::Unauthorized().finish();
     }
     let limit = params.limit.unwrap_or(500).min(500);
