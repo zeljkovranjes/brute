@@ -1,7 +1,8 @@
 use async_trait::async_trait;
 use crate::error::BruteError;
 
-#[async_trait]
+#[cfg_attr(feature = "wasm", async_trait(?Send))]
+#[cfg_attr(not(feature = "wasm"), async_trait)]
 pub trait HibpProvider: Send + Sync {
     /// Check if a password appears in known breach data.
     /// Returns Ok(true) if breached, Ok(false) if clean, Ok(false) if unconfigured.

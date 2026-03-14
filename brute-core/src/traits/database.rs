@@ -11,7 +11,8 @@ use crate::model::{
 /// Core database trait that all backend implementations must satisfy.
 ///
 /// Implemented by `PostgresDb` (brute-http) and `D1Db` (brute-worker).
-#[async_trait]
+#[cfg_attr(feature = "wasm", async_trait(?Send))]
+#[cfg_attr(not(feature = "wasm"), async_trait)]
 pub trait BruteDb: Send + Sync {
     // ---- write operations ----
 

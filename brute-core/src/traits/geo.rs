@@ -48,7 +48,8 @@ pub struct GeoData {
 ///
 /// In brute-http this calls the IPinfo.io HTTP API.
 /// In brute-worker this reads from the Cloudflare `cf` request object (free, no token needed).
-#[async_trait]
+#[cfg_attr(feature = "wasm", async_trait(?Send))]
+#[cfg_attr(not(feature = "wasm"), async_trait)]
 pub trait GeoProvider: Send + Sync {
     async fn lookup(&self, ip: &str) -> Result<GeoData, BruteError>;
 }

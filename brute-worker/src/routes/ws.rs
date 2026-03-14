@@ -25,7 +25,7 @@ pub async fn handle_websocket(_req: Request, _ctx: RouteContext<()>) -> worker::
 #[cfg(feature = "paid")]
 use serde::Serialize;
 #[cfg(feature = "paid")]
-use worker::{durable_object, DurableObject, Env, State, WebSocket, WebSocketPair as _WebSocketPair};
+use worker::{durable_object, DurableObject, Env, State, WebSocket};
 
 #[cfg(feature = "paid")]
 pub async fn handle_websocket(req: Request, ctx: RouteContext<()>) -> worker::Result<Response> {

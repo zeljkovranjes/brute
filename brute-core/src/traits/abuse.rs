@@ -17,7 +17,8 @@ pub struct AbuseData {
 /// In brute-worker this calls the AbuseIPDB v2 API with a 24-hour cache in D1.
 /// The key is read from the `ABUSEIPDB_KEY` environment variable; when absent the
 /// check is silently skipped.
-#[async_trait]
+#[cfg_attr(feature = "wasm", async_trait(?Send))]
+#[cfg_attr(not(feature = "wasm"), async_trait)]
 pub trait AbuseProvider: Send + Sync {
     /// Check the abuse reputation of an IP address.
     ///
