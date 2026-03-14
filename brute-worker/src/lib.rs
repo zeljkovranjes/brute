@@ -2,9 +2,15 @@ use worker::*;
 
 mod abuse;
 mod analytics;
+mod cron;
 mod db;
 mod geo;
 mod routes;
+
+#[event(scheduled)]
+async fn scheduled(_event: ScheduledEvent, env: Env, _ctx: ScheduleContext) -> Result<()> {
+    cron::retention::run(&env).await
+}
 
 #[event(fetch)]
 async fn main(req: Request, env: Env, _ctx: Context) -> Result<Response> {
