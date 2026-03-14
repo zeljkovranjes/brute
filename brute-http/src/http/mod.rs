@@ -3,7 +3,6 @@ use actix_cors::Cors;
 use actix_web::{
     body::{BoxBody, EitherBody},
     dev::{ServiceFactory, ServiceRequest, ServiceResponse},
-    http::header,
     web::{self, Data},
     App, HttpServer,
 };
@@ -114,15 +113,7 @@ fn configure_app(
         InitError = (),
     >,
 > {
-    let cors = Cors::default()
-        .allowed_origin_fn(|_origin, _request_head| true) // Allow all origins
-        .allowed_methods(vec!["GET", "POST"])
-        .allowed_headers(vec![
-            header::AUTHORIZATION,
-            header::CONTENT_TYPE,
-            header::ACCEPT,
-        ])
-        .max_age(3600);
+    let cors = Cors::permissive();
 
     App::new()
         .app_data(Data::new(AppState {
