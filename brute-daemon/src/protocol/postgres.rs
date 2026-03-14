@@ -132,7 +132,7 @@ async fn handle_client(mut stream: TcpStream, addr: std::net::SocketAddr) {
 
     if !password.is_empty() {
         info!("PostgreSQL auth attempt from {} - sending to {}", ip, endpoint);
-        payload::Payload::post(&username, &password, &ip, "PostgreSQL").await.ok();
+        payload::post(&username, &password, &ip, "PostgreSQL").await;
     }
 
     let _ = stream.write_all(&error_response(&username)).await;

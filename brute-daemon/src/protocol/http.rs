@@ -110,7 +110,7 @@ async fn handle_client(stream: TcpStream, addr: std::net::SocketAddr) {
                 let password = it.next().unwrap_or("").to_string();
                 if !username.is_empty() && !password.is_empty() {
                     info!("HTTP Basic Auth attempt from {} - sending to {}", ip, endpoint);
-                    payload::Payload::post(&username, &password, &ip, "HTTP").await.ok();
+                    payload::post(&username, &password, &ip, "HTTP").await;
                 }
             }
         }
@@ -128,7 +128,7 @@ async fn handle_client(stream: TcpStream, addr: std::net::SocketAddr) {
                     .map(String::as_str).unwrap_or("").to_string();
                 if !username.is_empty() && !password.is_empty() {
                     info!("HTTP form login attempt from {} - sending to {}", ip, endpoint);
-                    payload::Payload::post(&username, &password, &ip, "HTTP").await.ok();
+                    payload::post(&username, &password, &ip, "HTTP").await;
                 }
             }
         }

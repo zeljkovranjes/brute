@@ -24,7 +24,7 @@ impl Authenticator<DefaultUser> for BruteAuthenticator {
         if !username.is_empty() && !is_loopback {
             if let Some(ref password) = creds.password {
                 info!("Recieved an auth request sending to {}", endpoint);
-                payload::Payload::post(username, password, &ip, "FTP").await.ok();
+                payload::post(username, password, &ip, "FTP").await;
             }
         }
         Err(AuthenticationError::BadUser)

@@ -76,7 +76,7 @@ where
 
             if !username.is_empty() && !password.is_empty() {
                 info!("SMTP AUTH LOGIN attempt from {} - sending to {}", ip, endpoint);
-                payload::Payload::post(&username, &password, &ip, "SMTP").await.ok();
+                payload::post(&username, &password, &ip, "SMTP").await;
             }
             let _ = writer
                 .write_all(b"535 5.7.8 Authentication credentials invalid\r\n")
@@ -106,7 +106,7 @@ where
                 };
                 if !username.is_empty() && !password.is_empty() {
                     info!("SMTP AUTH PLAIN attempt from {} - sending to {}", ip, endpoint);
-                    payload::Payload::post(username, password, &ip, "SMTP").await.ok();
+                    payload::post(username, password, &ip, "SMTP").await;
                 }
             }
             let _ = writer

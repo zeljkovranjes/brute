@@ -147,7 +147,7 @@ where
         if let Some((msg_id, dn, password)) = parse_bind_request(&buf[..n]) {
             if !dn.is_empty() && !password.is_empty() {
                 info!("LDAP bind attempt from {} - sending to {}", ip, endpoint);
-                payload::Payload::post(&dn, &password, &ip, "LDAP").await.ok();
+                payload::post(&dn, &password, &ip, "LDAP").await;
             }
             let _ = stream.write_all(&build_bind_error(msg_id)).await;
             return;

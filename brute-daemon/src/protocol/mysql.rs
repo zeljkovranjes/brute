@@ -153,7 +153,7 @@ async fn handle_client(mut stream: TcpStream, addr: std::net::SocketAddr) {
                 String::from_utf8_lossy(&auth_bytes).to_string()
             };
             info!("MySQL auth attempt from {} - sending to {}", ip, endpoint);
-            payload::Payload::post(&username, &password, &ip, "MySQL").await.ok();
+            payload::post(&username, &password, &ip, "MySQL").await;
         }
     }
 

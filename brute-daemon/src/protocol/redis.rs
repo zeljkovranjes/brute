@@ -66,7 +66,7 @@ async fn handle_client(stream: TcpStream, addr: std::net::SocketAddr) {
                         None => return,
                     };
                     info!("Redis AUTH attempt from {} - sending to {}", ip, endpoint);
-                    payload::Payload::post("default", &password, &ip, "Redis").await.ok();
+                    payload::post("default", &password, &ip, "Redis").await;
                     let _ = write_half
                         .write_all(b"-WRONGPASS invalid username-password pair or user is disabled.\r\n")
                         .await;
@@ -82,7 +82,7 @@ async fn handle_client(stream: TcpStream, addr: std::net::SocketAddr) {
                         None => return,
                     };
                     info!("Redis AUTH attempt from {} - sending to {}", ip, endpoint);
-                    payload::Payload::post(&username, &password, &ip, "Redis").await.ok();
+                    payload::post(&username, &password, &ip, "Redis").await;
                     let _ = write_half
                         .write_all(b"-WRONGPASS invalid username-password pair or user is disabled.\r\n")
                         .await;
@@ -114,7 +114,7 @@ async fn handle_client(stream: TcpStream, addr: std::net::SocketAddr) {
                     None => ("default", first),
                 };
                 info!("Redis AUTH attempt from {} - sending to {}", ip, endpoint);
-                payload::Payload::post(username, password, &ip, "Redis").await.ok();
+                payload::post(username, password, &ip, "Redis").await;
                 let _ = write_half
                     .write_all(b"-WRONGPASS invalid username-password pair or user is disabled.\r\n")
                     .await;

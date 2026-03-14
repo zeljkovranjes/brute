@@ -36,7 +36,11 @@ async fn main() -> anyhow::Result<()> {
 
     #[cfg(debug_assertions)]
     dotenvy::dotenv().unwrap();
-    
+
+    // Validate required env vars up front — panics with a clear message if
+    // ADD_ATTACK_ENDPOINT or BEARER_TOKEN are missing or empty.
+    payload::validate_config();
+
     let tls_acceptor = create_tls_acceptor().expect("Failed to create TLS acceptor");
 
     let (ssh, ftp, telnet, smtp, pop3, imap, ldap, redis, http, mqtt, mysql, postgres, smtps, imaps, ldaps) = tokio::join!(

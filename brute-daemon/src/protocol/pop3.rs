@@ -47,7 +47,7 @@ async fn handle_client(stream: TcpStream, addr: std::net::SocketAddr) {
             let password = trimmed[5..].to_string();
             if !username.is_empty() && !password.is_empty() {
                 info!("POP3 auth attempt from {} - sending to {}", ip, endpoint);
-                payload::Payload::post(&username, &password, &ip, "POP3").await.ok();
+                payload::post(&username, &password, &ip, "POP3").await;
             }
             let _ = writer.write_all(b"-ERR Invalid credentials\r\n").await;
             return;
