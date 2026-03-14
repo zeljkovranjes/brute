@@ -2,6 +2,7 @@ use std::time::Instant;
 
 use actix::Addr;
 use actix_web::{get, web, HttpRequest, HttpResponse, Responder};
+use actix_web_httpauth::extractors::bearer::BearerAuth;
 use actix_web_actors::ws;
 use serde::Deserialize;
 
@@ -623,7 +624,11 @@ struct BlocklistParams {
 async fn get_blocklist(
     state: web::Data<AppState>,
     params: web::Query<BlocklistParams>,
+    bearer: BearerAuth,
 ) -> impl Responder {
+    if !bearer.token().eq(&state.bearer) {
+        return HttpResponse::Unauthorized().finish();
+    }
     let limit = params.limit.unwrap_or(500).min(500);
     let request = RequestWithLimit {
         table: TopIp::default(),
