@@ -19,7 +19,7 @@ command = "cargo install worker-build && worker-build --release"
 binding = "DB"
 database_name = "brute"
 database_id = "YOUR_D1_DATABASE_ID"
-migrations_dir = "migrations"
+migrations_dir = "../migrations/d1"
 
 # ── Analytics Engine ──────────────────────────────────────────────────────────
 # Requires the Workers Paid plan ($5/month).
