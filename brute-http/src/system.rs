@@ -33,6 +33,13 @@ pub struct RequestWithLimit<T> {
     pub max_limit: usize,
 }
 
+pub struct RequestWithLimitAndOffset<T> {
+    pub table: T, // just call ::default()
+    pub limit: usize,
+    pub max_limit: usize,
+    pub offset: usize,
+}
+
 //////////////////////
 // SYSTEM /w ACTOR //
 ////////////////////
@@ -933,6 +940,536 @@ impl Handler<RequestWithLimit<TopYearly>> for BruteSystem {
                 "SELECT * FROM top_yearly ORDER BY timestamp DESC LIMIT $1;",
             )
             .bind(limit as i64)
+            .fetch_all(&db_pool)
+            .await;
+            match rows {
+                Ok(r) => Ok(r),
+                Err(_) => Err(BruteResponeError::InternalError("something broke".to_string())),
+            }
+        };
+        Box::pin(fut)
+    }
+}
+
+///////////////////////////////////////////////////
+// HANDLER IMPLS FOR RequestWithLimitAndOffset  //
+/////////////////////////////////////////////////
+
+impl Handler<RequestWithLimitAndOffset<ProcessedIndividual>> for BruteSystem {
+    type Result = ResponseFuture<Result<Vec<ProcessedIndividual>, BruteResponeError>>;
+
+    fn handle(&mut self, msg: RequestWithLimitAndOffset<ProcessedIndividual>, _: &mut Self::Context) -> Self::Result {
+        let db_pool = self.db_pool.clone();
+        let limit = msg.limit;
+        let offset = msg.offset;
+        let fut = async move {
+            let query = "SELECT * FROM processed_individual ORDER BY timestamp DESC LIMIT $1 OFFSET $2";
+            let rows = sqlx::query_as::<_, ProcessedIndividual>(query)
+                .bind(limit as i64)
+                .bind(offset as i64)
+                .fetch_all(&db_pool)
+                .await;
+            match rows {
+                Ok(rows) => Ok(rows),
+                Err(e) => {
+                    log::error!("processed_individual query failed: {:?}", e);
+                    Err(BruteResponeError::InternalError("something definitely broke on our side".to_string()))
+                }
+            }
+        };
+        Box::pin(fut)
+    }
+}
+
+impl Handler<RequestWithLimitAndOffset<TopUsername>> for BruteSystem {
+    type Result = ResponseFuture<Result<Vec<TopUsername>, BruteResponeError>>;
+
+    fn handle(&mut self, msg: RequestWithLimitAndOffset<TopUsername>, _: &mut Self::Context) -> Self::Result {
+        let db_pool = self.db_pool.clone();
+        let limit = msg.limit;
+        let offset = msg.offset;
+        let fut = async move {
+            let rows = sqlx::query_as::<_, TopUsername>(
+                "SELECT * FROM top_username ORDER BY amount DESC LIMIT $1 OFFSET $2;",
+            )
+            .bind(limit as i64)
+            .bind(offset as i64)
+            .fetch_all(&db_pool)
+            .await;
+            match rows {
+                Ok(rows) => Ok(rows),
+                Err(_) => Err(BruteResponeError::InternalError("something definitely broke on our side".to_string())),
+            }
+        };
+        Box::pin(fut)
+    }
+}
+
+impl Handler<RequestWithLimitAndOffset<TopPassword>> for BruteSystem {
+    type Result = ResponseFuture<Result<Vec<TopPassword>, BruteResponeError>>;
+
+    fn handle(&mut self, msg: RequestWithLimitAndOffset<TopPassword>, _: &mut Self::Context) -> Self::Result {
+        let db_pool = self.db_pool.clone();
+        let limit = msg.limit;
+        let offset = msg.offset;
+        let fut = async move {
+            let rows = sqlx::query_as::<_, TopPassword>(
+                "SELECT * FROM top_password WHERE password !~ '^X{2,}$' ORDER BY amount DESC LIMIT $1 OFFSET $2;",
+            )
+            .bind(limit as i64)
+            .bind(offset as i64)
+            .fetch_all(&db_pool)
+            .await;
+            match rows {
+                Ok(rows) => Ok(rows),
+                Err(_) => Err(BruteResponeError::InternalError("something definitely broke on our side".to_string())),
+            }
+        };
+        Box::pin(fut)
+    }
+}
+
+impl Handler<RequestWithLimitAndOffset<TopIp>> for BruteSystem {
+    type Result = ResponseFuture<Result<Vec<TopIp>, BruteResponeError>>;
+
+    fn handle(&mut self, msg: RequestWithLimitAndOffset<TopIp>, _: &mut Self::Context) -> Self::Result {
+        let db_pool = self.db_pool.clone();
+        let limit = msg.limit;
+        let offset = msg.offset;
+        let fut = async move {
+            let rows = sqlx::query_as::<_, TopIp>(
+                "SELECT * FROM top_ip ORDER BY amount DESC LIMIT $1 OFFSET $2;",
+            )
+            .bind(limit as i64)
+            .bind(offset as i64)
+            .fetch_all(&db_pool)
+            .await;
+            match rows {
+                Ok(rows) => Ok(rows),
+                Err(_) => Err(BruteResponeError::InternalError("something definitely broke on our side".to_string())),
+            }
+        };
+        Box::pin(fut)
+    }
+}
+
+impl Handler<RequestWithLimitAndOffset<TopProtocol>> for BruteSystem {
+    type Result = ResponseFuture<Result<Vec<TopProtocol>, BruteResponeError>>;
+
+    fn handle(&mut self, msg: RequestWithLimitAndOffset<TopProtocol>, _: &mut Self::Context) -> Self::Result {
+        let db_pool = self.db_pool.clone();
+        let limit = msg.limit;
+        let offset = msg.offset;
+        let fut = async move {
+            let rows = sqlx::query_as::<_, TopProtocol>(
+                "SELECT * FROM top_protocol ORDER BY amount DESC LIMIT $1 OFFSET $2;",
+            )
+            .bind(limit as i64)
+            .bind(offset as i64)
+            .fetch_all(&db_pool)
+            .await;
+            match rows {
+                Ok(rows) => Ok(rows),
+                Err(_) => Err(BruteResponeError::InternalError("something definitely broke on our side".to_string())),
+            }
+        };
+        Box::pin(fut)
+    }
+}
+
+impl Handler<RequestWithLimitAndOffset<TopCountry>> for BruteSystem {
+    type Result = ResponseFuture<Result<Vec<TopCountry>, BruteResponeError>>;
+
+    fn handle(&mut self, msg: RequestWithLimitAndOffset<TopCountry>, _: &mut Self::Context) -> Self::Result {
+        let db_pool = self.db_pool.clone();
+        let limit = msg.limit;
+        let offset = msg.offset;
+        let fut = async move {
+            let rows = sqlx::query_as::<_, TopCountry>(
+                "SELECT * FROM top_country ORDER BY amount DESC LIMIT $1 OFFSET $2;",
+            )
+            .bind(limit as i64)
+            .bind(offset as i64)
+            .fetch_all(&db_pool)
+            .await;
+            match rows {
+                Ok(rows) => Ok(rows),
+                Err(_) => Err(BruteResponeError::InternalError("a country broke the server.".to_string())),
+            }
+        };
+        Box::pin(fut)
+    }
+}
+
+impl Handler<RequestWithLimitAndOffset<TopCity>> for BruteSystem {
+    type Result = ResponseFuture<Result<Vec<TopCity>, BruteResponeError>>;
+
+    fn handle(&mut self, msg: RequestWithLimitAndOffset<TopCity>, _: &mut Self::Context) -> Self::Result {
+        let db_pool = self.db_pool.clone();
+        let limit = msg.limit;
+        let offset = msg.offset;
+        let fut = async move {
+            let rows = sqlx::query_as::<_, TopCity>(
+                "SELECT * FROM top_city ORDER BY amount DESC LIMIT $1 OFFSET $2;",
+            )
+            .bind(limit as i64)
+            .bind(offset as i64)
+            .fetch_all(&db_pool)
+            .await;
+            match rows {
+                Ok(rows) => Ok(rows),
+                Err(_) => Err(BruteResponeError::InternalError("something definitely broke on our side".to_string())),
+            }
+        };
+        Box::pin(fut)
+    }
+}
+
+impl Handler<RequestWithLimitAndOffset<TopRegion>> for BruteSystem {
+    type Result = ResponseFuture<Result<Vec<TopRegion>, BruteResponeError>>;
+
+    fn handle(&mut self, msg: RequestWithLimitAndOffset<TopRegion>, _: &mut Self::Context) -> Self::Result {
+        let db_pool = self.db_pool.clone();
+        let limit = msg.limit;
+        let offset = msg.offset;
+        let fut = async move {
+            let rows = sqlx::query_as::<_, TopRegion>(
+                "SELECT * FROM top_region ORDER BY amount DESC LIMIT $1 OFFSET $2;",
+            )
+            .bind(limit as i64)
+            .bind(offset as i64)
+            .fetch_all(&db_pool)
+            .await;
+            match rows {
+                Ok(rows) => Ok(rows),
+                Err(_) => Err(BruteResponeError::InternalError("something definitely broke on our side".to_string())),
+            }
+        };
+        Box::pin(fut)
+    }
+}
+
+impl Handler<RequestWithLimitAndOffset<TopTimezone>> for BruteSystem {
+    type Result = ResponseFuture<Result<Vec<TopTimezone>, BruteResponeError>>;
+
+    fn handle(&mut self, msg: RequestWithLimitAndOffset<TopTimezone>, _: &mut Self::Context) -> Self::Result {
+        let db_pool = self.db_pool.clone();
+        let limit = msg.limit;
+        let offset = msg.offset;
+        let fut = async move {
+            let rows = sqlx::query_as::<_, TopTimezone>(
+                "SELECT * FROM top_timezone ORDER BY amount DESC LIMIT $1 OFFSET $2;",
+            )
+            .bind(limit as i64)
+            .bind(offset as i64)
+            .fetch_all(&db_pool)
+            .await;
+            match rows {
+                Ok(rows) => Ok(rows),
+                Err(_) => Err(BruteResponeError::InternalError("something definitely broke on our side".to_string())),
+            }
+        };
+        Box::pin(fut)
+    }
+}
+
+impl Handler<RequestWithLimitAndOffset<TopOrg>> for BruteSystem {
+    type Result = ResponseFuture<Result<Vec<TopOrg>, BruteResponeError>>;
+
+    fn handle(&mut self, msg: RequestWithLimitAndOffset<TopOrg>, _: &mut Self::Context) -> Self::Result {
+        let db_pool = self.db_pool.clone();
+        let limit = msg.limit;
+        let offset = msg.offset;
+        let fut = async move {
+            let rows = sqlx::query_as::<_, TopOrg>(
+                "SELECT * FROM top_org ORDER BY amount DESC LIMIT $1 OFFSET $2;",
+            )
+            .bind(limit as i64)
+            .bind(offset as i64)
+            .fetch_all(&db_pool)
+            .await;
+            match rows {
+                Ok(rows) => Ok(rows),
+                Err(_) => Err(BruteResponeError::InternalError("something definitely broke on our side".to_string())),
+            }
+        };
+        Box::pin(fut)
+    }
+}
+
+impl Handler<RequestWithLimitAndOffset<TopPostal>> for BruteSystem {
+    type Result = ResponseFuture<Result<Vec<TopPostal>, BruteResponeError>>;
+
+    fn handle(&mut self, msg: RequestWithLimitAndOffset<TopPostal>, _: &mut Self::Context) -> Self::Result {
+        let db_pool = self.db_pool.clone();
+        let limit = msg.limit;
+        let offset = msg.offset;
+        let fut = async move {
+            let rows = sqlx::query_as::<_, TopPostal>(
+                "SELECT * FROM top_postal WHERE postal !~ '^\\s*$' ORDER BY amount DESC LIMIT $1 OFFSET $2;",
+            )
+            .bind(limit as i64)
+            .bind(offset as i64)
+            .fetch_all(&db_pool)
+            .await;
+            match rows {
+                Ok(rows) => Ok(rows),
+                Err(_) => Err(BruteResponeError::InternalError("something definitely broke on our side".to_string())),
+            }
+        };
+        Box::pin(fut)
+    }
+}
+
+impl Handler<RequestWithLimitAndOffset<TopLocation>> for BruteSystem {
+    type Result = ResponseFuture<Result<Vec<TopLocation>, BruteResponeError>>;
+
+    fn handle(&mut self, msg: RequestWithLimitAndOffset<TopLocation>, _: &mut Self::Context) -> Self::Result {
+        let db_pool = self.db_pool.clone();
+        let limit = msg.limit;
+        let offset = msg.offset;
+        let fut = async move {
+            let rows = sqlx::query_as::<_, TopLocation>(
+                "SELECT * FROM top_loc ORDER BY amount DESC LIMIT $1 OFFSET $2;",
+            )
+            .bind(limit as i64)
+            .bind(offset as i64)
+            .fetch_all(&db_pool)
+            .await;
+            match rows {
+                Ok(rows) => Ok(rows),
+                Err(_) => Err(BruteResponeError::InternalError("something definitely broke on our side".to_string())),
+            }
+        };
+        Box::pin(fut)
+    }
+}
+
+impl Handler<RequestWithLimitAndOffset<TopUsrPassCombo>> for BruteSystem {
+    type Result = ResponseFuture<Result<Vec<TopUsrPassCombo>, BruteResponeError>>;
+
+    fn handle(&mut self, msg: RequestWithLimitAndOffset<TopUsrPassCombo>, _: &mut Self::Context) -> Self::Result {
+        let db_pool = self.db_pool.clone();
+        let limit = msg.limit;
+        let offset = msg.offset;
+        let fut = async move {
+            let rows = sqlx::query_as::<_, TopUsrPassCombo>(
+                "SELECT * FROM top_usr_pass_combo WHERE password !~ '^X{2,}$' ORDER BY amount DESC LIMIT $1 OFFSET $2;",
+            )
+            .bind(limit as i64)
+            .bind(offset as i64)
+            .fetch_all(&db_pool)
+            .await;
+            match rows {
+                Ok(rows) => Ok(rows),
+                Err(_) => Err(BruteResponeError::InternalError("something definitely broke on our side".to_string())),
+            }
+        };
+        Box::pin(fut)
+    }
+}
+
+impl Handler<RequestWithLimitAndOffset<TopHourly>> for BruteSystem {
+    type Result = ResponseFuture<Result<Vec<TopHourly>, BruteResponeError>>;
+
+    fn handle(&mut self, msg: RequestWithLimitAndOffset<TopHourly>, _: &mut Self::Context) -> Self::Result {
+        let db_pool = self.db_pool.clone();
+        let limit = msg.limit;
+        let offset = msg.offset;
+        let fut = async move {
+            let rows = sqlx::query_as::<_, TopHourly>(
+                "SELECT * FROM top_hourly ORDER BY timestamp DESC LIMIT $1 OFFSET $2;",
+            )
+            .bind(limit as i64)
+            .bind(offset as i64)
+            .fetch_all(&db_pool)
+            .await;
+            match rows {
+                Ok(rows) => Ok(rows),
+                Err(_) => Err(BruteResponeError::InternalError("something definitely broke on our side".to_string())),
+            }
+        };
+        Box::pin(fut)
+    }
+}
+
+impl Handler<RequestWithLimitAndOffset<TopDaily>> for BruteSystem {
+    type Result = ResponseFuture<Result<Vec<TopDaily>, BruteResponeError>>;
+
+    fn handle(&mut self, msg: RequestWithLimitAndOffset<TopDaily>, _: &mut Self::Context) -> Self::Result {
+        let db_pool = self.db_pool.clone();
+        let limit = msg.limit;
+        let offset = msg.offset;
+        let fut = async move {
+            let rows = sqlx::query_as::<_, TopDaily>(
+                "SELECT * FROM top_daily ORDER BY timestamp DESC LIMIT $1 OFFSET $2;",
+            )
+            .bind(limit as i64)
+            .bind(offset as i64)
+            .fetch_all(&db_pool)
+            .await;
+            match rows {
+                Ok(rows) => Ok(rows),
+                Err(_) => Err(BruteResponeError::InternalError("something broke".to_string())),
+            }
+        };
+        Box::pin(fut)
+    }
+}
+
+impl Handler<RequestWithLimitAndOffset<TopWeekly>> for BruteSystem {
+    type Result = ResponseFuture<Result<Vec<TopWeekly>, BruteResponeError>>;
+
+    fn handle(&mut self, msg: RequestWithLimitAndOffset<TopWeekly>, _: &mut Self::Context) -> Self::Result {
+        let db_pool = self.db_pool.clone();
+        let limit = msg.limit;
+        let offset = msg.offset;
+        let fut = async move {
+            let rows = sqlx::query_as::<_, TopWeekly>(
+                "SELECT * FROM top_weekly ORDER BY timestamp DESC LIMIT $1 OFFSET $2;",
+            )
+            .bind(limit as i64)
+            .bind(offset as i64)
+            .fetch_all(&db_pool)
+            .await;
+            match rows {
+                Ok(rows) => Ok(rows),
+                Err(_) => Err(BruteResponeError::InternalError("something broke".to_string())),
+            }
+        };
+        Box::pin(fut)
+    }
+}
+
+impl Handler<RequestWithLimitAndOffset<TopYearly>> for BruteSystem {
+    type Result = ResponseFuture<Result<Vec<TopYearly>, BruteResponeError>>;
+
+    fn handle(&mut self, msg: RequestWithLimitAndOffset<TopYearly>, _: &mut Self::Context) -> Self::Result {
+        let db_pool = self.db_pool.clone();
+        let limit = msg.limit;
+        let offset = msg.offset;
+        let fut = async move {
+            let rows = sqlx::query_as::<_, TopYearly>(
+                "SELECT * FROM top_yearly ORDER BY timestamp DESC LIMIT $1 OFFSET $2;",
+            )
+            .bind(limit as i64)
+            .bind(offset as i64)
+            .fetch_all(&db_pool)
+            .await;
+            match rows {
+                Ok(rows) => Ok(rows),
+                Err(_) => Err(BruteResponeError::InternalError("something broke".to_string())),
+            }
+        };
+        Box::pin(fut)
+    }
+}
+
+impl Handler<RequestWithLimitAndOffset<TopSubnet>> for BruteSystem {
+    type Result = ResponseFuture<Result<Vec<TopSubnet>, BruteResponeError>>;
+
+    fn handle(&mut self, msg: RequestWithLimitAndOffset<TopSubnet>, _: &mut Self::Context) -> Self::Result {
+        let db_pool = self.db_pool.clone();
+        let limit = msg.limit;
+        let offset = msg.offset;
+        let fut = async move {
+            let rows = sqlx::query_as::<_, TopSubnet>(
+                r#"SELECT
+                    regexp_replace(ip, '(\d+\.\d+\.\d+)\.\d+', '\1.0/24') AS subnet,
+                    COUNT(*)::bigint AS amount
+                FROM processed_individual
+                WHERE ip ~ '^\d+\.\d+\.\d+\.\d+$'
+                GROUP BY subnet
+                ORDER BY amount DESC
+                LIMIT $1 OFFSET $2"#,
+            )
+            .bind(limit as i64)
+            .bind(offset as i64)
+            .fetch_all(&db_pool)
+            .await;
+            match rows {
+                Ok(r) => Ok(r),
+                Err(_) => Err(BruteResponeError::InternalError("something broke".to_string())),
+            }
+        };
+        Box::pin(fut)
+    }
+}
+
+impl Handler<RequestWithLimitAndOffset<IpSeen>> for BruteSystem {
+    type Result = ResponseFuture<Result<Vec<IpSeen>, BruteResponeError>>;
+
+    fn handle(&mut self, msg: RequestWithLimitAndOffset<IpSeen>, _: &mut Self::Context) -> Self::Result {
+        let db_pool = self.db_pool.clone();
+        let limit = msg.limit;
+        let offset = msg.offset;
+        let fut = async move {
+            let rows = sqlx::query_as::<_, IpSeen>(
+                "SELECT * FROM ip_seen ORDER BY total_sessions DESC LIMIT $1 OFFSET $2;",
+            )
+            .bind(limit as i64)
+            .bind(offset as i64)
+            .fetch_all(&db_pool)
+            .await;
+            match rows {
+                Ok(r) => Ok(r),
+                Err(_) => Err(BruteResponeError::InternalError("query failed".to_string())),
+            }
+        };
+        Box::pin(fut)
+    }
+}
+
+impl Handler<RequestWithLimitAndOffset<IpAbuse>> for BruteSystem {
+    type Result = ResponseFuture<Result<Vec<IpAbuse>, BruteResponeError>>;
+
+    fn handle(&mut self, msg: RequestWithLimitAndOffset<IpAbuse>, _: &mut Self::Context) -> Self::Result {
+        let db_pool = self.db_pool.clone();
+        let limit = msg.limit;
+        let offset = msg.offset;
+        let fut = async move {
+            let rows = sqlx::query_as::<_, IpAbuse>(
+                "SELECT * FROM ip_abuse ORDER BY confidence_score DESC LIMIT $1 OFFSET $2;",
+            )
+            .bind(limit as i64)
+            .bind(offset as i64)
+            .fetch_all(&db_pool)
+            .await;
+            match rows {
+                Ok(r) => Ok(r),
+                Err(_) => Err(BruteResponeError::InternalError("query failed".to_string())),
+            }
+        };
+        Box::pin(fut)
+    }
+}
+
+impl Handler<RequestWithLimitAndOffset<AttackVelocity>> for BruteSystem {
+    type Result = ResponseFuture<Result<Vec<AttackVelocity>, BruteResponeError>>;
+
+    fn handle(&mut self, msg: RequestWithLimitAndOffset<AttackVelocity>, _: &mut Self::Context) -> Self::Result {
+        let db_pool = self.db_pool.clone();
+        let limit = msg.limit;
+        let offset = msg.offset;
+        let fut = async move {
+            let now = SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .unwrap()
+                .as_millis() as i64;
+            let since = now - 3_600_000;
+            let rows = sqlx::query_as::<_, AttackVelocity>(
+                r#"SELECT
+                    (timestamp / 60000) * 60000 AS minute_bucket,
+                    COUNT(*)::bigint AS amount
+                FROM processed_individual
+                WHERE timestamp > $1
+                GROUP BY minute_bucket
+                ORDER BY minute_bucket DESC
+                LIMIT $2 OFFSET $3"#,
+            )
+            .bind(since)
+            .bind(limit as i64)
+            .bind(offset as i64)
             .fetch_all(&db_pool)
             .await;
             match rows {
