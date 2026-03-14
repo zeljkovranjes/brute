@@ -9,6 +9,16 @@ authors = [
 [lib]
 crate-type = ["cdylib"]
 
+# Feature flags
+# ─────────────
+# default (free tier): D1 for all storage and aggregations, no WebSocket.
+# paid: enables Cloudflare Analytics Engine (aggregation queries) and
+#       Durable Objects (WebSocket broadcasting). Both require the Workers
+#       Paid plan ($5/month). Build with `--features paid` to activate.
+[features]
+default = []
+paid = []
+
 [dependencies]
 worker = "0.4"
 brute-core = { path = "../brute-core" }
