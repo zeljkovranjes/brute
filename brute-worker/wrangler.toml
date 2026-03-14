@@ -61,3 +61,12 @@ ABUSEIPDB_KEY = ""
 # Number of days to retain attack records in D1.
 # Rows older than this threshold are pruned by the daily cron at 3am UTC.
 DATA_RETENTION_DAYS = "90"
+# Optional — enriches attack records with full IPinfo.io geo data.
+# Two ways to enable (set one or both):
+#   IPINFO_BASE_URL — set to your round-robin proxy URL; no token required,
+#                     the proxy handles auth internally.
+#   IPINFO_TOKEN    — set to your IPinfo API token to use https://ipinfo.io
+#                     directly without a proxy.
+# Leave both empty to fall back to Cloudflare's built-in cf geo data.
+IPINFO_TOKEN = ""
+IPINFO_BASE_URL = ""

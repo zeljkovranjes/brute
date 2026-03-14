@@ -12,7 +12,11 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use uuid::Uuid;
 use worker::{Env, Request, Response, RouteContext};
 
-use crate::{db::d1::D1Db, analytics::engine::AnalyticsEngine, geo::cf::CfGeoProvider};
+use crate::{
+    analytics::engine::AnalyticsEngine,
+    db::d1::D1Db,
+    geo::{cf::CfGeoProvider, ipinfo::IpInfoProvider},
+};
 
 #[derive(Deserialize)]
 struct IndividualPayload {
@@ -88,10 +92,33 @@ pub async fn add_attack(mut req: Request, ctx: RouteContext<()>) -> worker::Resu
         Err(e) => return Response::error(format!("Analytics binding error: {}", e), 500),
     };
 
-    // Geo lookup from cf object
-    let cf = req.cf().cloned().unwrap_or_default();
-    let geo = CfGeoProvider::new(cf);
-    let geo_data = geo.lookup(&individual.ip).await.unwrap_or_default();
+    // Geo lookup — IPinfo first, Cloudflare cf object as fallback.
+    //
+    // Two ways to enable IPinfo:
+    //   IPINFO_BASE_URL set → use that proxy (no token needed, proxy handles auth)
+    //   IPINFO_TOKEN set    → use real https://ipinfo.io with that token
+    // If neither is set, fall through to CF.
+    let ipinfo_base_url = env.var("IPINFO_BASE_URL").map(|v| v.to_string()).unwrap_or_default();
+    let ipinfo_token = env.var("IPINFO_TOKEN").map(|v| v.to_string()).unwrap_or_default();
+
+    let geo_data = if !ipinfo_base_url.is_empty() || !ipinfo_token.is_empty() {
+        let base_url = if !ipinfo_base_url.is_empty() {
+            ipinfo_base_url
+        } else {
+            "https://ipinfo.io".to_string()
+        };
+        let ipinfo = IpInfoProvider::new(ipinfo_token, base_url);
+        match ipinfo.lookup(&individual.ip).await {
+            Ok(data) => data,
+            Err(_) => {
+                let cf = req.cf().cloned().unwrap_or_default();
+                CfGeoProvider::new(cf).lookup(&individual.ip).await.unwrap_or_default()
+            }
+        }
+    } else {
+        let cf = req.cf().cloned().unwrap_or_default();
+        CfGeoProvider::new(cf).lookup(&individual.ip).await.unwrap_or_default()
+    };
 
     let now = now_ms();
     let new_id = Uuid::new_v4().as_simple().to_string();
