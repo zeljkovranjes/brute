@@ -13,7 +13,7 @@ use crate::payload;
 
 /// Parse: `<tag> LOGIN <user> <pass>` with optional double-quote wrapping.
 fn parse_imap_login(line: &str) -> Option<(String, String, String)> {
-    let mut parts = line.splitn(4, ' ');
+    let mut parts = line.splitn(3, ' ');
     let tag = parts.next()?.to_string();
     let cmd = parts.next()?;
     if !cmd.eq_ignore_ascii_case("LOGIN") {
