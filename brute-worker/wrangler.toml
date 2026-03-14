@@ -16,9 +16,10 @@ command = "cargo install worker-build && worker-build --release"
 # Create your database: wrangler d1 create brute
 # Then fill in the database_id below.
 [[d1_databases]]
-binding = "D1"
+binding = "DB"
 database_name = "brute"
 database_id = "YOUR_D1_DATABASE_ID"
+migrations_dir = "migrations"
 
 # ── Analytics Engine ──────────────────────────────────────────────────────────
 # Requires the Workers Paid plan ($5/month).
