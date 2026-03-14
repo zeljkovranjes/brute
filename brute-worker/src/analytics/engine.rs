@@ -4,7 +4,7 @@ use brute_core::{
     model::{Individual, ProcessedIndividual},
     traits::analytics::BruteAnalytics,
 };
-use worker::AnalyticsEngineDataset;
+use worker::{AnalyticsEngineDataPointBuilder, AnalyticsEngineDataset};
 
 /// Cloudflare Analytics Engine implementation of `BruteAnalytics`.
 ///
@@ -37,18 +37,16 @@ impl BruteAnalytics for AnalyticsEngine {
         individual: &Individual,
         processed: &ProcessedIndividual,
     ) -> Result<(), BruteError> {
-        self.dataset
-            .write_data_point()
-            .map_err(|e| BruteError::Analytics(e.to_string()))?
-            .blob(individual.username.clone())
-            .blob(individual.password.clone())
-            .blob(processed.country.clone().unwrap_or_default())
-            .blob(processed.city.clone().unwrap_or_default())
-            .blob(individual.protocol.clone())
-            .blob(individual.ip.clone())
-            .blob(processed.org.clone().unwrap_or_default())
-            .double(1.0)
-            .send()
+        AnalyticsEngineDataPointBuilder::new()
+            .add_blob(individual.username.clone())
+            .add_blob(individual.password.clone())
+            .add_blob(processed.country.clone().unwrap_or_default())
+            .add_blob(processed.city.clone().unwrap_or_default())
+            .add_blob(individual.protocol.clone())
+            .add_blob(individual.ip.clone())
+            .add_blob(processed.org.clone().unwrap_or_default())
+            .add_double(1.0)
+            .write_to(&self.dataset)
             .map_err(|e| BruteError::Analytics(e.to_string()))?;
         Ok(())
     }
@@ -58,17 +56,14 @@ impl BruteAnalytics for AnalyticsEngine {
         protocol: &str,
         amount: i32,
     ) -> Result<(), BruteError> {
-        // Write a protocol-only increment data point.
         // blob1 = "_protocol_increment" sentinel to distinguish from attack events
         // blob2 = protocol name
         // double1 = amount
-        self.dataset
-            .write_data_point()
-            .map_err(|e| BruteError::Analytics(e.to_string()))?
-            .blob("_protocol_increment".to_string())
-            .blob(protocol.to_string())
-            .double(amount as f64)
-            .send()
+        AnalyticsEngineDataPointBuilder::new()
+            .add_blob("_protocol_increment".to_string())
+            .add_blob(protocol.to_string())
+            .add_double(amount as f64)
+            .write_to(&self.dataset)
             .map_err(|e| BruteError::Analytics(e.to_string()))?;
         Ok(())
     }
