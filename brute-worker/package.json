@@ -1,0 +1,13 @@
+{
+  "name": "brute-worker",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev",
+    "build": "cargo install worker-build && worker-build --release"
+  },
+  "devDependencies": {
+    "wrangler": "^3.0.0"
+  }
+}
