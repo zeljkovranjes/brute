@@ -193,22 +193,22 @@ npm install -g wrangler
 1. Create a D1 database:
 
     ```sh
-    wrangler d1 create brute
+    wrangler d1 create worker_brute_d1
     ```
 
     Copy the `database_id` from the output and paste it into `brute-worker/wrangler.toml`:
 
     ```toml
     [[d1_databases]]
-    binding = "DB"
-    database_name = "brute"
+    binding = "worker_brute_d1"
+    database_name = "worker_brute_d1"
     database_id = "YOUR_D1_DATABASE_ID"   # <-- paste here
     ```
 
 2. Apply the D1 schema:
 
     ```sh
-    wrangler d1 execute brute --file=../migrations/d1/0001_initial_schema.sql
+    wrangler d1 execute worker_brute_d1 --file=../migrations/d1/0001_initial_schema.sql
     ```
 
 3. Set the bearer token secret:
