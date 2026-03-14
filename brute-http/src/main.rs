@@ -1,10 +1,11 @@
-use std::{env::var, fs::File, io::BufReader, path::Path};
+use std::{env::var, fs::File, io::BufReader, path::Path, time::{SystemTime, UNIX_EPOCH}};
 
 use actix::Actor;
 use brute_http::{config::Config, geo::ipinfo::IpInfoProvider, http::{serve, serve_tls}, system::BruteSystem};
 use clap::Parser;
 use log::info;
 use sqlx::{migrate::Migrator, postgres::{PgConnectOptions, PgPoolOptions}, Connection, PgConnection};
+use tokio::time::Duration;
 
 static CERTS_DIRECTORY: &str = "certs";
 
@@ -124,8 +125,35 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     ////////////
     // ACTOR //
     //////////
-    let brute_system = BruteSystem::new_brute(db, geo).await;
+    let brute_system = BruteSystem::new_brute(db.clone(), geo).await;
     let brute_actor = brute_system.start();
+
+    ///////////////////////
+    // DATA RETENTION   //
+    /////////////////////
+    let retention_pool = db.clone();
+    let retention_days = config.data_retention_days as i64;
+    tokio::spawn(async move {
+        let mut interval = tokio::time::interval(Duration::from_secs(86_400)); // 24h
+        loop {
+            interval.tick().await;
+            let cutoff = SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .unwrap()
+                .as_millis() as i64
+                - (retention_days * 86_400_000);
+            for table in &["individual", "processed_individual"] {
+                match sqlx::query(&format!("DELETE FROM {} WHERE timestamp < $1", table))
+                    .bind(cutoff)
+                    .execute(&retention_pool)
+                    .await
+                {
+                    Ok(r) => log::info!("Retention: pruned {} rows from {}", r.rows_affected(), table),
+                    Err(e) => log::error!("Retention: failed to prune {}: {}", table, e),
+                }
+            }
+        }
+    });
 
     ////////////////////////////////////
     // HTTP SERVER (TLS and NON-TLS) //
