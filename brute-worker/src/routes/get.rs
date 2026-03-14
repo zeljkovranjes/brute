@@ -1,16 +1,10 @@
 use brute_core::traits::database::BruteDb;
-use serde::Deserialize;
 use std::time::{SystemTime, UNIX_EPOCH};
 use worker::{Request, Response, RouteContext};
 
 use crate::db::d1::D1Db;
 
 static MAX_LIMIT: i64 = 100;
-
-#[derive(Deserialize, Default)]
-struct LimitParam {
-    limit: Option<i64>,
-}
 
 fn parse_limit(req: &Request, default: i64, max: i64) -> i64 {
     req.url()
