@@ -3,7 +3,7 @@ use derive_getters::Getters;
 
 use serde::{Deserialize, Serialize};
 
-use crate::{error::BruteResponeError, system::RequestWithLimit};
+use crate::{error::BruteResponeError, system::{RequestWithLimit, RequestWithLimitAndOffset}};
 
 #[derive(Default, Clone, Debug, sqlx::FromRow, Getters, Serialize)]
 pub struct Individual {
@@ -89,6 +89,10 @@ impl Message for RequestWithLimit<ProcessedIndividual> {
     type Result = Result<Vec<ProcessedIndividual>, BruteResponeError>;
 }
 
+impl Message for RequestWithLimitAndOffset<ProcessedIndividual> {
+    type Result = Result<Vec<ProcessedIndividual>, BruteResponeError>;
+}
+
 #[derive(Default, Debug, sqlx::FromRow, Getters, Serialize, Deserialize)]
 pub struct TopUsername {
     username: String,
@@ -102,6 +106,10 @@ impl TopUsername {
 }
 
 impl Message for RequestWithLimit<TopUsername> {
+    type Result = Result<Vec<TopUsername>, BruteResponeError>;
+}
+
+impl Message for RequestWithLimitAndOffset<TopUsername> {
     type Result = Result<Vec<TopUsername>, BruteResponeError>;
 }
 
@@ -122,6 +130,10 @@ impl Message for RequestWithLimit<TopPassword> {
     type Result = Result<Vec<TopPassword>, BruteResponeError>;
 }
 
+impl Message for RequestWithLimitAndOffset<TopPassword> {
+    type Result = Result<Vec<TopPassword>, BruteResponeError>;
+}
+
 #[derive(Default, Debug, sqlx::FromRow, Getters, Serialize, Deserialize)]
 pub struct TopIp {
     ip: String,
@@ -129,6 +141,10 @@ pub struct TopIp {
 }
 
 impl Message for RequestWithLimit<TopIp> {
+    type Result = Result<Vec<TopIp>, BruteResponeError>;
+}
+
+impl Message for RequestWithLimitAndOffset<TopIp> {
     type Result = Result<Vec<TopIp>, BruteResponeError>;
 }
 
@@ -158,6 +174,10 @@ impl Message for RequestWithLimit<TopProtocol> {
     type Result = Result<Vec<TopProtocol>, BruteResponeError>;
 }
 
+impl Message for RequestWithLimitAndOffset<TopProtocol> {
+    type Result = Result<Vec<TopProtocol>, BruteResponeError>;
+}
+
 #[derive(Default, Debug, sqlx::FromRow, Getters, Serialize, Deserialize)]
 pub struct TopCountry {
     country: String,
@@ -165,6 +185,10 @@ pub struct TopCountry {
 }
 
 impl Message for RequestWithLimit<TopCountry> {
+    type Result = Result<Vec<TopCountry>, BruteResponeError>;
+}
+
+impl Message for RequestWithLimitAndOffset<TopCountry> {
     type Result = Result<Vec<TopCountry>, BruteResponeError>;
 }
 
@@ -179,6 +203,10 @@ impl Message for RequestWithLimit<TopCity> {
     type Result = Result<Vec<TopCity>, BruteResponeError>;
 }
 
+impl Message for RequestWithLimitAndOffset<TopCity> {
+    type Result = Result<Vec<TopCity>, BruteResponeError>;
+}
+
 #[derive(Default, Debug, sqlx::FromRow, Getters, Serialize, Deserialize)]
 pub struct TopRegion {
     region: String,
@@ -187,6 +215,10 @@ pub struct TopRegion {
 }
 
 impl Message for RequestWithLimit<TopRegion> {
+    type Result = Result<Vec<TopRegion>, BruteResponeError>;
+}
+
+impl Message for RequestWithLimitAndOffset<TopRegion> {
     type Result = Result<Vec<TopRegion>, BruteResponeError>;
 }
 
@@ -200,6 +232,10 @@ impl Message for RequestWithLimit<TopTimezone> {
     type Result = Result<Vec<TopTimezone>, BruteResponeError>;
 }
 
+impl Message for RequestWithLimitAndOffset<TopTimezone> {
+    type Result = Result<Vec<TopTimezone>, BruteResponeError>;
+}
+
 #[derive(Default, Debug, sqlx::FromRow, Getters, Serialize, Deserialize)]
 pub struct TopOrg {
     org: String,
@@ -210,6 +246,10 @@ impl Message for RequestWithLimit<TopOrg> {
     type Result = Result<Vec<TopOrg>, BruteResponeError>;
 }
 
+impl Message for RequestWithLimitAndOffset<TopOrg> {
+    type Result = Result<Vec<TopOrg>, BruteResponeError>;
+}
+
 #[derive(Default, Debug, sqlx::FromRow, Getters, Serialize, Deserialize)]
 pub struct TopPostal {
     postal: String,
@@ -217,6 +257,10 @@ pub struct TopPostal {
 }
 
 impl Message for RequestWithLimit<TopPostal> {
+    type Result = Result<Vec<TopPostal>, BruteResponeError>;
+}
+
+impl Message for RequestWithLimitAndOffset<TopPostal> {
     type Result = Result<Vec<TopPostal>, BruteResponeError>;
 }
 
@@ -236,6 +280,10 @@ pub struct TopLocation {
 }
 
 impl Message for RequestWithLimit<TopLocation> {
+    type Result = Result<Vec<TopLocation>, BruteResponeError>;
+}
+
+impl Message for RequestWithLimitAndOffset<TopLocation> {
     type Result = Result<Vec<TopLocation>, BruteResponeError>;
 }
 
@@ -263,6 +311,10 @@ impl Message for RequestWithLimit<TopUsrPassCombo> {
     type Result = Result<Vec<TopUsrPassCombo>, BruteResponeError>;
 }
 
+impl Message for RequestWithLimitAndOffset<TopUsrPassCombo> {
+    type Result = Result<Vec<TopUsrPassCombo>, BruteResponeError>;
+}
+
 #[derive(Default, Debug, Clone, sqlx::FromRow, Getters, Serialize)]
 pub struct TopHourly {
     pub timestamp: i64,
@@ -270,6 +322,10 @@ pub struct TopHourly {
 }
 
 impl Message for RequestWithLimit<TopHourly> {
+    type Result = Result<Vec<TopHourly>, BruteResponeError>;
+}
+
+impl Message for RequestWithLimitAndOffset<TopHourly> {
     type Result = Result<Vec<TopHourly>, BruteResponeError>;
 }
 
@@ -283,6 +339,10 @@ impl Message for RequestWithLimit<TopDaily> {
     type Result = Result<Vec<TopDaily>, BruteResponeError>;
 }
 
+impl Message for RequestWithLimitAndOffset<TopDaily> {
+    type Result = Result<Vec<TopDaily>, BruteResponeError>;
+}
+
 #[derive(Default, Debug, Clone, sqlx::FromRow, Getters, Serialize, Deserialize)]
 pub struct TopWeekly {
     pub timestamp: i64,
@@ -293,6 +353,10 @@ impl Message for RequestWithLimit<TopWeekly> {
     type Result = Result<Vec<TopWeekly>, BruteResponeError>;
 }
 
+impl Message for RequestWithLimitAndOffset<TopWeekly> {
+    type Result = Result<Vec<TopWeekly>, BruteResponeError>;
+}
+
 #[derive(Default, Debug, Clone, sqlx::FromRow, Getters, Serialize, Deserialize)]
 pub struct TopYearly {
     pub timestamp: i64,
@@ -300,6 +364,10 @@ pub struct TopYearly {
 }
 
 impl Message for RequestWithLimit<TopYearly> {
+    type Result = Result<Vec<TopYearly>, BruteResponeError>;
+}
+
+impl Message for RequestWithLimitAndOffset<TopYearly> {
     type Result = Result<Vec<TopYearly>, BruteResponeError>;
 }
 
@@ -321,6 +389,10 @@ pub struct TopSubnet {
 }
 
 impl Message for RequestWithLimit<TopSubnet> {
+    type Result = Result<Vec<TopSubnet>, BruteResponeError>;
+}
+
+impl Message for RequestWithLimitAndOffset<TopSubnet> {
     type Result = Result<Vec<TopSubnet>, BruteResponeError>;
 }
 
@@ -352,6 +424,10 @@ impl Message for RequestWithLimit<IpSeen> {
     type Result = Result<Vec<IpSeen>, BruteResponeError>;
 }
 
+impl Message for RequestWithLimitAndOffset<IpSeen> {
+    type Result = Result<Vec<IpSeen>, BruteResponeError>;
+}
+
 #[derive(Default, Debug, sqlx::FromRow, Getters, Serialize, Deserialize)]
 pub struct AttackVelocity {
     pub minute_bucket: i64,
@@ -359,6 +435,10 @@ pub struct AttackVelocity {
 }
 
 impl Message for RequestWithLimit<AttackVelocity> {
+    type Result = Result<Vec<AttackVelocity>, BruteResponeError>;
+}
+
+impl Message for RequestWithLimitAndOffset<AttackVelocity> {
     type Result = Result<Vec<AttackVelocity>, BruteResponeError>;
 }
 
@@ -371,6 +451,10 @@ pub struct IpAbuse {
 }
 
 impl Message for RequestWithLimit<IpAbuse> {
+    type Result = Result<Vec<IpAbuse>, BruteResponeError>;
+}
+
+impl Message for RequestWithLimitAndOffset<IpAbuse> {
     type Result = Result<Vec<IpAbuse>, BruteResponeError>;
 }
 

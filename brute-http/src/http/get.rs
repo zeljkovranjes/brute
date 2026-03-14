@@ -22,12 +22,13 @@ use crate::{
         TopLocation, TopOrg, TopPassword, TopPostal, TopProtocol, TopRegion, TopSubnet,
         TopTimezone, TopUsername, TopUsrPassCombo, TopWeekly, TopYearly,
     },
-    system::RequestWithLimit,
+    system::{RequestWithLimit, RequestWithLimitAndOffset},
 };
 
 #[derive(Debug, Deserialize)]
 struct LimitParameter {
     limit: Option<usize>,
+    offset: Option<usize>,
 }
 
 static MAX_LIMIT: usize = 100;
@@ -46,15 +47,14 @@ async fn get_brute_attackers(
     if !token_matches(bearer.token(), &state.bearer) {
         return HttpResponse::Unauthorized().finish();
     }
-    let limit = params.limit.unwrap_or(MAX_LIMIT);
-    let mut request = RequestWithLimit {
+    let limit = params.limit.unwrap_or(MAX_LIMIT).min(MAX_LIMIT);
+    let offset = params.offset.unwrap_or(0);
+    let request = RequestWithLimitAndOffset {
         table: ProcessedIndividual::default(),
         limit,
         max_limit: MAX_LIMIT,
+        offset,
     };
-    if limit > request.max_limit {
-        request.limit = request.max_limit;
-    }
     match state.actor.send(request).await {
         Ok(result) => HttpResponse::Ok().json(result.unwrap()),
         Err(er) => HttpResponse::Ok().body(format!("{}", er.to_string())),
@@ -75,15 +75,14 @@ async fn get_brute_protocol(
     if !token_matches(bearer.token(), &state.bearer) {
         return HttpResponse::Unauthorized().finish();
     }
-    let limit = params.limit.unwrap_or(MAX_LIMIT);
-    let mut request = RequestWithLimit {
+    let limit = params.limit.unwrap_or(MAX_LIMIT).min(MAX_LIMIT);
+    let offset = params.offset.unwrap_or(0);
+    let request = RequestWithLimitAndOffset {
         table: TopProtocol::default(),
         limit,
         max_limit: MAX_LIMIT,
+        offset,
     };
-    if limit > request.max_limit {
-        request.limit = request.max_limit;
-    }
     match state.actor.send(request).await {
         Ok(result) => HttpResponse::Ok().json(result.unwrap()),
         Err(er) => HttpResponse::Ok().body(format!("{}", er.to_string())),
@@ -104,15 +103,15 @@ async fn get_brute_country(
     if !token_matches(bearer.token(), &state.bearer) {
         return HttpResponse::Unauthorized().finish();
     }
-    let limit = params.limit.unwrap_or(MAX_LIMIT);
-    let mut request = RequestWithLimit {
+    let max_limit = 195; // there can only be 195 countries...
+    let limit = params.limit.unwrap_or(max_limit).min(max_limit);
+    let offset = params.offset.unwrap_or(0);
+    let request = RequestWithLimitAndOffset {
         table: TopCountry::default(),
         limit,
-        max_limit: 195, // there can only be 195 countries...
+        max_limit,
+        offset,
     };
-    if limit > request.max_limit {
-        request.limit = request.max_limit;
-    }
     match state.actor.send(request).await {
         Ok(result) => HttpResponse::Ok().json(result.unwrap()),
         Err(er) => HttpResponse::Ok().body(format!("{}", er.to_string())),
@@ -133,15 +132,14 @@ async fn get_brute_city(
     if !token_matches(bearer.token(), &state.bearer) {
         return HttpResponse::Unauthorized().finish();
     }
-    let limit = params.limit.unwrap_or(MAX_LIMIT);
-    let mut request = RequestWithLimit {
+    let limit = params.limit.unwrap_or(MAX_LIMIT).min(MAX_LIMIT);
+    let offset = params.offset.unwrap_or(0);
+    let request = RequestWithLimitAndOffset {
         table: TopCity::default(),
         limit,
         max_limit: MAX_LIMIT,
+        offset,
     };
-    if limit > request.max_limit {
-        request.limit = request.max_limit;
-    }
     match state.actor.send(request).await {
         Ok(result) => HttpResponse::Ok().json(result.unwrap()),
         Err(er) => HttpResponse::Ok().body(format!("{}", er.to_string())),
@@ -162,15 +160,14 @@ async fn get_brute_region(
     if !token_matches(bearer.token(), &state.bearer) {
         return HttpResponse::Unauthorized().finish();
     }
-    let limit = params.limit.unwrap_or(MAX_LIMIT);
-    let mut request = RequestWithLimit {
+    let limit = params.limit.unwrap_or(MAX_LIMIT).min(MAX_LIMIT);
+    let offset = params.offset.unwrap_or(0);
+    let request = RequestWithLimitAndOffset {
         table: TopRegion::default(),
         limit,
         max_limit: MAX_LIMIT,
+        offset,
     };
-    if limit > request.max_limit {
-        request.limit = request.max_limit;
-    }
     match state.actor.send(request).await {
         Ok(result) => HttpResponse::Ok().json(result.unwrap()),
         Err(er) => HttpResponse::Ok().body(format!("{}", er.to_string())),
@@ -191,15 +188,14 @@ async fn get_brute_username(
     if !token_matches(bearer.token(), &state.bearer) {
         return HttpResponse::Unauthorized().finish();
     }
-    let limit = params.limit.unwrap_or(MAX_LIMIT);
-    let mut request = RequestWithLimit {
+    let limit = params.limit.unwrap_or(MAX_LIMIT).min(MAX_LIMIT);
+    let offset = params.offset.unwrap_or(0);
+    let request = RequestWithLimitAndOffset {
         table: TopUsername::default(),
         limit,
         max_limit: MAX_LIMIT,
+        offset,
     };
-    if limit > request.max_limit {
-        request.limit = request.max_limit;
-    }
     match state.actor.send(request).await {
         Ok(result) => HttpResponse::Ok().json(result.unwrap()),
         Err(er) => HttpResponse::Ok().body(format!("{}", er.to_string())),
@@ -220,15 +216,14 @@ async fn get_brute_password(
     if !token_matches(bearer.token(), &state.bearer) {
         return HttpResponse::Unauthorized().finish();
     }
-    let limit = params.limit.unwrap_or(MAX_LIMIT);
-    let mut request = RequestWithLimit {
+    let limit = params.limit.unwrap_or(MAX_LIMIT).min(MAX_LIMIT);
+    let offset = params.offset.unwrap_or(0);
+    let request = RequestWithLimitAndOffset {
         table: TopPassword::default(),
         limit,
         max_limit: MAX_LIMIT,
+        offset,
     };
-    if limit > request.max_limit {
-        request.limit = request.max_limit;
-    }
     match state.actor.send(request).await {
         Ok(result) => HttpResponse::Ok().json(result.unwrap()),
         Err(er) => HttpResponse::Ok().body(format!("{}", er.to_string())),
@@ -249,16 +244,14 @@ async fn get_brute_ip(
     if !token_matches(bearer.token(), &state.bearer) {
         return HttpResponse::Unauthorized().finish();
     }
-    let limit = params.limit.unwrap_or(MAX_LIMIT);
-    let mut request = RequestWithLimit {
+    let limit = params.limit.unwrap_or(MAX_LIMIT).min(MAX_LIMIT);
+    let offset = params.offset.unwrap_or(0);
+    let request = RequestWithLimitAndOffset {
         table: TopIp::default(),
         limit,
         max_limit: MAX_LIMIT,
+        offset,
     };
-    if limit > request.max_limit {
-        request.limit = request.max_limit;
-    }
-
     match state.actor.send(request).await {
         Ok(result) => HttpResponse::Ok().json(result.unwrap()),
         Err(er) => HttpResponse::Ok().body(format!("{}", er.to_string())),
@@ -279,15 +272,14 @@ async fn get_brute_usr_pass_combo(
     if !token_matches(bearer.token(), &state.bearer) {
         return HttpResponse::Unauthorized().finish();
     }
-    let limit = params.limit.unwrap_or(MAX_LIMIT);
-    let mut request = RequestWithLimit {
+    let limit = params.limit.unwrap_or(MAX_LIMIT).min(MAX_LIMIT);
+    let offset = params.offset.unwrap_or(0);
+    let request = RequestWithLimitAndOffset {
         table: TopUsrPassCombo::default(),
         limit,
         max_limit: MAX_LIMIT,
+        offset,
     };
-    if limit > request.max_limit {
-        request.limit = request.max_limit;
-    }
     match state.actor.send(request).await {
         Ok(result) => HttpResponse::Ok().json(result.unwrap()),
         Err(er) => HttpResponse::Ok().body(format!("{}", er.to_string())),
@@ -308,15 +300,14 @@ async fn get_brute_timezone(
     if !token_matches(bearer.token(), &state.bearer) {
         return HttpResponse::Unauthorized().finish();
     }
-    let limit = params.limit.unwrap_or(MAX_LIMIT);
-    let mut request = RequestWithLimit {
+    let limit = params.limit.unwrap_or(MAX_LIMIT).min(MAX_LIMIT);
+    let offset = params.offset.unwrap_or(0);
+    let request = RequestWithLimitAndOffset {
         table: TopTimezone::default(),
         limit,
         max_limit: MAX_LIMIT,
+        offset,
     };
-    if limit > request.max_limit {
-        request.limit = request.max_limit;
-    }
     match state.actor.send(request).await {
         Ok(result) => HttpResponse::Ok().json(result.unwrap()),
         Err(er) => HttpResponse::Ok().body(format!("{}", er.to_string())),
@@ -337,15 +328,14 @@ async fn get_brute_org(
     if !token_matches(bearer.token(), &state.bearer) {
         return HttpResponse::Unauthorized().finish();
     }
-    let limit = params.limit.unwrap_or(MAX_LIMIT);
-    let mut request = RequestWithLimit {
+    let limit = params.limit.unwrap_or(MAX_LIMIT).min(MAX_LIMIT);
+    let offset = params.offset.unwrap_or(0);
+    let request = RequestWithLimitAndOffset {
         table: TopOrg::default(),
         limit,
         max_limit: MAX_LIMIT,
+        offset,
     };
-    if limit > request.max_limit {
-        request.limit = request.max_limit;
-    }
     match state.actor.send(request).await {
         Ok(result) => HttpResponse::Ok().json(result.unwrap()),
         Err(er) => HttpResponse::Ok().body(format!("{}", er.to_string())),
@@ -366,15 +356,14 @@ async fn get_brute_postal(
     if !token_matches(bearer.token(), &state.bearer) {
         return HttpResponse::Unauthorized().finish();
     }
-    let limit = params.limit.unwrap_or(MAX_LIMIT);
-    let mut request = RequestWithLimit {
+    let limit = params.limit.unwrap_or(MAX_LIMIT).min(MAX_LIMIT);
+    let offset = params.offset.unwrap_or(0);
+    let request = RequestWithLimitAndOffset {
         table: TopPostal::default(),
         limit,
         max_limit: MAX_LIMIT,
+        offset,
     };
-    if limit > request.max_limit {
-        request.limit = request.max_limit;
-    }
     match state.actor.send(request).await {
         Ok(result) => HttpResponse::Ok().json(result.unwrap()),
         Err(er) => HttpResponse::Ok().body(format!("{}", er.to_string())),
@@ -395,15 +384,14 @@ async fn get_brute_loc(
     if !token_matches(bearer.token(), &state.bearer) {
         return HttpResponse::Unauthorized().finish();
     }
-    let limit = params.limit.unwrap_or(MAX_LIMIT);
-    let mut request = RequestWithLimit {
+    let limit = params.limit.unwrap_or(MAX_LIMIT).min(MAX_LIMIT);
+    let offset = params.offset.unwrap_or(0);
+    let request = RequestWithLimitAndOffset {
         table: TopLocation::default(),
         limit,
         max_limit: MAX_LIMIT,
+        offset,
     };
-    if limit > request.max_limit {
-        request.limit = request.max_limit;
-    }
     match state.actor.send(request).await {
         Ok(result) => HttpResponse::Ok().json(result.unwrap()),
         Err(er) => HttpResponse::Ok().body(format!("{}", er.to_string())),
@@ -425,15 +413,14 @@ async fn get_hourly(
         return HttpResponse::Unauthorized().finish();
     }
     // sorted by most recent.
-    let limit = params.limit.unwrap_or(MAX_LIMIT);
-    let mut request = RequestWithLimit {
+    let limit = params.limit.unwrap_or(MAX_LIMIT).min(MAX_LIMIT);
+    let offset = params.offset.unwrap_or(0);
+    let request = RequestWithLimitAndOffset {
         table: TopHourly::default(),
         limit,
         max_limit: MAX_LIMIT,
+        offset,
     };
-    if limit > request.max_limit {
-        request.limit = request.max_limit;
-    }
     match state.actor.send(request).await {
         Ok(result) => HttpResponse::Ok().json(result.unwrap()),
         Err(er) => HttpResponse::Ok().body(format!("{}", er.to_string())),
@@ -485,15 +472,14 @@ async fn get_ip_abuse(
     if !token_matches(bearer.token(), &state.bearer) {
         return HttpResponse::Unauthorized().finish();
     }
-    let limit = params.limit.unwrap_or(MAX_LIMIT);
-    let mut request = RequestWithLimit {
+    let limit = params.limit.unwrap_or(MAX_LIMIT).min(MAX_LIMIT);
+    let offset = params.offset.unwrap_or(0);
+    let request = RequestWithLimitAndOffset {
         table: IpAbuse::default(),
         limit,
         max_limit: MAX_LIMIT,
+        offset,
     };
-    if limit > request.max_limit {
-        request.limit = request.max_limit;
-    }
     match state.actor.send(request).await {
         Ok(result) => HttpResponse::Ok().json(result.unwrap()),
         Err(er) => HttpResponse::Ok().body(er.to_string()),
@@ -515,10 +501,12 @@ async fn get_velocity(
         return HttpResponse::Unauthorized().finish();
     }
     let limit = params.limit.unwrap_or(60).min(MAX_LIMIT);
-    let request = RequestWithLimit {
+    let offset = params.offset.unwrap_or(0);
+    let request = RequestWithLimitAndOffset {
         table: AttackVelocity::default(),
         limit,
         max_limit: MAX_LIMIT,
+        offset,
     };
     match state.actor.send(request).await {
         Ok(result) => HttpResponse::Ok().json(result.unwrap()),
@@ -540,15 +528,14 @@ async fn get_ip_seen(
     if !token_matches(bearer.token(), &state.bearer) {
         return HttpResponse::Unauthorized().finish();
     }
-    let limit = params.limit.unwrap_or(MAX_LIMIT);
-    let mut request = RequestWithLimit {
+    let limit = params.limit.unwrap_or(MAX_LIMIT).min(MAX_LIMIT);
+    let offset = params.offset.unwrap_or(0);
+    let request = RequestWithLimitAndOffset {
         table: IpSeen::default(),
         limit,
         max_limit: MAX_LIMIT,
+        offset,
     };
-    if limit > request.max_limit {
-        request.limit = request.max_limit;
-    }
     match state.actor.send(request).await {
         Ok(result) => HttpResponse::Ok().json(result.unwrap()),
         Err(er) => HttpResponse::Ok().body(er.to_string()),
@@ -569,15 +556,14 @@ async fn get_subnet(
     if !token_matches(bearer.token(), &state.bearer) {
         return HttpResponse::Unauthorized().finish();
     }
-    let limit = params.limit.unwrap_or(MAX_LIMIT);
-    let mut request = RequestWithLimit {
+    let limit = params.limit.unwrap_or(MAX_LIMIT).min(MAX_LIMIT);
+    let offset = params.offset.unwrap_or(0);
+    let request = RequestWithLimitAndOffset {
         table: TopSubnet::default(),
         limit,
         max_limit: MAX_LIMIT,
+        offset,
     };
-    if limit > request.max_limit {
-        request.limit = request.max_limit;
-    }
     match state.actor.send(request).await {
         Ok(result) => HttpResponse::Ok().json(result.unwrap()),
         Err(er) => HttpResponse::Ok().body(er.to_string()),
@@ -622,15 +608,14 @@ async fn get_daily(
     if !token_matches(bearer.token(), &state.bearer) {
         return HttpResponse::Unauthorized().finish();
     }
-    let limit = params.limit.unwrap_or(MAX_LIMIT);
-    let mut request = RequestWithLimit {
+    let limit = params.limit.unwrap_or(MAX_LIMIT).min(MAX_LIMIT);
+    let offset = params.offset.unwrap_or(0);
+    let request = RequestWithLimitAndOffset {
         table: TopDaily::default(),
         limit,
         max_limit: MAX_LIMIT,
+        offset,
     };
-    if limit > request.max_limit {
-        request.limit = request.max_limit;
-    }
     match state.actor.send(request).await {
         Ok(result) => HttpResponse::Ok().json(result.unwrap()),
         Err(er) => HttpResponse::Ok().body(format!("{}", er.to_string())),
@@ -651,15 +636,14 @@ async fn get_weekly(
     if !token_matches(bearer.token(), &state.bearer) {
         return HttpResponse::Unauthorized().finish();
     }
-    let limit = params.limit.unwrap_or(MAX_LIMIT);
-    let mut request = RequestWithLimit {
+    let limit = params.limit.unwrap_or(MAX_LIMIT).min(MAX_LIMIT);
+    let offset = params.offset.unwrap_or(0);
+    let request = RequestWithLimitAndOffset {
         table: TopWeekly::default(),
         limit,
         max_limit: MAX_LIMIT,
+        offset,
     };
-    if limit > request.max_limit {
-        request.limit = request.max_limit;
-    }
     match state.actor.send(request).await {
         Ok(result) => HttpResponse::Ok().json(result.unwrap()),
         Err(er) => HttpResponse::Ok().body(format!("{}", er.to_string())),
@@ -680,15 +664,14 @@ async fn get_yearly(
     if !token_matches(bearer.token(), &state.bearer) {
         return HttpResponse::Unauthorized().finish();
     }
-    let limit = params.limit.unwrap_or(MAX_LIMIT);
-    let mut request = RequestWithLimit {
+    let limit = params.limit.unwrap_or(MAX_LIMIT).min(MAX_LIMIT);
+    let offset = params.offset.unwrap_or(0);
+    let request = RequestWithLimitAndOffset {
         table: TopYearly::default(),
         limit,
         max_limit: MAX_LIMIT,
+        offset,
     };
-    if limit > request.max_limit {
-        request.limit = request.max_limit;
-    }
     match state.actor.send(request).await {
         Ok(result) => HttpResponse::Ok().json(result.unwrap()),
         Err(er) => HttpResponse::Ok().body(format!("{}", er.to_string())),
