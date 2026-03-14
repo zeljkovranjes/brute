@@ -28,6 +28,25 @@ where
     }
 }
 
+/// Deserializes `Option<bool>` from a boolean, integer (0/1), or null.
+/// D1/SQLite stores booleans as INTEGER — this prevents a deserialization panic.
+fn deserialize_bool_from_int<'de, D>(de: D) -> Result<Option<bool>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let v: serde_json::Value = serde_json::Value::deserialize(de)?;
+    match v {
+        serde_json::Value::Null => Ok(None),
+        serde_json::Value::Bool(b) => Ok(Some(b)),
+        serde_json::Value::Number(n) => Ok(Some(
+            n.as_i64().map(|i| i != 0)
+                .or_else(|| n.as_f64().map(|f| f != 0.0))
+                .unwrap_or(false),
+        )),
+        _ => Ok(None),
+    }
+}
+
 #[derive(Default, Clone, Debug, Serialize, Deserialize)]
 pub struct Individual {
     pub id: String,
@@ -92,10 +111,15 @@ pub struct ProcessedIndividual {
     pub company_name: Option<String>,
     pub company_domain: Option<String>,
     pub company_type: Option<String>,
+    #[serde(deserialize_with = "deserialize_bool_from_int")]
     pub vpn: Option<bool>,
+    #[serde(deserialize_with = "deserialize_bool_from_int")]
     pub proxy: Option<bool>,
+    #[serde(deserialize_with = "deserialize_bool_from_int")]
     pub tor: Option<bool>,
+    #[serde(deserialize_with = "deserialize_bool_from_int")]
     pub relay: Option<bool>,
+    #[serde(deserialize_with = "deserialize_bool_from_int")]
     pub hosting: Option<bool>,
     pub service: Option<String>,
     pub abuse_address: Option<String>,
