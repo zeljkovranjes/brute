@@ -40,10 +40,6 @@ impl BruteAnalytics for D1Analytics {
         let hour_bucket = now_s - (now_s % 3600);
         let day_bucket = now_s - (now_s % 86400);
 
-        let js_date = js_sys::Date::new_0();
-        let dow = js_date.get_day() as i32; // 0 = Sunday
-        let hod = js_date.get_hours() as i32;
-
         // Build the batch — unconditional upserts first.
         let mut stmts = vec![
             // top_username
@@ -91,26 +87,18 @@ impl BruteAnalytics for D1Analytics {
 
             // top_hourly
             db.prepare(
-                "INSERT INTO top_hourly (bucket, amount) VALUES (?1, 1)
-                 ON CONFLICT (bucket) DO UPDATE SET amount = amount + 1",
+                "INSERT INTO top_hourly (timestamp, amount) VALUES (?1, 1)
+                 ON CONFLICT (timestamp) DO UPDATE SET amount = amount + 1",
             )
             .bind(&[hour_bucket.into()])
             .map_err(|e| BruteError::Database(e.to_string()))?,
 
             // top_daily
             db.prepare(
-                "INSERT INTO top_daily (bucket, amount) VALUES (?1, 1)
-                 ON CONFLICT (bucket) DO UPDATE SET amount = amount + 1",
+                "INSERT INTO top_daily (timestamp, amount) VALUES (?1, 1)
+                 ON CONFLICT (timestamp) DO UPDATE SET amount = amount + 1",
             )
             .bind(&[day_bucket.into()])
-            .map_err(|e| BruteError::Database(e.to_string()))?,
-
-            // heatmap
-            db.prepare(
-                "INSERT INTO heatmap (day_of_week, hour_of_day, amount) VALUES (?1, ?2, 1)
-                 ON CONFLICT (day_of_week, hour_of_day) DO UPDATE SET amount = amount + 1",
-            )
-            .bind(&[dow.into(), hod.into()])
             .map_err(|e| BruteError::Database(e.to_string()))?,
         ];
 
