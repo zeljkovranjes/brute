@@ -208,7 +208,7 @@ npm install -g wrangler
 2. Apply the D1 schema:
 
     ```sh
-    wrangler d1 execute brute --file=migrations/d1/0001_initial_schema.sql
+    wrangler d1 execute brute --file=../migrations/d1/0001_initial_schema.sql
     ```
 
 3. Set the bearer token secret:
