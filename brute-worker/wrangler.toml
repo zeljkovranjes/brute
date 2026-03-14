@@ -26,3 +26,4 @@ new_classes = ["WsBroadcaster"]
 
 [vars]
 BEARER_TOKEN = ""
+ABUSEIPDB_KEY = ""
