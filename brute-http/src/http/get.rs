@@ -41,7 +41,11 @@ static MAX_LIMIT: usize = 100;
 async fn get_brute_attackers(
     state: web::Data<AppState>,
     params: web::Query<LimitParameter>,
+    bearer: BearerAuth,
 ) -> impl Responder {
+    if !token_matches(bearer.token(), &state.bearer) {
+        return HttpResponse::Unauthorized().finish();
+    }
     let limit = params.limit.unwrap_or(MAX_LIMIT);
     let mut request = RequestWithLimit {
         table: ProcessedIndividual::default(),
@@ -66,7 +70,11 @@ async fn get_brute_attackers(
 async fn get_brute_protocol(
     state: web::Data<AppState>,
     params: web::Query<LimitParameter>,
+    bearer: BearerAuth,
 ) -> impl Responder {
+    if !token_matches(bearer.token(), &state.bearer) {
+        return HttpResponse::Unauthorized().finish();
+    }
     let limit = params.limit.unwrap_or(MAX_LIMIT);
     let mut request = RequestWithLimit {
         table: TopProtocol::default(),
@@ -91,7 +99,11 @@ async fn get_brute_protocol(
 async fn get_brute_country(
     state: web::Data<AppState>,
     params: web::Query<LimitParameter>,
+    bearer: BearerAuth,
 ) -> impl Responder {
+    if !token_matches(bearer.token(), &state.bearer) {
+        return HttpResponse::Unauthorized().finish();
+    }
     let limit = params.limit.unwrap_or(MAX_LIMIT);
     let mut request = RequestWithLimit {
         table: TopCountry::default(),
@@ -116,7 +128,11 @@ async fn get_brute_country(
 async fn get_brute_city(
     state: web::Data<AppState>,
     params: web::Query<LimitParameter>,
+    bearer: BearerAuth,
 ) -> impl Responder {
+    if !token_matches(bearer.token(), &state.bearer) {
+        return HttpResponse::Unauthorized().finish();
+    }
     let limit = params.limit.unwrap_or(MAX_LIMIT);
     let mut request = RequestWithLimit {
         table: TopCity::default(),
@@ -141,7 +157,11 @@ async fn get_brute_city(
 async fn get_brute_region(
     state: web::Data<AppState>,
     params: web::Query<LimitParameter>,
+    bearer: BearerAuth,
 ) -> impl Responder {
+    if !token_matches(bearer.token(), &state.bearer) {
+        return HttpResponse::Unauthorized().finish();
+    }
     let limit = params.limit.unwrap_or(MAX_LIMIT);
     let mut request = RequestWithLimit {
         table: TopRegion::default(),
@@ -166,7 +186,11 @@ async fn get_brute_region(
 async fn get_brute_username(
     state: web::Data<AppState>,
     params: web::Query<LimitParameter>,
+    bearer: BearerAuth,
 ) -> impl Responder {
+    if !token_matches(bearer.token(), &state.bearer) {
+        return HttpResponse::Unauthorized().finish();
+    }
     let limit = params.limit.unwrap_or(MAX_LIMIT);
     let mut request = RequestWithLimit {
         table: TopUsername::default(),
@@ -191,7 +215,11 @@ async fn get_brute_username(
 async fn get_brute_password(
     state: web::Data<AppState>,
     params: web::Query<LimitParameter>,
+    bearer: BearerAuth,
 ) -> impl Responder {
+    if !token_matches(bearer.token(), &state.bearer) {
+        return HttpResponse::Unauthorized().finish();
+    }
     let limit = params.limit.unwrap_or(MAX_LIMIT);
     let mut request = RequestWithLimit {
         table: TopPassword::default(),
@@ -216,7 +244,11 @@ async fn get_brute_password(
 async fn get_brute_ip(
     state: web::Data<AppState>,
     params: web::Query<LimitParameter>,
+    bearer: BearerAuth,
 ) -> impl Responder {
+    if !token_matches(bearer.token(), &state.bearer) {
+        return HttpResponse::Unauthorized().finish();
+    }
     let limit = params.limit.unwrap_or(MAX_LIMIT);
     let mut request = RequestWithLimit {
         table: TopIp::default(),
@@ -242,7 +274,11 @@ async fn get_brute_ip(
 async fn get_brute_usr_pass_combo(
     state: web::Data<AppState>,
     params: web::Query<LimitParameter>,
+    bearer: BearerAuth,
 ) -> impl Responder {
+    if !token_matches(bearer.token(), &state.bearer) {
+        return HttpResponse::Unauthorized().finish();
+    }
     let limit = params.limit.unwrap_or(MAX_LIMIT);
     let mut request = RequestWithLimit {
         table: TopUsrPassCombo::default(),
@@ -267,7 +303,11 @@ async fn get_brute_usr_pass_combo(
 async fn get_brute_timezone(
     state: web::Data<AppState>,
     params: web::Query<LimitParameter>,
+    bearer: BearerAuth,
 ) -> impl Responder {
+    if !token_matches(bearer.token(), &state.bearer) {
+        return HttpResponse::Unauthorized().finish();
+    }
     let limit = params.limit.unwrap_or(MAX_LIMIT);
     let mut request = RequestWithLimit {
         table: TopTimezone::default(),
@@ -292,7 +332,11 @@ async fn get_brute_timezone(
 async fn get_brute_org(
     state: web::Data<AppState>,
     params: web::Query<LimitParameter>,
+    bearer: BearerAuth,
 ) -> impl Responder {
+    if !token_matches(bearer.token(), &state.bearer) {
+        return HttpResponse::Unauthorized().finish();
+    }
     let limit = params.limit.unwrap_or(MAX_LIMIT);
     let mut request = RequestWithLimit {
         table: TopOrg::default(),
@@ -317,7 +361,11 @@ async fn get_brute_org(
 async fn get_brute_postal(
     state: web::Data<AppState>,
     params: web::Query<LimitParameter>,
+    bearer: BearerAuth,
 ) -> impl Responder {
+    if !token_matches(bearer.token(), &state.bearer) {
+        return HttpResponse::Unauthorized().finish();
+    }
     let limit = params.limit.unwrap_or(MAX_LIMIT);
     let mut request = RequestWithLimit {
         table: TopPostal::default(),
@@ -342,7 +390,11 @@ async fn get_brute_postal(
 async fn get_brute_loc(
     state: web::Data<AppState>,
     params: web::Query<LimitParameter>,
+    bearer: BearerAuth,
 ) -> impl Responder {
+    if !token_matches(bearer.token(), &state.bearer) {
+        return HttpResponse::Unauthorized().finish();
+    }
     let limit = params.limit.unwrap_or(MAX_LIMIT);
     let mut request = RequestWithLimit {
         table: TopLocation::default(),
@@ -367,7 +419,11 @@ async fn get_brute_loc(
 async fn get_hourly(
     state: web::Data<AppState>,
     params: web::Query<LimitParameter>,
+    bearer: BearerAuth,
 ) -> impl Responder {
+    if !token_matches(bearer.token(), &state.bearer) {
+        return HttpResponse::Unauthorized().finish();
+    }
     // sorted by most recent.
     let limit = params.limit.unwrap_or(MAX_LIMIT);
     let mut request = RequestWithLimit {
@@ -399,7 +455,11 @@ struct ProtocolComboParams {
 async fn get_protocol_combo(
     state: web::Data<AppState>,
     params: web::Query<ProtocolComboParams>,
+    bearer: BearerAuth,
 ) -> impl Responder {
+    if !token_matches(bearer.token(), &state.bearer) {
+        return HttpResponse::Unauthorized().finish();
+    }
     let limit = params.limit.unwrap_or(MAX_LIMIT).min(MAX_LIMIT);
     let request = ProtocolComboRequest {
         protocol: params.protocol.clone(),
@@ -420,7 +480,11 @@ async fn get_protocol_combo(
 async fn get_ip_abuse(
     state: web::Data<AppState>,
     params: web::Query<LimitParameter>,
+    bearer: BearerAuth,
 ) -> impl Responder {
+    if !token_matches(bearer.token(), &state.bearer) {
+        return HttpResponse::Unauthorized().finish();
+    }
     let limit = params.limit.unwrap_or(MAX_LIMIT);
     let mut request = RequestWithLimit {
         table: IpAbuse::default(),
@@ -445,7 +509,11 @@ async fn get_ip_abuse(
 async fn get_velocity(
     state: web::Data<AppState>,
     params: web::Query<LimitParameter>,
+    bearer: BearerAuth,
 ) -> impl Responder {
+    if !token_matches(bearer.token(), &state.bearer) {
+        return HttpResponse::Unauthorized().finish();
+    }
     let limit = params.limit.unwrap_or(60).min(MAX_LIMIT);
     let request = RequestWithLimit {
         table: AttackVelocity::default(),
@@ -467,7 +535,11 @@ async fn get_velocity(
 async fn get_ip_seen(
     state: web::Data<AppState>,
     params: web::Query<LimitParameter>,
+    bearer: BearerAuth,
 ) -> impl Responder {
+    if !token_matches(bearer.token(), &state.bearer) {
+        return HttpResponse::Unauthorized().finish();
+    }
     let limit = params.limit.unwrap_or(MAX_LIMIT);
     let mut request = RequestWithLimit {
         table: IpSeen::default(),
@@ -492,7 +564,11 @@ async fn get_ip_seen(
 async fn get_subnet(
     state: web::Data<AppState>,
     params: web::Query<LimitParameter>,
+    bearer: BearerAuth,
 ) -> impl Responder {
+    if !token_matches(bearer.token(), &state.bearer) {
+        return HttpResponse::Unauthorized().finish();
+    }
     let limit = params.limit.unwrap_or(MAX_LIMIT);
     let mut request = RequestWithLimit {
         table: TopSubnet::default(),
@@ -514,7 +590,13 @@ async fn get_subnet(
 /// brute/stats/heatmap   ///
 /////////////////////////////
 #[get("/stats/heatmap")]
-async fn get_heatmap(state: web::Data<AppState>) -> impl Responder {
+async fn get_heatmap(
+    state: web::Data<AppState>,
+    bearer: BearerAuth,
+) -> impl Responder {
+    if !token_matches(bearer.token(), &state.bearer) {
+        return HttpResponse::Unauthorized().finish();
+    }
     let request = RequestWithLimit {
         table: HeatmapCell::default(),
         limit: 168,
@@ -535,7 +617,11 @@ async fn get_heatmap(state: web::Data<AppState>) -> impl Responder {
 async fn get_daily(
     state: web::Data<AppState>,
     params: web::Query<LimitParameter>,
+    bearer: BearerAuth,
 ) -> impl Responder {
+    if !token_matches(bearer.token(), &state.bearer) {
+        return HttpResponse::Unauthorized().finish();
+    }
     let limit = params.limit.unwrap_or(MAX_LIMIT);
     let mut request = RequestWithLimit {
         table: TopDaily::default(),
@@ -560,7 +646,11 @@ async fn get_daily(
 async fn get_weekly(
     state: web::Data<AppState>,
     params: web::Query<LimitParameter>,
+    bearer: BearerAuth,
 ) -> impl Responder {
+    if !token_matches(bearer.token(), &state.bearer) {
+        return HttpResponse::Unauthorized().finish();
+    }
     let limit = params.limit.unwrap_or(MAX_LIMIT);
     let mut request = RequestWithLimit {
         table: TopWeekly::default(),
@@ -585,7 +675,11 @@ async fn get_weekly(
 async fn get_yearly(
     state: web::Data<AppState>,
     params: web::Query<LimitParameter>,
+    bearer: BearerAuth,
 ) -> impl Responder {
+    if !token_matches(bearer.token(), &state.bearer) {
+        return HttpResponse::Unauthorized().finish();
+    }
     let limit = params.limit.unwrap_or(MAX_LIMIT);
     let mut request = RequestWithLimit {
         table: TopYearly::default(),
@@ -607,7 +701,13 @@ async fn get_yearly(
 /// brute/stats/summary   ///
 /////////////////////////////
 #[get("/stats/summary")]
-async fn get_summary(state: web::Data<AppState>) -> impl Responder {
+async fn get_summary(
+    state: web::Data<AppState>,
+    bearer: BearerAuth,
+) -> impl Responder {
+    if !token_matches(bearer.token(), &state.bearer) {
+        return HttpResponse::Unauthorized().finish();
+    }
     match state.actor.send(GetRollingStats).await {
         Ok(result) => HttpResponse::Ok().json(result.unwrap()),
         Err(er) => HttpResponse::Ok().body(er.to_string()),
