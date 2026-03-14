@@ -13,11 +13,12 @@ uuid = { version = "1", features = ["v4", "serde", "js"] }
 chrono = { version = "0.4", features = ["serde"] }
 async-trait = "0.1"
 
+thiserror = "1"
+regex = "1"
+ipnetwork = "0.20"
+
 [features]
 # Enable when compiling for wasm32 (Cloudflare Workers).
 # Switches all async traits to ?Send so futures don't need to implement Send,
 # which is required because WASM is single-threaded.
 wasm = []
-thiserror = "1"
-regex = "1"
-ipnetwork = "0.20"
