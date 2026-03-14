@@ -1,5 +1,6 @@
 use worker::*;
 
+mod abuse;
 mod analytics;
 mod db;
 mod geo;
