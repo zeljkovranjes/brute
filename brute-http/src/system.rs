@@ -406,7 +406,7 @@ impl Handler<TopProtocol> for BruteSystem {
                     info!("Successfully incremented protocol: {}", msg.protocol())
                 }
                 Err(_) => {
-                    error!("Failed to increment proptocol: {}", msg.protocol());
+                    error!("Failed to increment protocol: {}", msg.protocol());
                 }
             }
         });

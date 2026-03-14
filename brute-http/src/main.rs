@@ -53,8 +53,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             let mut certs_reader = BufReader::new(cert_file);
             let mut key_reader = BufReader::new(key_file);
             let certs = rustls_pemfile::certs(&mut certs_reader).collect::<Result<Vec<_>, _>>().ok()?;
-            let key_bytes = std::fs::read(format!("{}/key.pem", CERTS_DIRECTORY)).ok()?;
-            let key = rustls_pemfile::private_key(&mut key_bytes.as_slice()).ok()??;
+            let key = rustls_pemfile::private_key(&mut key_reader).ok()??;
             rustls::ServerConfig::builder()
                 .with_no_client_auth()
                 .with_single_cert(certs, key)

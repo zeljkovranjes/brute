@@ -764,7 +764,6 @@ async fn get_blocklist(
 /// wss://localhost:7443/ws ///
 //////////////////////////////
 #[get("/ws")]
-#[allow(unused_variables)]
 async fn get_websocket(
     req: HttpRequest,
     stream: web::Payload,
