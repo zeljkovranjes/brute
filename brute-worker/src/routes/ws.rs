@@ -49,7 +49,6 @@ pub struct WsBroadcaster {
 }
 
 #[cfg(feature = "paid")]
-#[durable_object]
 impl DurableObject for WsBroadcaster {
     fn new(state: State, env: Env) -> Self {
         Self { state, env }

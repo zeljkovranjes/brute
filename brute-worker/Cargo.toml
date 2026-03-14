@@ -20,7 +20,7 @@ default = []
 paid = []
 
 [dependencies]
-worker = "0.7.5"
+worker = { version = "0.7.5", features = ["d1"] }
 brute-core = { path = "../brute-core" }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
