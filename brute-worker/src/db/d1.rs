@@ -48,7 +48,7 @@ impl BruteDb for D1Db {
                 individual.password.clone().into(),
                 individual.ip.clone().into(),
                 individual.protocol.clone().into(),
-                individual.timestamp.into(),
+                (individual.timestamp as f64).into(),
             ])
             .map_err(Self::map_err)?
             .run()
@@ -118,9 +118,9 @@ impl BruteDb for D1Db {
                 p.abuse_network.clone().unwrap_or_default().into(),
                 p.abuse_phone.clone().unwrap_or_default().into(),
                 p.domain_ip.clone().unwrap_or_default().into(),
-                p.domain_total.unwrap_or(0).into(),
+                (p.domain_total.unwrap_or(0) as f64).into(),
                 domains_json.unwrap_or_default().into(),
-                p.timestamp.into(),
+                (p.timestamp as f64).into(),
                 p.timezone.clone().into(),
             ])
             .map_err(Self::map_err)?
@@ -309,7 +309,7 @@ impl BruteDb for D1Db {
                 "INSERT INTO ip_seen (ip, first_seen, last_seen, total_sessions) VALUES (?1, ?2, ?2, 1)
                  ON CONFLICT(ip) DO UPDATE SET last_seen = ?2, total_sessions = total_sessions + 1",
             )
-            .bind(&[ip.into(), now.into()])
+            .bind(&[ip.into(), (now as f64).into()])
             .map_err(Self::map_err)?
             .run()
             .await
@@ -324,7 +324,7 @@ impl BruteDb for D1Db {
                 "INSERT INTO top_hourly (timestamp, amount) VALUES (?1, 1)
                  ON CONFLICT(timestamp) DO UPDATE SET amount = amount + 1",
             )
-            .bind(&[bucket.into()])
+            .bind(&[(bucket as f64).into()])
             .map_err(Self::map_err)?
             .run()
             .await
@@ -339,7 +339,7 @@ impl BruteDb for D1Db {
                 "INSERT INTO top_daily (timestamp, amount) VALUES (?1, 1)
                  ON CONFLICT(timestamp) DO UPDATE SET amount = amount + 1",
             )
-            .bind(&[bucket.into()])
+            .bind(&[(bucket as f64).into()])
             .map_err(Self::map_err)?
             .run()
             .await
@@ -356,7 +356,7 @@ impl BruteDb for D1Db {
                 "INSERT INTO top_weekly (timestamp, amount) VALUES (?1, 1)
                  ON CONFLICT(timestamp) DO UPDATE SET amount = amount + 1",
             )
-            .bind(&[week_start.into()])
+            .bind(&[(week_start as f64).into()])
             .map_err(Self::map_err)?
             .run()
             .await
@@ -380,7 +380,7 @@ impl BruteDb for D1Db {
                 "INSERT INTO top_yearly (timestamp, amount) VALUES (?1, 1)
                  ON CONFLICT(timestamp) DO UPDATE SET amount = amount + 1",
             )
-            .bind(&[year_start.into()])
+            .bind(&[(year_start as f64).into()])
             .map_err(Self::map_err)?
             .run()
             .await
@@ -408,7 +408,7 @@ impl BruteDb for D1Db {
                 ip.into(),
                 confidence_score.into(),
                 total_reports.into(),
-                checked_at.into(),
+                (checked_at as f64).into(),
             ])
             .map_err(Self::map_err)?
             .run()
@@ -433,7 +433,7 @@ impl BruteDb for D1Db {
     async fn get_attacks(&self, limit: i64) -> Result<Vec<ProcessedIndividual>, BruteError> {
         let results = self.db
             .prepare("SELECT * FROM processed_individual ORDER BY timestamp DESC LIMIT ?1")
-            .bind(&[limit.into()])
+            .bind(&[(limit as f64).into()])
             .map_err(Self::map_err)?
             .all()
             .await
@@ -446,7 +446,7 @@ impl BruteDb for D1Db {
     async fn get_top_username(&self, limit: i64) -> Result<Vec<TopUsername>, BruteError> {
         let results = self.db
             .prepare("SELECT * FROM top_username ORDER BY amount DESC LIMIT ?1")
-            .bind(&[limit.into()])
+            .bind(&[(limit as f64).into()])
             .map_err(Self::map_err)?
             .all()
             .await
@@ -458,7 +458,7 @@ impl BruteDb for D1Db {
         // TODO: SQLite doesn't support regex — filter X-masked passwords client-side or via LIKE
         let results = self.db
             .prepare("SELECT * FROM top_password WHERE password NOT LIKE 'XX%' ORDER BY amount DESC LIMIT ?1")
-            .bind(&[limit.into()])
+            .bind(&[(limit as f64).into()])
             .map_err(Self::map_err)?
             .all()
             .await
@@ -469,7 +469,7 @@ impl BruteDb for D1Db {
     async fn get_top_ip(&self, limit: i64) -> Result<Vec<TopIp>, BruteError> {
         let results = self.db
             .prepare("SELECT * FROM top_ip ORDER BY amount DESC LIMIT ?1")
-            .bind(&[limit.into()])
+            .bind(&[(limit as f64).into()])
             .map_err(Self::map_err)?
             .all()
             .await
@@ -480,7 +480,7 @@ impl BruteDb for D1Db {
     async fn get_top_protocol(&self, limit: i64) -> Result<Vec<TopProtocol>, BruteError> {
         let results = self.db
             .prepare("SELECT * FROM top_protocol ORDER BY amount DESC LIMIT ?1")
-            .bind(&[limit.into()])
+            .bind(&[(limit as f64).into()])
             .map_err(Self::map_err)?
             .all()
             .await
@@ -491,7 +491,7 @@ impl BruteDb for D1Db {
     async fn get_top_country(&self, limit: i64) -> Result<Vec<TopCountry>, BruteError> {
         let results = self.db
             .prepare("SELECT * FROM top_country ORDER BY amount DESC LIMIT ?1")
-            .bind(&[limit.into()])
+            .bind(&[(limit as f64).into()])
             .map_err(Self::map_err)?
             .all()
             .await
@@ -502,7 +502,7 @@ impl BruteDb for D1Db {
     async fn get_top_city(&self, limit: i64) -> Result<Vec<TopCity>, BruteError> {
         let results = self.db
             .prepare("SELECT * FROM top_city ORDER BY amount DESC LIMIT ?1")
-            .bind(&[limit.into()])
+            .bind(&[(limit as f64).into()])
             .map_err(Self::map_err)?
             .all()
             .await
@@ -513,7 +513,7 @@ impl BruteDb for D1Db {
     async fn get_top_region(&self, limit: i64) -> Result<Vec<TopRegion>, BruteError> {
         let results = self.db
             .prepare("SELECT * FROM top_region ORDER BY amount DESC LIMIT ?1")
-            .bind(&[limit.into()])
+            .bind(&[(limit as f64).into()])
             .map_err(Self::map_err)?
             .all()
             .await
@@ -524,7 +524,7 @@ impl BruteDb for D1Db {
     async fn get_top_timezone(&self, limit: i64) -> Result<Vec<TopTimezone>, BruteError> {
         let results = self.db
             .prepare("SELECT * FROM top_timezone ORDER BY amount DESC LIMIT ?1")
-            .bind(&[limit.into()])
+            .bind(&[(limit as f64).into()])
             .map_err(Self::map_err)?
             .all()
             .await
@@ -535,7 +535,7 @@ impl BruteDb for D1Db {
     async fn get_top_org(&self, limit: i64) -> Result<Vec<TopOrg>, BruteError> {
         let results = self.db
             .prepare("SELECT * FROM top_org ORDER BY amount DESC LIMIT ?1")
-            .bind(&[limit.into()])
+            .bind(&[(limit as f64).into()])
             .map_err(Self::map_err)?
             .all()
             .await
@@ -547,7 +547,7 @@ impl BruteDb for D1Db {
         // TODO: SQLite GLOB can filter blank postals: WHERE postal NOT GLOB '[ ]*'
         let results = self.db
             .prepare("SELECT * FROM top_postal WHERE trim(postal) != '' ORDER BY amount DESC LIMIT ?1")
-            .bind(&[limit.into()])
+            .bind(&[(limit as f64).into()])
             .map_err(Self::map_err)?
             .all()
             .await
@@ -558,7 +558,7 @@ impl BruteDb for D1Db {
     async fn get_top_location(&self, limit: i64) -> Result<Vec<TopLocation>, BruteError> {
         let results = self.db
             .prepare("SELECT * FROM top_loc ORDER BY amount DESC LIMIT ?1")
-            .bind(&[limit.into()])
+            .bind(&[(limit as f64).into()])
             .map_err(Self::map_err)?
             .all()
             .await
@@ -570,7 +570,7 @@ impl BruteDb for D1Db {
         // TODO: filter X-masked passwords — use NOT LIKE 'XX%' as SQLite approximation
         let results = self.db
             .prepare("SELECT * FROM top_usr_pass_combo WHERE password NOT LIKE 'XX%' ORDER BY amount DESC LIMIT ?1")
-            .bind(&[limit.into()])
+            .bind(&[(limit as f64).into()])
             .map_err(Self::map_err)?
             .all()
             .await
@@ -581,7 +581,7 @@ impl BruteDb for D1Db {
     async fn get_hourly(&self, limit: i64) -> Result<Vec<TopHourly>, BruteError> {
         let results = self.db
             .prepare("SELECT * FROM top_hourly ORDER BY timestamp DESC LIMIT ?1")
-            .bind(&[limit.into()])
+            .bind(&[(limit as f64).into()])
             .map_err(Self::map_err)?
             .all()
             .await
@@ -592,7 +592,7 @@ impl BruteDb for D1Db {
     async fn get_daily(&self, limit: i64) -> Result<Vec<TopDaily>, BruteError> {
         let results = self.db
             .prepare("SELECT * FROM top_daily ORDER BY timestamp DESC LIMIT ?1")
-            .bind(&[limit.into()])
+            .bind(&[(limit as f64).into()])
             .map_err(Self::map_err)?
             .all()
             .await
@@ -603,7 +603,7 @@ impl BruteDb for D1Db {
     async fn get_weekly(&self, limit: i64) -> Result<Vec<TopWeekly>, BruteError> {
         let results = self.db
             .prepare("SELECT * FROM top_weekly ORDER BY timestamp DESC LIMIT ?1")
-            .bind(&[limit.into()])
+            .bind(&[(limit as f64).into()])
             .map_err(Self::map_err)?
             .all()
             .await
@@ -614,7 +614,7 @@ impl BruteDb for D1Db {
     async fn get_yearly(&self, limit: i64) -> Result<Vec<TopYearly>, BruteError> {
         let results = self.db
             .prepare("SELECT * FROM top_yearly ORDER BY timestamp DESC LIMIT ?1")
-            .bind(&[limit.into()])
+            .bind(&[(limit as f64).into()])
             .map_err(Self::map_err)?
             .all()
             .await
@@ -652,7 +652,7 @@ impl BruteDb for D1Db {
                 ORDER BY minute_bucket DESC
                 LIMIT ?2"#,
             )
-            .bind(&[since.into(), limit.into()])
+            .bind(&[(since as f64).into(), (limit as f64).into()])
             .map_err(Self::map_err)?
             .all()
             .await
@@ -717,7 +717,7 @@ impl BruteDb for D1Db {
                 ORDER BY amount DESC
                 LIMIT ?1"#,
             )
-            .bind(&[limit.into()])
+            .bind(&[(limit as f64).into()])
             .map_err(Self::map_err)?
             .all()
             .await
@@ -728,7 +728,7 @@ impl BruteDb for D1Db {
     async fn get_ip_seen(&self, limit: i64) -> Result<Vec<IpSeen>, BruteError> {
         let results = self.db
             .prepare("SELECT * FROM ip_seen ORDER BY total_sessions DESC LIMIT ?1")
-            .bind(&[limit.into()])
+            .bind(&[(limit as f64).into()])
             .map_err(Self::map_err)?
             .all()
             .await
@@ -739,7 +739,7 @@ impl BruteDb for D1Db {
     async fn get_ip_abuse(&self, limit: i64) -> Result<Vec<IpAbuse>, BruteError> {
         let results = self.db
             .prepare("SELECT * FROM ip_abuse ORDER BY confidence_score DESC LIMIT ?1")
-            .bind(&[limit.into()])
+            .bind(&[(limit as f64).into()])
             .map_err(Self::map_err)?
             .all()
             .await
@@ -750,7 +750,7 @@ impl BruteDb for D1Db {
     async fn get_blocklist(&self, limit: i64) -> Result<Vec<TopIp>, BruteError> {
         let results = self.db
             .prepare("SELECT * FROM top_ip ORDER BY amount DESC LIMIT ?1")
-            .bind(&[limit.into()])
+            .bind(&[(limit as f64).into()])
             .map_err(Self::map_err)?
             .all()
             .await
@@ -783,7 +783,7 @@ impl BruteDb for D1Db {
                    ORDER BY amount DESC
                    LIMIT ?2"#,
             )
-            .bind(&[protocol.into(), limit.into()])
+            .bind(&[protocol.into(), (limit as f64).into()])
             .map_err(Self::map_err)?
             .all()
             .await

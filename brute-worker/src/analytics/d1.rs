@@ -90,7 +90,7 @@ impl BruteAnalytics for D1Analytics {
                 "INSERT INTO top_hourly (timestamp, amount) VALUES (?1, 1)
                  ON CONFLICT (timestamp) DO UPDATE SET amount = amount + 1",
             )
-            .bind(&[hour_bucket.into()])
+            .bind(&[(hour_bucket as f64).into()])
             .map_err(|e| BruteError::Database(e.to_string()))?,
 
             // top_daily
@@ -98,7 +98,7 @@ impl BruteAnalytics for D1Analytics {
                 "INSERT INTO top_daily (timestamp, amount) VALUES (?1, 1)
                  ON CONFLICT (timestamp) DO UPDATE SET amount = amount + 1",
             )
-            .bind(&[day_bucket.into()])
+            .bind(&[(day_bucket as f64).into()])
             .map_err(|e| BruteError::Database(e.to_string()))?,
         ];
 
