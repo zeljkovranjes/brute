@@ -1,9 +1,8 @@
 use std::{env::var, fs::File, io::BufReader, path::Path};
 
 use actix::Actor;
-use brute_http::{config::Config, http::{serve, serve_tls}, system::BruteSystem};
+use brute_http::{config::Config, geo::ipinfo::IpInfoProvider, http::{serve, serve_tls}, system::BruteSystem};
 use clap::Parser;
-use ipinfo::{IpInfo, IpInfoConfig};
 use log::info;
 use sqlx::{migrate::Migrator, postgres::{PgConnectOptions, PgPoolOptions}, Connection, PgConnection};
 
@@ -120,18 +119,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     /////////////
     // IPINFO //
     ///////////
-    let ipinfo_config = IpInfoConfig {
-        token: Some(config.ipinfo_token.to_string()),
-        ..Default::default()
-    };
-    let ipinfo_client = IpInfo::new(ipinfo_config)
-        .map_err(|e| format!("Failed to create IpInfo client: {}", e))
-        .unwrap();
+    let geo = IpInfoProvider::new(config.ipinfo_token.to_string());
 
     ////////////
     // ACTOR //
     //////////
-    let brute_system = BruteSystem::new_brute(db, ipinfo_client).await;
+    let brute_system = BruteSystem::new_brute(db, geo).await;
     let brute_actor = brute_system.start();
 
     ////////////////////////////////////
