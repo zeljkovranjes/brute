@@ -23,9 +23,19 @@ async fn main(req: Request, env: Env, _ctx: Context) -> Result<Response> {
         req.url().map(|u| u.to_string()).unwrap_or_default()
     );
 
+    // Handle CORS preflight
+    if req.method() == Method::Options {
+        let mut headers = Headers::new();
+        headers.set("Access-Control-Allow-Origin", "*")?;
+        headers.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")?;
+        headers.set("Access-Control-Allow-Headers", "Authorization, Content-Type, Accept")?;
+        headers.set("Access-Control-Max-Age", "3600")?;
+        return Response::empty().map(|r| r.with_headers(headers));
+    }
+
     let router = Router::new();
 
-    router
+    let mut response = router
         // Attack ingestion
         .post_async("/brute/attack/add", routes::post::add_attack)
         .post_async("/brute/protocol/increment", routes::post::increment_protocol)
@@ -62,5 +72,8 @@ async fn main(req: Request, env: Env, _ctx: Context) -> Result<Response> {
         // WebSocket
         .get_async("/ws", routes::ws::handle_websocket)
         .run(req, env)
-        .await
+        .await?;
+
+    response.headers_mut().set("Access-Control-Allow-Origin", "*")?;
+    Ok(response)
 }
