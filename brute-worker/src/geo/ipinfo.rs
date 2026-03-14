@@ -108,7 +108,7 @@ impl GeoProvider for IpInfoProvider {
 
         let mut init = worker::RequestInit::new();
         init.with_method(worker::Method::Get);
-        let mut headers = worker::Headers::new();
+        let headers = worker::Headers::new();
         headers.set("Accept", "application/json").ok();
         init.with_headers(headers);
 

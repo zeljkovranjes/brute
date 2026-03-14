@@ -23,7 +23,7 @@ pub async fn handle_websocket(_req: Request, _ctx: RouteContext<()>) -> worker::
 // the inbound attack.
 
 #[cfg(feature = "paid")]
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 #[cfg(feature = "paid")]
 use worker::{durable_object, DurableObject, Env, State, WebSocket};
 
@@ -35,7 +35,7 @@ pub async fn handle_websocket(req: Request, ctx: RouteContext<()>) -> worker::Re
 }
 
 #[cfg(feature = "paid")]
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize)]
 struct BroadcastMessage {
     parse_type: String,
     message: String,
@@ -68,7 +68,7 @@ impl DurableObject for WsBroadcaster {
             "/internal/broadcast" => {
                 let msg: BroadcastMessage = req.json().await?;
                 let text = serde_json::to_string(&msg).unwrap_or_else(|_| "{}".to_string());
-                for ws in self.state.get_web_sockets() {
+                for ws in self.state.get_websockets() {
                     ws.send_with_str(&text).ok();
                 }
                 Response::ok("broadcast sent")

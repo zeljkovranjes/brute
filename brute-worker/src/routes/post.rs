@@ -110,14 +110,16 @@ pub async fn add_attack(mut req: Request, ctx: RouteContext<()>) -> worker::Resu
         let ipinfo = IpInfoProvider::new(ipinfo_token, base_url);
         match ipinfo.lookup(&individual.ip).await {
             Ok(data) => data,
-            Err(_) => {
-                let cf = req.cf().cloned().unwrap_or_default();
-                CfGeoProvider::new(cf).lookup(&individual.ip).await.unwrap_or_default()
-            }
+            Err(_) => match req.cf() {
+                Some(cf) => CfGeoProvider::new(cf.clone()).lookup(&individual.ip).await.unwrap_or_default(),
+                None => Default::default(),
+            },
         }
     } else {
-        let cf = req.cf().cloned().unwrap_or_default();
-        CfGeoProvider::new(cf).lookup(&individual.ip).await.unwrap_or_default()
+        match req.cf() {
+            Some(cf) => CfGeoProvider::new(cf.clone()).lookup(&individual.ip).await.unwrap_or_default(),
+            None => Default::default(),
+        }
     };
 
     let now = now_ms();

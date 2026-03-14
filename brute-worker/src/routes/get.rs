@@ -317,7 +317,7 @@ pub async fn get_blocklist(req: Request, ctx: RouteContext<()>) -> worker::Resul
     };
 
     Response::ok(body).map(|r| {
-        let mut headers = worker::Headers::new();
+        let headers = worker::Headers::new();
         headers.set("Content-Type", "text/plain; charset=utf-8").ok();
         r.with_headers(headers)
     })

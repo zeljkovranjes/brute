@@ -56,7 +56,7 @@ impl AbuseProvider for WorkerAbuseIpDb {
 
         let mut init = worker::RequestInit::new();
         init.with_method(worker::Method::Get);
-        let mut headers = worker::Headers::new();
+        let headers = worker::Headers::new();
         headers.set("Key", &self.api_key).ok();
         headers.set("Accept", "application/json").ok();
         init.with_headers(headers);
