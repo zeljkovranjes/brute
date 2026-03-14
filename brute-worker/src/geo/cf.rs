@@ -49,7 +49,7 @@ impl GeoProvider for CfGeoProvider {
             loc,
             org: None,      // not available from cf object
             postal: self.cf.postal_code().map(|s| s.to_string()),
-            timezone: self.cf.timezone().map(|s| s.to_string()),
+            timezone: Some(self.cf.timezone_name()).filter(|s| !s.is_empty()),
             // ASN — number only, name/domain/route not available from cf
             asn,
             asn_name: None,
