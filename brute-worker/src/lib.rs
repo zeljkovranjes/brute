@@ -7,10 +7,10 @@ mod db;
 mod geo;
 mod routes;
 
-#[allow(unused_must_use)]
 #[event(scheduled)]
 async fn scheduled(_event: ScheduledEvent, env: Env, _ctx: ScheduleContext) -> Result<()> {
-    cron::retention::run(&env).await
+    cron::retention::run(&env).await?;
+    Ok(())
 }
 
 #[event(fetch)]
