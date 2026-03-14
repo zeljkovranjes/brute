@@ -3,27 +3,51 @@ main = "build/worker/shim.mjs"
 compatibility_date = "2024-01-01"
 compatibility_flags = ["nodejs_compat"]
 
+# Free tier build (default):
+#   cargo install worker-build && worker-build --release
+#
+# Paid tier build (Analytics Engine + Durable Objects):
+#   cargo install worker-build && worker-build --release --features paid
 [build]
 command = "cargo install worker-build && worker-build --release"
 
+# ── D1 Database ───────────────────────────────────────────────────────────────
+# Available on the free tier.
+# Create your database: wrangler d1 create brute
+# Then fill in the database_id below.
 [[d1_databases]]
 binding = "DB"
 database_name = "brute"
 database_id = "YOUR_D1_DATABASE_ID"
 
-[[analytics_engine_datasets]]
-binding = "ANALYTICS"
-dataset = "brute_attacks"
+# ── Analytics Engine ──────────────────────────────────────────────────────────
+# Requires the Workers Paid plan ($5/month).
+# To enable:
+#   1. Uncomment the section below.
+#   2. Rebuild with `--features paid` (update the [build] command above).
+#
+# [[analytics_engine_datasets]]
+# binding = "ANALYTICS"
+# dataset = "brute_attacks"
 
-[durable_objects]
-bindings = [
-  { name = "WS_BROADCASTER", class_name = "WsBroadcaster" }
-]
+# ── Durable Objects (WebSocket broadcasting) ──────────────────────────────────
+# Requires the Workers Paid plan ($5/month).
+# To enable:
+#   1. Uncomment both sections below.
+#   2. Rebuild with `--features paid` (update the [build] command above).
+#
+# [durable_objects]
+# bindings = [
+#   { name = "WS_BROADCASTER", class_name = "WsBroadcaster" }
+# ]
+#
+# [[migrations]]
+# tag = "v1"
+# new_classes = ["WsBroadcaster"]
 
-[[migrations]]
-tag = "v1"
-new_classes = ["WsBroadcaster"]
-
+# ── Environment variables ─────────────────────────────────────────────────────
 [vars]
 BEARER_TOKEN = ""
+# Optional — enables IP abuse reputation scoring via AbuseIPDB.
+# Leave empty to disable.
 ABUSEIPDB_KEY = ""
