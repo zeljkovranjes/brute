@@ -101,7 +101,7 @@ impl AbuseProvider for WorkerAbuseIpDb {
                 ip.into(),
                 confidence_score.into(),
                 total_reports.into(),
-                now.into(),
+                (now as f64).into(),
             ])
             .map_err(|e| BruteError::Database(e.to_string()))?
             .run()

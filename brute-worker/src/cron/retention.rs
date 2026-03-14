@@ -12,7 +12,7 @@ pub async fn run(env: &Env) -> worker::Result<()> {
 
     for table in &["individual", "processed_individual"] {
         db.prepare(&format!("DELETE FROM {} WHERE timestamp < ?1", table))
-            .bind(&[cutoff_ms.into()])?
+            .bind(&[(cutoff_ms as f64).into()])?
             .run()
             .await?;
     }
