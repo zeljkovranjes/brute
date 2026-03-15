@@ -23,7 +23,7 @@ jobs:
             "embeds": [{
               "title": "New Commit #${{ steps.sha.outputs.short }}",
               "url": "https://github.com/${{ github.repository }}/commit/${{ github.sha }}",
-              "description": "A new commit was pushed to **${{ github.repository }}** — [view changes](https://github.com/${{ github.repository }}/commit/${{ github.sha }})",
+              "description": "A new commit was pushed to **${{ github.repository }}** on branch **${{ github.ref_name }}** — [view changes](https://github.com/${{ github.repository }}/commit/${{ github.sha }})",
               "color": 3447003,
               "fields": [
                 {
@@ -48,11 +48,6 @@ jobs:
                 {
                   "name": "Commit",
                   "value": "[`${{ github.sha }}`](https://github.com/${{ github.repository }}/commit/${{ github.sha }})"
-                },
-                {
-                  "name": "\u200b",
-                  "value": "\u200b",
-                  "inline": false
                 }
               ],
               "footer": {
