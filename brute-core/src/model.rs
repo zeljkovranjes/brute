@@ -47,6 +47,26 @@ where
     }
 }
 
+/// Deserializes `bool` from a boolean, integer (0/1), float (0.0/1.0), or null.
+/// D1/SQLite stores booleans as INTEGER and serde_wasm_bindgen surfaces them as
+/// JS floats — this prevents a deserialization panic on non-optional bool fields.
+fn deserialize_bool_from_any<'de, D>(de: D) -> Result<bool, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let v: serde_json::Value = serde_json::Value::deserialize(de)?;
+    match v {
+        serde_json::Value::Null => Ok(false),
+        serde_json::Value::Bool(b) => Ok(b),
+        serde_json::Value::Number(n) => Ok(
+            n.as_i64().map(|i| i != 0)
+                .or_else(|| n.as_f64().map(|f| f != 0.0))
+                .unwrap_or(false),
+        ),
+        _ => Ok(false),
+    }
+}
+
 #[derive(Default, Clone, Debug, Serialize, Deserialize)]
 pub struct Individual {
     pub id: String,
@@ -151,6 +171,7 @@ impl TopUsername {
 pub struct TopPassword {
     pub password: String,
     pub amount: i32,
+    #[serde(deserialize_with = "deserialize_bool_from_any")]
     pub is_breached: bool,
 }
 
