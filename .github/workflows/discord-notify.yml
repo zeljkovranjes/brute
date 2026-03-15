@@ -7,6 +7,10 @@ jobs:
   notify:
     runs-on: ubuntu-latest
     steps:
+      - name: Get short SHA
+        id: sha
+        run: echo "short=$(echo ${{ github.sha }} | cut -c1-8)" >> $GITHUB_OUTPUT
+
       - name: Send Discord notification
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
@@ -17,8 +21,9 @@ jobs:
             "username": "GitHub",
             "avatar_url": "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png",
             "embeds": [{
-              "title": "New Commit",
+              "title": "New Commit #${{ steps.sha.outputs.short }}",
               "url": "https://github.com/${{ github.repository }}/commit/${{ github.sha }}",
+              "description": "A new commit was pushed to **${{ github.repository }}** — [view changes](https://github.com/${{ github.repository }}/commit/${{ github.sha }})",
               "color": 3447003,
               "fields": [
                 {
@@ -43,6 +48,11 @@ jobs:
                 {
                   "name": "Commit",
                   "value": "[`${{ github.sha }}`](https://github.com/${{ github.repository }}/commit/${{ github.sha }})"
+                },
+                {
+                  "name": "\u200b",
+                  "value": "\u200b",
+                  "inline": false
                 }
               ],
               "footer": {
