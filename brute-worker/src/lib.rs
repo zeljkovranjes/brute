@@ -5,6 +5,7 @@ mod analytics;
 mod cron;
 mod db;
 mod geo;
+mod hibp;
 mod routes;
 
 #[event(scheduled)]
