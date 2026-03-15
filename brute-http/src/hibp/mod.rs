@@ -48,6 +48,17 @@ impl HibpProvider for HibpChecker {
             .await
             .map_err(|e| BruteError::Internal(format!("HIBP request failed: {}", e)))?;
 
+        if resp.status() == 429 {
+            return Err(BruteError::Internal("HIBP rate limited".to_string()));
+        }
+
+        if !resp.status().is_success() {
+            return Err(BruteError::Internal(format!(
+                "HIBP unexpected status: {}",
+                resp.status()
+            )));
+        }
+
         let body = resp
             .text()
             .await
