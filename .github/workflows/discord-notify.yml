@@ -17,7 +17,7 @@ jobs:
             "username": "GitHub",
             "avatar_url": "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png",
             "embeds": [{
-              "title": "Changes Deployed",
+              "title": "New Commit",
               "url": "https://github.com/${{ github.repository }}/commit/${{ github.sha }}",
               "color": 3447003,
               "fields": [
