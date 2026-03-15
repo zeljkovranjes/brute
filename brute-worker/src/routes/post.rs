@@ -5,6 +5,7 @@ use brute_core::{
         analytics::BruteAnalytics,
         database::BruteDb,
         geo::GeoProvider,
+        hibp::HibpProvider,
     },
     validator::Validate,
 };
@@ -16,6 +17,7 @@ use crate::{
     abuse::WorkerAbuseIpDb,
     db::d1::D1Db,
     geo::{cf::CfGeoProvider, ipinfo::IpInfoProvider},
+    hibp::WorkerHibpChecker,
 };
 
 #[cfg(feature = "paid")]
@@ -178,6 +180,14 @@ pub async fn add_attack(mut req: Request, ctx: RouteContext<()>) -> worker::Resu
     // Update all aggregation tables
     let _ = d1.upsert_top_username(&individual.username).await;
     let _ = d1.upsert_top_password(&individual.password).await;
+
+    // HIBP breach check — fire-and-forget
+    {
+        let hibp = WorkerHibpChecker::new();
+        if let Ok(true) = hibp.check_password(&individual.password).await {
+            let _ = d1.update_password_breached(&individual.password).await;
+        }
+    }
     let _ = d1.upsert_top_ip(&individual.ip).await;
     let _ = d1.upsert_top_protocol(&individual.protocol, 1).await;
     let _ = d1.update_ip_seen(&individual.ip, now).await;
