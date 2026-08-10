@@ -1,3 +1,5 @@
+
+
 # Brute
 [<img alt="github" src="https://img.shields.io/badge/%20GitHub-chomnr%2Fbrute-orange" height="20">](https://github.com/chomnr/brute)
 [<img alt="os" src="https://img.shields.io/badge/%20OS-Linux,%20Windows,%20MacOS-blue" height="20">](/)
@@ -327,7 +329,7 @@ https://github.com/chomnr/brute-daemon
 
     ```sh
     cargo build --release
-    mv ~/brute-daemon/target/release/brute-daemon /usr/local/bin/brute-daemon
+    mv ./target/release/brute-daemon /usr/local/bin/brute-daemon
     ```
 
 3. Create a systemd service:
